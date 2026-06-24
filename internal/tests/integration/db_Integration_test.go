@@ -1,0 +1,114 @@
+package integration
+
+import (
+	"database/sql"
+	"errors"
+	"io/fs"
+	"os"
+	"strconv"
+	"testing"
+
+	"github.com/sirupsen/logrus"
+	"github.com/uptrace/bun"
+	"github.com/uptrace/bun/dialect/pgdialect"
+	"github.com/uptrace/bun/driver/pgdriver"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/cache"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/repository"
+	"golang.org/x/crypto/bcrypt"
+)
+
+var store *repository.DB
+var logger *logrus.Logger
+
+func TestMain(m *testing.M) {
+	sqldb := sql.OpenDB(pgdriver.NewConnector(
+		pgdriver.WithDSN("postgres://test:test@localhost:5432/testdb?sslmode=disable"),
+	))
+	db := bun.NewDB(sqldb, pgdialect.New())
+
+	redisCache, err := cache.NewRedisCache("localhost:6379", "")
+	if err != nil {
+		panic(err)
+	}
+
+	store = repository.NewDB(db, redisCache, nil, nil)
+
+	code := m.Run()
+	os.Exit(code)
+}
+
+func TestDBIntegration(t *testing.T) {
+
+	// create a test user
+	email := "test1@example.com"
+	password := "password"
+	user, err := store.CreateUser(email, password)
+	if err != nil {
+		t.Fatalf("failed to create test user: %v", err)
+	}
+
+	// test reading a user
+	readUser, err := store.ReadUser(user.ID)
+	if err != nil {
+		t.Fatalf("failed to read user: %v", err)
+	}
+	if readUser.Email != email {
+		t.Errorf("expected email %q, got %q", email, readUser.Email)
+	}
+
+	// test reading all users
+	users, err := store.ReadUsers()
+	if err != nil {
+		t.Fatalf("failed to read users: %v", err)
+	}
+	if len(users) != 1 {
+		t.Errorf("expected 1 user, got %d", len(users))
+	}
+	if users[0].Email != email {
+		t.Errorf("expected email %q, got %q", email, users[0].Email)
+	}
+
+	// test updating a user
+	newEmail := "newemail@example.com"
+	newPassword := "newpassword"
+	err = store.UpdateUser(strconv.FormatUint(uint64(user.ID), 10), newEmail, newPassword)
+	logger.WithField("updated user", user).Debugf("updated user: %v", user)
+
+	if err != nil {
+		t.Fatalf("failed to update user: %v", err)
+	}
+	readUser, err = store.ReadUser(user.ID)
+	logger.WithField("readUser", readUser).Debugf("readUser: %v", readUser)
+
+	if err != nil {
+		t.Fatalf("failed to read updated user: %v", err)
+	}
+	if readUser.Email != newEmail {
+		t.Errorf("expected email %q, got %q", newEmail, readUser.Email)
+	}
+
+	hashedNewPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		t.Errorf("password not hashed: %v", err)
+	}
+
+	if readUser.Password != string(hashedNewPassword) {
+		t.Errorf("expected password %q, got %q", newPassword, readUser.Password)
+	}
+
+	// test deleting a user
+	err = store.DeleteUser(user.ID)
+	if err != nil {
+		t.Fatalf("failed to delete user: %v", err)
+	}
+	_, err = store.ReadUser(user.ID)
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("expected user not found error, got %v", err)
+	}
+
+	// test deleting the same user again should return error
+	err = store.DeleteUser(user.ID)
+	if !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("expected user not found error, got %v", err)
+	}
+}
