@@ -34,3 +34,28 @@ func (u *DB) FindAccountByUsername(username string) (*domain.Account, error) {
 	}
 	return &account, nil
 }
+
+func (u *DB) LoginAccount(username, password string) (*uint64, error) {
+	ctx := context.Background()
+	var account domain.Account
+	err := u.db.NewSelect().Model(&account).Where("username = ?", username).Limit(1).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if err = utils.VerifyPassword(account.Password, password); err != nil {
+		return nil, err
+	}
+	return &account.ID, nil
+}
+
+func (u *DB) ProfileAccount(userID string) (*domain.Account, error) {
+	ctx := context.Background()
+	var account domain.Account
+	err := u.db.NewSelect().Model(&account).Where("id = ?", userID).Limit(1).Scan(ctx)
+	if err != nil {
+		return nil, err
+	}
+	account.Password = ""
+	return &account, nil
+}

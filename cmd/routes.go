@@ -32,11 +32,12 @@ func InitRoutes(
 	// Initialize handlers
 	messageHandler := handler.NewMessageHandler(*msgService)
 	customerHandler := handler.NewUserHandler(*customerService, *firebaseService)
+	loginHandler := handler.NewLoginHandler(*accountService)
 	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService)
 	tagHandler := handler.NewTagHandler(tagService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, blogHandler, tagHandler)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -48,6 +49,7 @@ func setupV1Routes(
 	router *gin.Engine,
 	messageHandler *handler.MessageHandler,
 	customerHandler *handler.UserHandler,
+	loginHandler *handler.LoginHandler,
 	blogHandler *handler.BlogHandler,
 	tagHandler *handler.TagHandler,
 ) {
@@ -80,7 +82,7 @@ func setupV1Routes(
 		}
 
 		// Auth routes
-		v1.POST("/login", customerHandler.LoginUser)
+		v1.POST("/login", loginHandler.LoginAccount)
 
 		// Webhook routes
 		v1.POST("/membership/webhooks", customerHandler.UpdateMembershipStatus)
@@ -129,12 +131,12 @@ func setupV1Routes(
 // setupV2Routes configures v2 API routes
 func setupV2Routes(
 	router *gin.Engine,
-	customerHandler *handler.UserHandler,
+	loginHandler *handler.LoginHandler,
 ) {
 	v2 := router.Group("/v2")
 	{
 		// Auth routes
-		v2.POST("/login", customerHandler.LoginUser)
+		v2.POST("/login", loginHandler.LoginAccount)
 	}
 }
 

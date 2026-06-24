@@ -51,10 +51,14 @@ type CustomerRepository interface {
 type AccountRepository interface {
 	CreateAccount(account domain.Account) (*domain.Account, error)
 	FindAccountByUsername(username string) (*domain.Account, error)
+	LoginAccount(username, password string) (*uint64, error)
+	ProfileAccount(userID string) (*domain.Account, error)
 }
 
 type AccountService interface {
 	CreateAccountRoot() error
+	LoginAccount(username, password string) (*domain.LoginResponse, error)
+	ProfileAccount(userID string) (*domain.Account, error)
 }
 
 type PaymentService interface {

@@ -2,11 +2,23 @@ package domain
 
 import "time"
 
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+type Profile struct {
+	ID       uint64 `json:"id"`
+	Username string `json:"username"`
+	FullName string `json:"full_name"`
+}
+
 type LoginResponse struct {
-	ID           uint64 `json:"id"`
-	Email        string `json:"email"`
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
+	ID           uint64   `json:"_"`
+	Email        string   `json:"_"`
+	AccessToken  string   `json:"access_token"`
+	RefreshToken string   `json:"refresh_token"`
+	User         *Profile `json:"user"`
 }
 
 type CreateBlogCategoryRequest struct {

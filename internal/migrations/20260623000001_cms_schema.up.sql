@@ -1,4 +1,4 @@
-CREATE TABLE tags (
+CREATE TABLE blog_tags (
     id         BIGINT PRIMARY KEY,
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(100) NOT NULL UNIQUE,
@@ -37,7 +37,7 @@ CREATE TABLE blog_posts (
 
 CREATE TABLE blog_post_tags (
     post_id BIGINT NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
-    tag_id  BIGINT NOT NULL REFERENCES tags(id)       ON DELETE CASCADE,
+    tag_id  BIGINT NOT NULL REFERENCES blog_tags(id)       ON DELETE CASCADE,
     PRIMARY KEY (post_id, tag_id)
 );
 

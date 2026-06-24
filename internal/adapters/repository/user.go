@@ -142,8 +142,6 @@ func (u *DB) LoginUser(email, password string) (*domain.LoginResponse, error) {
 	}
 
 	return &domain.LoginResponse{
-		ID:           user.ID,
-		Email:        user.Email,
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
 	}, nil
@@ -184,4 +182,3 @@ func (u *DB) findUserByEmail(email string) (*domain.Customer, error) {
 	}
 	return user, nil
 }
-
