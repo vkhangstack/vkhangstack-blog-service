@@ -21,6 +21,7 @@ RUN cp -r .env.example .env || true
 
 
 # Build the application
+RUN go mod tidy
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd
 
 # Final stage
