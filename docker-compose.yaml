@@ -38,7 +38,24 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-
+  rustfs:
+    image: rustfs/rustfs:latest
+    environment:
+      - RUSTFS_SERVER_DOMAINS=localhost
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_SECRET_KEY=rustfsadmin
+      - RUSTFS_ACCESS_KEY=rustfsadmin
+    volumes:
+      - "/tmp/rustfs/data:/data"
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    container_name: rustfs_container
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
   # Application
   app:
     image: golang-hexagonal:latest
