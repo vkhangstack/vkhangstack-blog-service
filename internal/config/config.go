@@ -30,6 +30,15 @@ type Config struct {
 	App   AppConfig
 	DB    DBConfig
 	Cache CacheConfig
+	S3    S3Config
+}
+
+type S3Config struct {
+	PublicURL string
+	Endpoint  string
+	AccessKey string
+	SecretKey string
+	Bucket    string
 }
 
 func LoadConfig() Config {
@@ -54,6 +63,13 @@ func LoadConfig() Config {
 		Cache: CacheConfig{
 			Host:     getEnv("CACHE_URI", "localhost:6379"),
 			Password: getEnv("CACHE_PASSWORD", ""),
+		},
+		S3: S3Config{
+			PublicURL: getEnv("S3_PUBLIC_URL", "http://localhost:9001"),
+			Endpoint:  getEnv("S3_ENDPOINT", "http://localhost:9001"),
+			AccessKey: getEnv("S3_ACCESS_KEY", ""),
+			SecretKey: getEnv("S3_SECRET_KEY", ""),
+			Bucket:    getEnv("S3_BUCKET", "my-bucket"),
 		},
 	}
 }
