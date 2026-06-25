@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	awscore "github.com/vkhangstack/hexagonal-architecture/internal/adapters/aws"
+	awscore "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
 )
 
 func setUpS3() *awscore.S3Adapter {

@@ -1,11 +1,11 @@
-CREATE TABLE blog_tags (
+CREATE TABLE IF NOT EXISTS blog_tags (
     id         BIGINT PRIMARY KEY,
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE blog_categories (
+CREATE TABLE IF NOT EXISTS blog_categories (
     id          BIGINT PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     slug        VARCHAR(255) NOT NULL UNIQUE,
@@ -17,7 +17,7 @@ CREATE TABLE blog_categories (
     deleted_at  TIMESTAMPTZ
 );
 
-CREATE TABLE blog_posts (
+CREATE TABLE IF NOT EXISTS blog_posts (
     id              BIGINT PRIMARY KEY,
     title           VARCHAR(500) NOT NULL,
     slug            VARCHAR(500) NOT NULL UNIQUE,
@@ -35,7 +35,7 @@ CREATE TABLE blog_posts (
     deleted_at      TIMESTAMPTZ
 );
 
-CREATE TABLE blog_post_tags (
+CREATE TABLE IF NOT EXISTS blog_post_tags (
     post_id BIGINT NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
     tag_id  BIGINT NOT NULL REFERENCES blog_tags(id)       ON DELETE CASCADE,
     PRIMARY KEY (post_id, tag_id)

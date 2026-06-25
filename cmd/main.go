@@ -13,6 +13,7 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/migrate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/cache"
+	storage "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/repository"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/snowflake"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
@@ -73,6 +74,18 @@ func main() {
 
 	store := repository.NewDB(db, redisCache, nil, snowflakeNode)
 
+	storageAdapter, err := storage.NewS3Adapter(ctx, storage.S3Config{
+		AccessKeyID:     cfg.S3.AccessKey,
+		SecretAccessKey: cfg.S3.SecretKey,
+		Endpoint:        cfg.S3.Endpoint,
+		PublicURL:       cfg.S3.PublicURL,
+		Bucket:          cfg.S3.Bucket,
+		UsePathStyle:    true,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize S3 adapter")
+	}
+
 	msgService = services.NewMessengerService(store)
 	customerService = services.NewCustomerService(store)
 	firebaseService = services.NewFirebaseService(store)
@@ -80,8 +93,9 @@ func main() {
 	blogCategoryService = services.NewBlogCategoryService(store)
 	blogPostService = services.NewBlogPostService(store)
 	tagService = services.NewTagService(store)
+	uploadService := services.NewUploadService(storageAdapter)
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService)
+	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, uploadService)
 }

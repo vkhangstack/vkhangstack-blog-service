@@ -126,3 +126,9 @@ type BlogPostService interface {
 	DeletePost(id uint64) error
 	PublishPost(id uint64) (*domain.BlogPost, error)
 }
+
+type UploadService interface {
+	UploadFile(fileName string, fileData []byte) (string, error)
+	DeleteFile(fileKey string) error
+	PublicURL(key string) string
+}

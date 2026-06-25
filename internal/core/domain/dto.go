@@ -77,3 +77,8 @@ type BlogPostListResponse struct {
 	Total int         `json:"total"`
 	Posts []*BlogPost `json:"posts"`
 }
+
+type UploadFileResponse struct {
+	FileKey string `json:"file_key"`
+	URL     string `json:"url"`
+}

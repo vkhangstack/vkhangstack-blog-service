@@ -34,11 +34,12 @@ type Config struct {
 }
 
 type S3Config struct {
-	PublicURL string
-	Endpoint  string
-	AccessKey string
-	SecretKey string
-	Bucket    string
+	PublicURL    string
+	Endpoint     string
+	AccessKey    string
+	SecretKey    string
+	Bucket       string
+	UsePathStyle bool
 }
 
 func LoadConfig() Config {
@@ -65,11 +66,12 @@ func LoadConfig() Config {
 			Password: getEnv("CACHE_PASSWORD", ""),
 		},
 		S3: S3Config{
-			PublicURL: getEnv("S3_PUBLIC_URL", "http://localhost:9001"),
-			Endpoint:  getEnv("S3_ENDPOINT", "http://localhost:9001"),
-			AccessKey: getEnv("S3_ACCESS_KEY", ""),
-			SecretKey: getEnv("S3_SECRET_KEY", ""),
-			Bucket:    getEnv("S3_BUCKET", "my-bucket"),
+			PublicURL:    getEnv("S3_PUBLIC_URL", "http://localhost:9001"),
+			Endpoint:     getEnv("S3_ENDPOINT", "http://localhost:9001"),
+			AccessKey:    getEnv("S3_ACCESS_KEY", ""),
+			SecretKey:    getEnv("S3_SECRET_KEY", ""),
+			Bucket:       getEnv("S3_BUCKET", "my-bucket"),
+			UsePathStyle: getEnv("S3_USE_PATH_STYLE", "true") == "true",
 		},
 	}
 }

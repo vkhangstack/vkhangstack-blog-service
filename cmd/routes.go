@@ -20,6 +20,7 @@ func InitRoutes(
 	blogCategoryService *services.BlogCategoryService,
 	blogPostService *services.BlogPostService,
 	tagService *services.TagService,
+	uploadService *services.UploadService,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -35,9 +36,10 @@ func InitRoutes(
 	loginHandler := handler.NewLoginHandler(*accountService)
 	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService)
 	tagHandler := handler.NewTagHandler(tagService)
+	uploadHandler := handler.NewUploadHandler(uploadService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, uploadHandler)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -52,6 +54,7 @@ func setupV1Routes(
 	loginHandler *handler.LoginHandler,
 	blogHandler *handler.BlogHandler,
 	tagHandler *handler.TagHandler,
+	uploadHandler *handler.UploadHandler,
 ) {
 
 	// Health check route
@@ -124,6 +127,12 @@ func setupV1Routes(
 			blog.GET("/posts", blogHandler.ListPublishedPosts)
 			blog.GET("/posts/:slug", blogHandler.GetPostBySlug)
 			blog.GET("/tags", tagHandler.ListTags)
+		}
+		// Upload routes
+		upload := v1.Group("/upload")
+		upload.Use(http.AuthenticationMiddleware())
+		{
+			upload.POST("", uploadHandler.UploadFile)
 		}
 	}
 }

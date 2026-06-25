@@ -51,8 +51,8 @@ type S3Adapter struct {
 	bucket    string
 	endpoint  string
 	publicURL string
-	region    string
-	pathStyle bool
+	region    *string
+	pathStyle *bool
 }
 
 func NewS3Adapter(ctx context.Context, cfg S3Config) (*S3Adapter, error) {
@@ -98,8 +98,8 @@ func NewS3Adapter(ctx context.Context, cfg S3Config) (*S3Adapter, error) {
 		bucket:    cfg.Bucket,
 		endpoint:  cfg.Endpoint,
 		publicURL: cfg.PublicURL,
-		region:    cfg.Region,
-		pathStyle: cfg.UsePathStyle,
+		region:    utils.StringPtr(cfg.Region),
+		pathStyle: utils.BoolPtr(cfg.UsePathStyle),
 	}, nil
 }
 
@@ -288,7 +288,7 @@ func (a *S3Adapter) PublicURL(key string) string {
 	cleanKey := utils.CleanKey(key)
 	if a.publicURL != "" {
 		ep := strings.TrimRight(a.publicURL, "/")
-		if a.pathStyle {
+		if a.pathStyle != nil && *a.pathStyle {
 			return ep + "/" + a.bucket + "/" + cleanKey
 		}
 		// virtual-hosted style: inject bucket as subdomain
@@ -297,7 +297,7 @@ func (a *S3Adapter) PublicURL(key string) string {
 			return u.Scheme + "://" + a.bucket + "." + u.Host + "/" + cleanKey
 		}
 	}
-	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", a.bucket, a.region, cleanKey)
+	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", a.bucket, utils.StringVal(a.region), cleanKey)
 }
 
 func (a *S3Adapter) PresignGet(ctx context.Context, key string, ttl time.Duration) (string, error) {
