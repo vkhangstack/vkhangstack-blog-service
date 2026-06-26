@@ -47,7 +47,7 @@ type CreateBlogPostRequest struct {
 	Excerpt       *string    `json:"excerpt"`
 	Content       string     `json:"content"         binding:"required"`
 	CoverImageURL *string    `json:"cover_image_url"`
-	CategoryID    *uint64    `json:"category_id"`
+	CategoryID    *uint64    `json:"category_id,omitempty"`
 	TagIDs        []uint64   `json:"tag_ids"`
 	Status        PostStatus `json:"status"`
 	ScheduledAt   *time.Time `json:"scheduled_at"`
@@ -59,7 +59,7 @@ type UpdateBlogPostRequest struct {
 	Excerpt       *string     `json:"excerpt"`
 	Content       *string     `json:"content"`
 	CoverImageURL *string     `json:"cover_image_url"`
-	CategoryID    *uint64     `json:"category_id"`
+	CategoryID    *uint64     `json:"category_id,omitempty"`
 	TagIDs        []uint64    `json:"tag_ids"`
 	Status        *PostStatus `json:"status"`
 	ScheduledAt   *time.Time  `json:"scheduled_at"`

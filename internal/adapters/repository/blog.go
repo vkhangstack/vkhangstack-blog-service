@@ -161,8 +161,6 @@ func (u *DB) GetPost(id uint64) (*domain.BlogPost, error) {
 	}
 
 	err = u.db.NewSelect().Model(post).
-		Relation("Category").
-		Relation("Tags").
 		Where("bp.id = ?", id).
 		Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -181,8 +179,6 @@ func (u *DB) GetPostBySlug(slug string) (*domain.BlogPost, error) {
 	}
 
 	err = u.db.NewSelect().Model(post).
-		Relation("Category").
-		Relation("Tags").
 		Where("bp.slug = ?", slug).
 		Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -218,7 +214,6 @@ func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, e
 	var posts []*domain.BlogPost
 	offset := (filter.Page - 1) * filter.Limit
 	err = applyFilters(u.db.NewSelect().Model(&posts)).
-		Relation("Tags").
 		Order("bp.created_at DESC").
 		Limit(filter.Limit).
 		Offset(offset).

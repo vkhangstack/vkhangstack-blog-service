@@ -195,44 +195,39 @@ type Tag struct {
 
 type BlogPostTag struct {
 	bun.BaseModel `bun:"table:blog_post_tags"`
-	PostID        uint64    `bun:"post_id,pk,type:bigint"`
-	Post          *BlogPost `bun:"rel:belongs-to,join:post_id=id"`
-	TagID         uint64    `bun:"tag_id,pk,type:bigint"`
-	Tag           *Tag      `bun:"rel:belongs-to,join:tag_id=id"`
+	PostID        uint64 `bun:"post_id,pk,type:bigint"`
+	TagID         uint64 `bun:"tag_id,pk,type:bigint"`
 }
 
 type BlogCategory struct {
 	bun.BaseModel `bun:"table:blog_categories,alias:bc"`
-	ID            uint64         `bun:"id,pk,type:bigint"                              json:"id"`
-	Name          string         `bun:"name,notnull,type:varchar(255)"                 json:"name"`
-	Slug          string         `bun:"slug,notnull,type:varchar(255)"                 json:"slug"`
-	Description   *string        `bun:"description,nullzero,type:text"                 json:"description,omitempty"`
-	ParentID      *uint64        `bun:"parent_id,nullzero,type:bigint"                 json:"parent_id,omitempty"`
-	Parent        *BlogCategory  `bun:"rel:belongs-to,join:parent_id=id"               json:"parent,omitempty"`
-	Children      []BlogCategory `bun:"rel:has-many,join:id=parent_id"                 json:"children,omitempty"`
-	IsActive      bool           `bun:"is_active,notnull,default:true,type:boolean"    json:"is_active"`
-	CreatedAt     time.Time      `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
-	UpdatedAt     time.Time      `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
-	DeletedAt     time.Time      `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	ID            uint64    `bun:"id,pk,type:bigint"                              json:"id"`
+	Name          string    `bun:"name,notnull,type:varchar(255)"                 json:"name"`
+	Slug          string    `bun:"slug,notnull,type:varchar(255)"                 json:"slug"`
+	Description   *string   `bun:"description,nullzero,type:text"                 json:"description,omitempty"`
+	ParentID      *uint64   `bun:"parent_id,nullzero,type:bigint"                 json:"parent_id,omitempty"`
+	IsActive      bool      `bun:"is_active,notnull,default:true,type:boolean"    json:"is_active"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
 }
 
 type BlogPost struct {
 	bun.BaseModel `bun:"table:blog_posts,alias:bp"`
-	ID            uint64        `bun:"id,pk,type:bigint"                               json:"id"`
-	Title         string        `bun:"title,notnull,type:varchar(500)"                 json:"title"`
-	Slug          string        `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
-	Excerpt       *string       `bun:"excerpt,nullzero,type:text"                      json:"excerpt,omitempty"`
-	Content       string        `bun:"content,notnull,type:text"                       json:"content"`
-	CoverImageURL *string       `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url,omitempty"`
-	CategoryID    *uint64       `bun:"category_id,nullzero,type:bigint"                json:"category_id,omitempty"`
-	Category      *BlogCategory `bun:"rel:belongs-to,join:category_id=id"              json:"category,omitempty"`
-	Tags          []*Tag        `bun:"m2m:blog_post_tags,join:Post=Tag"                json:"tags,omitempty"`
-	Status        PostStatus    `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
-	PublishedAt   *time.Time    `bun:"published_at,nullzero,type:timestamptz"          json:"published_at,omitempty"`
-	ScheduledAt   *time.Time    `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at,omitempty"`
-	ViewCount     uint64        `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
-	AuthorID      uint64        `bun:"author_id,notnull,type:bigint"                   json:"author_id"`
-	CreatedAt     time.Time     `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
-	UpdatedAt     time.Time     `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
-	DeletedAt     time.Time     `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	ID            uint64     `bun:"id,pk,type:bigint"                               json:"id"`
+	Title         string     `bun:"title,notnull,type:varchar(500)"                 json:"title"`
+	Slug          string     `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
+	Excerpt       *string    `bun:"excerpt,nullzero,type:text"                      json:"excerpt,omitempty"`
+	Content       string     `bun:"content,notnull,type:text"                       json:"content"`
+	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url,omitempty"`
+	CategoryID    *uint64    `bun:"category_id,nullzero,type:bigint"                json:"category_id,omitempty"`
+	TagIDs        []uint64   `bun:"tag_ids,nullzero,type:bigint[]" json:"tag_ids,omitempty"`
+	Status        PostStatus `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
+	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at,omitempty"`
+	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at,omitempty"`
+	ViewCount     uint64     `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
+	AuthorID      uint64     `bun:"author_id,notnull,type:bigint"                   json:"author_id"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time  `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
 }

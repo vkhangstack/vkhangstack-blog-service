@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS blog_categories (
     name        VARCHAR(255) NOT NULL,
     slug        VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
-    parent_id   BIGINT REFERENCES blog_categories(id) ON DELETE SET NULL,
+    parent_id   BIGINT NULL,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -24,20 +24,21 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     excerpt         TEXT,
     content         TEXT NOT NULL,
     cover_image_url VARCHAR(1000),
-    category_id     BIGINT REFERENCES blog_categories(id) ON DELETE SET NULL,
+    category_id     BIGINT NULL,
+    tag_ids         BIGINT[] NULL,
     status          VARCHAR(50) NOT NULL DEFAULT 'draft',
     published_at    TIMESTAMPTZ,
     scheduled_at    TIMESTAMPTZ,
     view_count      BIGINT NOT NULL DEFAULT 0,
-    author_id       BIGINT NOT NULL REFERENCES accounts(id),
+    author_id       BIGINT NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS blog_post_tags (
-    post_id BIGINT NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
-    tag_id  BIGINT NOT NULL REFERENCES blog_tags(id)       ON DELETE CASCADE,
+    post_id BIGINT NOT NULL,
+    tag_id  BIGINT NOT NULL,
     PRIMARY KEY (post_id, tag_id)
 );
 
