@@ -94,7 +94,7 @@ func main() {
 	blogPostService = services.NewBlogPostService(store)
 	tagService = services.NewTagService(store)
 	uploadService := services.NewUploadService(storageAdapter)
-	rateLimiter := services.NewRateLimiter(10) // Allow 10 requests per minute
+	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 
 	accountService.CreateAccountRoot()
 
