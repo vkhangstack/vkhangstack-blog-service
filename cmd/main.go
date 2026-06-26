@@ -94,8 +94,9 @@ func main() {
 	blogPostService = services.NewBlogPostService(store)
 	tagService = services.NewTagService(store)
 	uploadService := services.NewUploadService(storageAdapter)
+	rateLimiter := services.NewRateLimiter(10) // Allow 10 requests per minute
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, uploadService)
+	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, uploadService, rateLimiter)
 }

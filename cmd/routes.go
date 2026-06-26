@@ -21,6 +21,7 @@ func InitRoutes(
 	blogPostService *services.BlogPostService,
 	tagService *services.TagService,
 	uploadService *services.UploadService,
+	rateLimiter *services.RateLimiter,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -39,7 +40,7 @@ func InitRoutes(
 	uploadHandler := handler.NewUploadHandler(uploadService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, uploadHandler)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, uploadHandler, rateLimiter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -55,6 +56,7 @@ func setupV1Routes(
 	blogHandler *handler.BlogHandler,
 	tagHandler *handler.TagHandler,
 	uploadHandler *handler.UploadHandler,
+	rateLimiter *services.RateLimiter,
 ) {
 
 	// Health check route
@@ -133,6 +135,13 @@ func setupV1Routes(
 		upload.Use(http.AuthenticationMiddleware())
 		{
 			upload.POST("", uploadHandler.UploadFile)
+		}
+		// Upload routes for TinyEditor
+		tinyEditor := v1.Group("/tiny-editor")
+		tinyEditor.Use(http.RateLimitMiddleware(rateLimiter))
+		{
+			tinyEditor.POST("", uploadHandler.UploadFileTinyEditor)
+			tinyEditor.DELETE("", uploadHandler.DeleteFileTinyEditor)
 		}
 	}
 }

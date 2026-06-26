@@ -128,7 +128,13 @@ type BlogPostService interface {
 }
 
 type UploadService interface {
-	UploadFile(fileName string, fileData []byte) (string, error)
-	DeleteFile(fileKey string) error
-	PublicURL(key string) string
+	UploadFile(ctx context.Context, fileName string, fileData []byte) (string, error)
+	UploadFileWithBucket(ctx context.Context, bucketName string, fileName string, fileData []byte) (string, error)
+	DeleteFile(ctx context.Context, fileKey string) error
+	DeleteFileWithBucket(ctx context.Context, bucketName string, fileKey string) error
+	PublicURL(key string, bucket string) string
+}
+
+type RateLimiter interface {
+	Allow(ip string) bool
 }

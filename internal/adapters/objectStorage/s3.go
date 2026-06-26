@@ -33,6 +33,7 @@ type PutInput struct {
 	ContentType  string
 	CacheControl string
 	Metadata     map[string]string
+	Bucket       string // Optional: override default bucket
 }
 
 type ObjectInfo struct {
@@ -110,9 +111,12 @@ func (a *S3Adapter) Put(ctx context.Context, in PutInput) error {
 	if in.Body == nil {
 		return fmt.Errorf("body is required")
 	}
+	if in.Bucket == "" {
+		in.Bucket = a.bucket
+	}
 
 	input := &transfermanager.UploadObjectInput{
-		Bucket:   aws.String(a.bucket),
+		Bucket:   aws.String(in.Bucket),
 		Key:      aws.String(utils.CleanKey(in.Key)),
 		Body:     in.Body,
 		Metadata: in.Metadata,
@@ -162,10 +166,16 @@ func (a *S3Adapter) GetInfo(ctx context.Context, key string) (*ObjectInfo, error
 	return info, nil
 }
 
-func (a *S3Adapter) Delete(ctx context.Context, key string) error {
+func (a *S3Adapter) Delete(ctx context.Context, key string, bucket string) error {
+	fmt.Println("Deleting object:", key, "from bucket:", bucket)
+	if bucket == "" {
+		bucket = a.bucket
+	}
+	fmt.Println("Deleting object:", key, "from bucket:", bucket)
 	_, err := a.client.DeleteObject(ctx, &s3.DeleteObjectInput{
-		Bucket: aws.String(a.bucket),
-		Key:    aws.String(utils.CleanKey(key)),
+		Bucket:                    aws.String(bucket),
+		Key:                       aws.String(utils.CleanKey(key)),
+		BypassGovernanceRetention: aws.Bool(true),
 	})
 	if err != nil {
 		return fmt.Errorf("delete object %q: %w", key, err)
@@ -248,7 +258,7 @@ func (a *S3Adapter) Rename(ctx context.Context, oldKey, newKey string) error {
 	if err := a.Copy(ctx, oldKey, newKey); err != nil {
 		return err
 	}
-	if err := a.Delete(ctx, oldKey); err != nil {
+	if err := a.Delete(ctx, oldKey, ""); err != nil {
 		return fmt.Errorf("delete old key after rename %q: %w", oldKey, err)
 	}
 	return nil
@@ -284,17 +294,20 @@ func (a *S3Adapter) List(ctx context.Context, prefix string, limit int32) ([]Obj
 // For path-style custom endpoints: {endpoint}/{bucket}/{key}
 // For virtual-hosted custom endpoints: {scheme}://{bucket}.{host}/{key}
 // For AWS S3 (no custom endpoint): https://{bucket}.s3.{region}.amazonaws.com/{key}
-func (a *S3Adapter) PublicURL(key string) string {
+func (a *S3Adapter) PublicURL(key string, bucket string) string {
 	cleanKey := utils.CleanKey(key)
 	if a.publicURL != "" {
 		ep := strings.TrimRight(a.publicURL, "/")
 		if a.pathStyle != nil && *a.pathStyle {
-			return ep + "/" + a.bucket + "/" + cleanKey
+			if bucket == "" {
+				return ep + "/" + cleanKey
+			}
+			return ep + "/" + bucket + "/" + cleanKey
 		}
 		// virtual-hosted style: inject bucket as subdomain
 		u, err := url.Parse(ep)
 		if err == nil {
-			return u.Scheme + "://" + a.bucket + "." + u.Host + "/" + cleanKey
+			return u.Scheme + "://" + bucket + "." + u.Host + "/" + cleanKey
 		}
 	}
 	return fmt.Sprintf("https://%s.s3.%s.amazonaws.com/%s", a.bucket, utils.StringVal(a.region), cleanKey)

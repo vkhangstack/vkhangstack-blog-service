@@ -82,3 +82,8 @@ type UploadFileResponse struct {
 	FileKey string `json:"file_key"`
 	URL     string `json:"url"`
 }
+
+type UploadFileResponseTinyEditor struct {
+	FileKey string `json:"file_key"`
+	URL     string `json:"url"`
+}

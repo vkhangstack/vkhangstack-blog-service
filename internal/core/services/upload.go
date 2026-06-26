@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"fmt"
 	"io"
 
 	storage "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
@@ -27,7 +26,6 @@ func (u *UploadService) UploadFile(ctx context.Context, fileName string, fileDat
 		Body:        fileData,
 		ContentType: contentType,
 	})
-	fmt.Println("Upload error:", err)
 
 	if err != nil {
 		return "", err
@@ -35,10 +33,29 @@ func (u *UploadService) UploadFile(ctx context.Context, fileName string, fileDat
 	return keyName, nil
 }
 
-func (u *UploadService) DeleteFile(ctx context.Context, fileKey string) error {
-	return u.storage.Delete(ctx, fileKey)
+func (u *UploadService) UploadFileWithBucket(ctx context.Context, bucketName string, fileName string, fileData io.Reader, contentType string) (string, error) {
+	extension := utils.GetFileExtension(fileName)
+	keyName := utils.UUIDString() + "." + extension
+	err := u.storage.Put(ctx, storage.PutInput{
+		Key:         keyName,
+		Body:        fileData,
+		ContentType: contentType,
+		Bucket:      bucketName,
+	})
+
+	if err != nil {
+		return "", err
+	}
+	return bucketName + "/" + keyName, nil
 }
 
-func (u *UploadService) PublicURL(key string) string {
-	return u.storage.PublicURL(key)
+func (u *UploadService) DeleteFile(ctx context.Context, fileKey string) error {
+	return u.storage.Delete(ctx, fileKey, "")
+}
+func (u *UploadService) DeleteFileWithBucket(ctx context.Context, bucketName string, fileKey string) error {
+	return u.storage.Delete(ctx, fileKey, bucketName)
+}
+
+func (u *UploadService) PublicURL(key string, bucket string) string {
+	return u.storage.PublicURL(key, bucket)
 }

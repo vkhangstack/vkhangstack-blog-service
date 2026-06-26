@@ -28,6 +28,7 @@ const (
 	ErrorCodeUnAuthorization     = -401
 	ErrorCodeForbidden           = -403
 	ErrorCodeInternalServerError = -500
+	ErrorCodeTooManyRequests     = -429
 )
 
 const (

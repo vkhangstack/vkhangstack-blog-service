@@ -26,13 +26,6 @@ type CacheConfig struct {
 	Password string
 }
 
-type Config struct {
-	App   AppConfig
-	DB    DBConfig
-	Cache CacheConfig
-	S3    S3Config
-}
-
 type S3Config struct {
 	PublicURL    string
 	Endpoint     string
@@ -40,6 +33,18 @@ type S3Config struct {
 	SecretKey    string
 	Bucket       string
 	UsePathStyle bool
+}
+
+type TinyEditorConfig struct {
+	Bucket string
+}
+
+type Config struct {
+	App        AppConfig
+	DB         DBConfig
+	Cache      CacheConfig
+	S3         S3Config
+	TinyEditor TinyEditorConfig
 }
 
 func LoadConfig() Config {
@@ -72,6 +77,9 @@ func LoadConfig() Config {
 			SecretKey:    getEnv("S3_SECRET_KEY", ""),
 			Bucket:       getEnv("S3_BUCKET", "my-bucket"),
 			UsePathStyle: getEnv("S3_USE_PATH_STYLE", "true") == "true",
+		},
+		TinyEditor: TinyEditorConfig{
+			Bucket: getEnv("TINY_EDITOR_BUCKET", "tiny-editor"),
 		},
 	}
 }
