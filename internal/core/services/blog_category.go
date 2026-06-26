@@ -24,7 +24,7 @@ func (s *BlogCategoryService) CreateCategory(req domain.CreateBlogCategoryReques
 	return s.repo.CreateCategory(category)
 }
 
-func (s *BlogCategoryService) GetCategory(id uint64) (*domain.BlogCategory, error) {
+func (s *BlogCategoryService) GetCategory(id string) (*domain.BlogCategory, error) {
 	return s.repo.GetCategory(id)
 }
 
@@ -32,7 +32,7 @@ func (s *BlogCategoryService) ListCategories() ([]*domain.BlogCategory, error) {
 	return s.repo.ListCategories()
 }
 
-func (s *BlogCategoryService) UpdateCategory(id uint64, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error) {
+func (s *BlogCategoryService) UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error) {
 	existing, err := s.repo.GetCategory(id)
 	if err != nil {
 		return nil, err
@@ -55,6 +55,6 @@ func (s *BlogCategoryService) UpdateCategory(id uint64, req domain.UpdateBlogCat
 	return s.repo.UpdateCategory(*existing)
 }
 
-func (s *BlogCategoryService) DeleteCategory(id uint64) error {
+func (s *BlogCategoryService) DeleteCategory(id string) error {
 	return s.repo.DeleteCategory(id)
 }

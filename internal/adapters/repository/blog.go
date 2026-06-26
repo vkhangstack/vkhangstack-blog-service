@@ -16,7 +16,7 @@ import (
 
 func (u *DB) CreateTag(tag domain.Tag) (*domain.Tag, error) {
 	ctx := context.Background()
-	tag.ID = uint64(u.snowflakeNode.GenerateIDInt64())
+	tag.ID = u.snowflakeNode.GenerateID()
 	_, err := u.db.NewInsert().Model(&tag).Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("tag not saved: %v", err)
@@ -44,7 +44,7 @@ func (u *DB) ListTags() ([]*domain.Tag, error) {
 	return tags, nil
 }
 
-func (u *DB) AttachTags(postID uint64, tagIDs []uint64) error {
+func (u *DB) AttachTags(postID string, tagIDs []string) error {
 	if len(tagIDs) == 0 {
 		return nil
 	}
@@ -57,7 +57,7 @@ func (u *DB) AttachTags(postID uint64, tagIDs []uint64) error {
 	return err
 }
 
-func (u *DB) DetachTags(postID uint64) error {
+func (u *DB) DetachTags(postID string) error {
 	ctx := context.Background()
 	_, err := u.db.NewDelete().Model((*domain.BlogPostTag)(nil)).Where("post_id = ?", postID).Exec(ctx)
 	return err
@@ -67,7 +67,7 @@ func (u *DB) DetachTags(postID uint64) error {
 
 func (u *DB) CreateCategory(category domain.BlogCategory) (*domain.BlogCategory, error) {
 	ctx := context.Background()
-	category.ID = uint64(u.snowflakeNode.GenerateIDInt64())
+	category.ID = u.snowflakeNode.GenerateID()
 	_, err := u.db.NewInsert().Model(&category).Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("category not saved: %v", err)
@@ -75,10 +75,10 @@ func (u *DB) CreateCategory(category domain.BlogCategory) (*domain.BlogCategory,
 	return &category, nil
 }
 
-func (u *DB) GetCategory(id uint64) (*domain.BlogCategory, error) {
+func (u *DB) GetCategory(id string) (*domain.BlogCategory, error) {
 	ctx := context.Background()
 	category := &domain.BlogCategory{}
-	err := u.cache.Get(utils.CacheKeyCategoryPrefix+utils.Uint64ToString(id), category)
+	err := u.cache.Get(utils.CacheKeyCategoryPrefix+id, category)
 	if err == nil {
 		return category, nil
 	}
@@ -87,7 +87,7 @@ func (u *DB) GetCategory(id uint64) (*domain.BlogCategory, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("category not found")
 	}
-	u.cache.Set(utils.CacheKeyCategoryPrefix+utils.Uint64ToString(id), category, time.Duration(utils.CacheTTLOneWeek))
+	u.cache.Set(utils.CacheKeyCategoryPrefix+id, category, time.Duration(utils.CacheTTLOneWeek))
 	return category, err
 }
 
@@ -117,11 +117,11 @@ func (u *DB) UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory,
 	if err != nil {
 		return nil, fmt.Errorf("category not updated: %v", err)
 	}
-	u.cache.Delete(utils.CacheKeyCategoryPrefix + utils.Uint64ToString(category.ID)) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyCategoryPrefix + category.ID) // Invalidate cache
 	return &category, nil
 }
 
-func (u *DB) DeleteCategory(id uint64) error {
+func (u *DB) DeleteCategory(id string) error {
 	ctx := context.Background()
 	category := &domain.BlogCategory{}
 	res, err := u.db.NewDelete().Model(category).Where("id = ?", id).Exec(ctx)
@@ -132,15 +132,15 @@ func (u *DB) DeleteCategory(id uint64) error {
 	if n == 0 {
 		return errors.New("category not found")
 	}
-	u.cache.Delete(utils.CacheKeyCategoryPrefix + utils.Uint64ToString(id)) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyCategoryPrefix + id) // Invalidate cache
 	return nil
 }
 
 // --- Post ---
 
-func (u *DB) CreatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost, error) {
+func (u *DB) CreatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error) {
 	ctx := context.Background()
-	post.ID = uint64(u.snowflakeNode.GenerateIDInt64())
+	post.ID = u.snowflakeNode.GenerateID()
 
 	_, err := u.db.NewInsert().Model(&post).Exec(ctx)
 	if err != nil {
@@ -152,10 +152,10 @@ func (u *DB) CreatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost
 	return u.GetPost(post.ID)
 }
 
-func (u *DB) GetPost(id uint64) (*domain.BlogPost, error) {
+func (u *DB) GetPost(id string) (*domain.BlogPost, error) {
 	ctx := context.Background()
 	post := &domain.BlogPost{}
-	err := u.cache.Get(utils.CacheKeyPostPrefix+utils.Uint64ToString(id), post)
+	err := u.cache.Get(utils.CacheKeyPostPrefix+id, post)
 	if err == nil {
 		return post, nil
 	}
@@ -166,7 +166,7 @@ func (u *DB) GetPost(id uint64) (*domain.BlogPost, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("post not found")
 	}
-	u.cache.Set(utils.CacheKeyPostPrefix+utils.Uint64ToString(id), post, time.Duration(utils.CacheTTLOneWeek))
+	u.cache.Set(utils.CacheKeyPostPrefix+id, post, time.Duration(utils.CacheTTLOneWeek))
 	return post, err
 }
 
@@ -224,7 +224,7 @@ func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, e
 	return posts, total, nil
 }
 
-func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost, error) {
+func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error) {
 	ctx := context.Background()
 	_, err := u.db.NewUpdate().Model(&post).WherePK().Exec(ctx)
 	if err != nil {
@@ -238,12 +238,12 @@ func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost
 			return nil, err
 		}
 	}
-	u.cache.Delete(utils.CacheKeyPostPrefix + post.Slug)                     // Invalidate cache
-	u.cache.Delete(utils.CacheKeyPostPrefix + utils.Uint64ToString(post.ID)) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyPostPrefix + post.Slug) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyPostPrefix + post.ID)   // Invalidate cache
 	return u.GetPost(post.ID)
 }
 
-func (u *DB) DeletePost(id uint64) error {
+func (u *DB) DeletePost(id string) error {
 	ctx := context.Background()
 	post := &domain.BlogPost{}
 	res, err := u.db.NewDelete().Model(post).Where("id = ?", id).Exec(ctx)
@@ -254,12 +254,12 @@ func (u *DB) DeletePost(id uint64) error {
 	if n == 0 {
 		return errors.New("post not found")
 	}
-	u.cache.Delete(utils.CacheKeyPostPrefix + post.Slug)                     // Invalidate cache
-	u.cache.Delete(utils.CacheKeyPostPrefix + utils.Uint64ToString(post.ID)) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyPostPrefix + post.Slug) // Invalidate cache
+	u.cache.Delete(utils.CacheKeyPostPrefix + post.ID)   // Invalidate cache
 	return nil
 }
 
-func (u *DB) IncrementViewCount(id uint64) error {
+func (u *DB) IncrementViewCount(id string) error {
 	ctx := context.Background()
 	_, err := u.db.NewUpdate().TableExpr("blog_posts").
 		Set("view_count = view_count + 1").

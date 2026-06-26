@@ -51,7 +51,7 @@ type CustomerRepository interface {
 type AccountRepository interface {
 	CreateAccount(account domain.Account) (*domain.Account, error)
 	FindAccountByUsername(username string) (*domain.Account, error)
-	LoginAccount(username, password string) (*uint64, error)
+	LoginAccount(username, password string) (*string, error)
 	ProfileAccount(userID string) (*domain.Account, error)
 }
 
@@ -81,8 +81,8 @@ type TagRepository interface {
 	CreateTag(tag domain.Tag) (*domain.Tag, error)
 	GetTagBySlug(slug string) (*domain.Tag, error)
 	ListTags() ([]*domain.Tag, error)
-	AttachTags(postID uint64, tagIDs []uint64) error
-	DetachTags(postID uint64) error
+	AttachTags(postID string, tagIDs []string) error
+	DetachTags(postID string) error
 }
 
 type TagService interface {
@@ -92,39 +92,39 @@ type TagService interface {
 
 type BlogCategoryRepository interface {
 	CreateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
-	GetCategory(id uint64) (*domain.BlogCategory, error)
+	GetCategory(id string) (*domain.BlogCategory, error)
 	GetCategoryBySlug(slug string) (*domain.BlogCategory, error)
 	ListCategories() ([]*domain.BlogCategory, error)
 	UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
-	DeleteCategory(id uint64) error
+	DeleteCategory(id string) error
 }
 
 type BlogPostRepository interface {
-	CreatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost, error)
-	GetPost(id uint64) (*domain.BlogPost, error)
+	CreatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error)
+	GetPost(id string) (*domain.BlogPost, error)
 	GetPostBySlug(slug string) (*domain.BlogPost, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	UpdatePost(post domain.BlogPost, tagIDs []uint64) (*domain.BlogPost, error)
-	DeletePost(id uint64) error
-	IncrementViewCount(id uint64) error
+	UpdatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error)
+	DeletePost(id string) error
+	IncrementViewCount(id string) error
 }
 
 type BlogCategoryService interface {
 	CreateCategory(req domain.CreateBlogCategoryRequest) (*domain.BlogCategory, error)
-	GetCategory(id uint64) (*domain.BlogCategory, error)
+	GetCategory(id string) (*domain.BlogCategory, error)
 	ListCategories() ([]*domain.BlogCategory, error)
-	UpdateCategory(id uint64, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error)
-	DeleteCategory(id uint64) error
+	UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error)
+	DeleteCategory(id string) error
 }
 
 type BlogPostService interface {
-	CreatePost(authorID uint64, req domain.CreateBlogPostRequest) (*domain.BlogPost, error)
-	GetPost(id uint64) (*domain.BlogPost, error)
+	CreatePost(authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error)
+	GetPost(id string) (*domain.BlogPost, error)
 	GetPostBySlug(slug string) (*domain.BlogPost, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	UpdatePost(id uint64, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error)
-	DeletePost(id uint64) error
-	PublishPost(id uint64) (*domain.BlogPost, error)
+	UpdatePost(id string, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error)
+	DeletePost(id string) error
+	PublishPost(id string) (*domain.BlogPost, error)
 }
 
 type UploadService interface {

@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
-	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type LoginHandler struct {
@@ -31,7 +30,7 @@ func (h *LoginHandler) LoginAccount(ctx *gin.Context) {
 		HandleError(ctx, http.StatusBadRequest, nil, err.Error())
 		return
 	}
-	profile, err := h.sva.ProfileAccount(utils.Uint64ToString(response.ID))
+	profile, err := h.sva.ProfileAccount(response.ID)
 	if err != nil {
 		HandleError(ctx, http.StatusBadRequest, nil, err.Error())
 		return

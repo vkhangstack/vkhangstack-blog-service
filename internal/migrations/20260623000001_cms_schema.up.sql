@@ -1,16 +1,16 @@
 CREATE TABLE IF NOT EXISTS blog_tags (
-    id         BIGINT PRIMARY KEY,
+    id         VARCHAR(20) PRIMARY KEY,
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS blog_categories (
-    id          BIGINT PRIMARY KEY,
+    id          VARCHAR(20) PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
     slug        VARCHAR(255) NOT NULL UNIQUE,
     description TEXT,
-    parent_id   BIGINT NULL,
+    parent_id   VARCHAR(20) NULL,
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -18,27 +18,27 @@ CREATE TABLE IF NOT EXISTS blog_categories (
 );
 
 CREATE TABLE IF NOT EXISTS blog_posts (
-    id              BIGINT PRIMARY KEY,
+    id              VARCHAR(20) PRIMARY KEY,
     title           VARCHAR(500) NOT NULL,
     slug            VARCHAR(500) NOT NULL UNIQUE,
     excerpt         TEXT,
     content         TEXT NOT NULL,
     cover_image_url VARCHAR(1000),
-    category_id     BIGINT NULL,
-    tag_ids         BIGINT[] NULL,
+    category_id     VARCHAR(20) NULL,
+    tag_ids         TEXT[] NULL,
     status          VARCHAR(50) NOT NULL DEFAULT 'draft',
     published_at    TIMESTAMPTZ,
     scheduled_at    TIMESTAMPTZ,
     view_count      BIGINT NOT NULL DEFAULT 0,
-    author_id       BIGINT NULL,
+    author_id       VARCHAR(20) NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at      TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS blog_post_tags (
-    post_id BIGINT NOT NULL,
-    tag_id  BIGINT NOT NULL,
+    post_id VARCHAR(20) NOT NULL,
+    tag_id  VARCHAR(20) NOT NULL,
     PRIMARY KEY (post_id, tag_id)
 );
 

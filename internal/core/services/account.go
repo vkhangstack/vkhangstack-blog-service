@@ -55,12 +55,12 @@ func (a *AccountService) LoginAccount(username, password string) (*domain.LoginR
 	}
 	apiCfg := config.LoadConfig()
 
-	accessToken, err := utils.GenerateAccessToken(utils.Uint64ToString(*userID), apiCfg.App.JWTSecret)
+	accessToken, err := utils.GenerateAccessToken(*userID, apiCfg.App.JWTSecret)
 	if err != nil {
 		return nil, err
 	}
 
-	refreshToken, err := utils.GenerateRefreshToken(utils.Uint64ToString(*userID), apiCfg.App.JWTSecret)
+	refreshToken, err := utils.GenerateRefreshToken(*userID, apiCfg.App.JWTSecret)
 	if err != nil {
 		return nil, err
 	}

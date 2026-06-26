@@ -15,7 +15,7 @@ func GenerateAccessToken(userID, jwtSecret string) (string, error) {
 		Issuer:    domain.JwtIssuerAccess,
 		Subject:   userID,
 		IssuedAt:  jwt.NewNumericDate(time.Now().UTC()),
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(1 * time.Hour).UTC()),
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour).UTC()), // TODO: Change to 1 hour in production
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(jwtSecret))

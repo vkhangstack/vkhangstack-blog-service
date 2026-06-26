@@ -16,7 +16,7 @@ func NewBlogPostService(repo ports.BlogPostRepository) *BlogPostService {
 	return &BlogPostService{repo: repo}
 }
 
-func (s *BlogPostService) CreatePost(authorID uint64, req domain.CreateBlogPostRequest) (*domain.BlogPost, error) {
+func (s *BlogPostService) CreatePost(authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error) {
 	status := req.Status
 	if status == "" {
 		status = domain.PostStatusDraft
@@ -29,13 +29,17 @@ func (s *BlogPostService) CreatePost(authorID uint64, req domain.CreateBlogPostR
 		CoverImageURL: req.CoverImageURL,
 		CategoryID:    req.CategoryID,
 		Status:        status,
-		ScheduledAt:   req.ScheduledAt,
 		AuthorID:      authorID,
+		TagIDs:        req.TagIDs,
+	}
+	if post.Status == domain.PostStatusPublished {
+		now := time.Now()
+		post.PublishedAt = &now
 	}
 	return s.repo.CreatePost(post, req.TagIDs)
 }
 
-func (s *BlogPostService) GetPost(id uint64) (*domain.BlogPost, error) {
+func (s *BlogPostService) GetPost(id string) (*domain.BlogPost, error) {
 	return s.repo.GetPost(id)
 }
 
@@ -58,7 +62,7 @@ func (s *BlogPostService) ListPosts(filter domain.BlogPostFilter) ([]*domain.Blo
 	return s.repo.ListPosts(filter)
 }
 
-func (s *BlogPostService) UpdatePost(id uint64, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error) {
+func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error) {
 	existing, err := s.repo.GetPost(id)
 	if err != nil {
 		return nil, err
@@ -90,11 +94,11 @@ func (s *BlogPostService) UpdatePost(id uint64, req domain.UpdateBlogPostRequest
 	return s.repo.UpdatePost(*existing, req.TagIDs)
 }
 
-func (s *BlogPostService) DeletePost(id uint64) error {
+func (s *BlogPostService) DeletePost(id string) error {
 	return s.repo.DeletePost(id)
 }
 
-func (s *BlogPostService) PublishPost(id uint64) (*domain.BlogPost, error) {
+func (s *BlogPostService) PublishPost(id string) (*domain.BlogPost, error) {
 	existing, err := s.repo.GetPost(id)
 	if err != nil {
 		return nil, err

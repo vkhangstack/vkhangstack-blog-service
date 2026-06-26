@@ -17,7 +17,7 @@ func (u *DB) CreateAccount(account domain.Account) (*domain.Account, error) {
 		}
 		account.Password = hashedPassword
 	}
-	account.ID = uint64(u.snowflakeNode.GenerateIDInt64())
+	account.ID = u.snowflakeNode.GenerateID()
 	_, err := u.db.NewInsert().Model(&account).Exec(ctx)
 	if err != nil {
 		return nil, err
@@ -35,7 +35,7 @@ func (u *DB) FindAccountByUsername(username string) (*domain.Account, error) {
 	return &account, nil
 }
 
-func (u *DB) LoginAccount(username, password string) (*uint64, error) {
+func (u *DB) LoginAccount(username, password string) (*string, error) {
 	ctx := context.Background()
 	var account domain.Account
 	err := u.db.NewSelect().Model(&account).Where("username = ?", username).Limit(1).Scan(ctx)

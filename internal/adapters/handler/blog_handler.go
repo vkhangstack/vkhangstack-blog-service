@@ -6,7 +6,6 @@ import (
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
-	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type BlogHandler struct {
@@ -218,14 +217,14 @@ func (h *BlogHandler) ListPublishedPosts(ctx *gin.Context) {
 	HandleSuccess(ctx, domain.BlogPostListResponse{Total: total, Posts: posts}, "Success")
 }
 
-func parseIDParam(ctx *gin.Context) (uint64, error) {
-	return utils.ParseUint64(ctx.Param("id"))
+func parseIDParam(ctx *gin.Context) (string, error) {
+	return ctx.Param("id"), nil
 }
 
-func getAuthorID(ctx *gin.Context) (uint64, error) {
+func getAuthorID(ctx *gin.Context) (string, error) {
 	idStr, err := customhttp.GetUserID(ctx)
 	if err != nil {
-		return 0, err
+		return "", err
 	}
-	return utils.ParseUint64(idStr)
+	return idStr, nil
 }

@@ -36,7 +36,7 @@ func (b *Base) BeforeUpdate(_ context.Context, _ *bun.UpdateQuery) error {
 
 type Account struct {
 	bun.BaseModel `bun:"table:accounts"`
-	ID            uint64    `bun:"id,pk"`
+	ID            string    `bun:"id,pk"`
 	Username      string    `bun:"username,notnull"`
 	Password      string    `bun:"password,notnull"`
 	Email         *string   `bun:"email"`
@@ -186,8 +186,8 @@ type FirebaseInfo struct {
 }
 
 type Tag struct {
-	bun.BaseModel `bun:"table:tags,alias:t"`
-	ID            uint64    `bun:"id,pk,type:bigint"              json:"id"`
+	bun.BaseModel `bun:"table:blog_tags,alias:t"`
+	ID            string    `bun:"id,pk,type:varchar(20)"              json:"id"`
 	Name          string    `bun:"name,notnull,type:varchar(100)" json:"name"`
 	Slug          string    `bun:"slug,notnull,type:varchar(100)" json:"slug"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
@@ -195,17 +195,17 @@ type Tag struct {
 
 type BlogPostTag struct {
 	bun.BaseModel `bun:"table:blog_post_tags"`
-	PostID        uint64 `bun:"post_id,pk,type:bigint"`
-	TagID         uint64 `bun:"tag_id,pk,type:bigint"`
+	PostID        string `bun:"post_id,pk,type:varchar(20)"`
+	TagID         string `bun:"tag_id,pk,type:varchar(20)"`
 }
 
 type BlogCategory struct {
 	bun.BaseModel `bun:"table:blog_categories,alias:bc"`
-	ID            uint64    `bun:"id,pk,type:bigint"                              json:"id"`
+	ID            string    `bun:"id,pk,type:varchar(20)"                              json:"id"`
 	Name          string    `bun:"name,notnull,type:varchar(255)"                 json:"name"`
 	Slug          string    `bun:"slug,notnull,type:varchar(255)"                 json:"slug"`
 	Description   *string   `bun:"description,nullzero,type:text"                 json:"description"`
-	ParentID      *uint64   `bun:"parent_id,nullzero,type:bigint"                 json:"parent_id"`
+	ParentID      *string   `bun:"parent_id,nullzero,type:varchar(20)"                 json:"parent_id"`
 	IsActive      bool      `bun:"is_active,notnull,default:true,type:boolean"    json:"is_active"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
@@ -214,19 +214,19 @@ type BlogCategory struct {
 
 type BlogPost struct {
 	bun.BaseModel `bun:"table:blog_posts,alias:bp"`
-	ID            uint64     `bun:"id,pk,type:bigint"                               json:"id"`
+	ID            string     `bun:"id,pk,type:varchar(20)"                               json:"id"`
 	Title         string     `bun:"title,notnull,type:varchar(500)"                 json:"title"`
 	Slug          string     `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
 	Excerpt       *string    `bun:"excerpt,nullzero,type:text"                      json:"excerpt"`
 	Content       string     `bun:"content,notnull,type:text"                       json:"content"`
 	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url"`
-	CategoryID    *uint64    `bun:"category_id,nullzero,type:bigint"                json:"category_id"`
-	TagIDs        []uint64   `bun:"tag_ids,nullzero,type:bigint[]" json:"tag_ids,omitempty"`
+	CategoryID    *string    `bun:"category_id,nullzero,type:varchar(20)"                json:"category_id"`
+	TagIDs        []string   `bun:"tag_ids,nullzero,type:text[]" json:"tag_ids,omitempty"`
 	Status        PostStatus `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
 	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at"`
 	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at"`
 	ViewCount     uint64     `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
-	AuthorID      uint64     `bun:"author_id,notnull,type:bigint"                   json:"author_id"`
+	AuthorID      string     `bun:"author_id,notnull,type:varchar(20)"                   json:"author_id"`
 	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time  `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
