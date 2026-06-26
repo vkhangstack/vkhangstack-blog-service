@@ -204,8 +204,8 @@ type BlogCategory struct {
 	ID            uint64    `bun:"id,pk,type:bigint"                              json:"id"`
 	Name          string    `bun:"name,notnull,type:varchar(255)"                 json:"name"`
 	Slug          string    `bun:"slug,notnull,type:varchar(255)"                 json:"slug"`
-	Description   *string   `bun:"description,nullzero,type:text"                 json:"description,omitempty"`
-	ParentID      *uint64   `bun:"parent_id,nullzero,type:bigint"                 json:"parent_id,omitempty"`
+	Description   *string   `bun:"description,nullzero,type:text"                 json:"description"`
+	ParentID      *uint64   `bun:"parent_id,nullzero,type:bigint"                 json:"parent_id"`
 	IsActive      bool      `bun:"is_active,notnull,default:true,type:boolean"    json:"is_active"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
@@ -217,14 +217,14 @@ type BlogPost struct {
 	ID            uint64     `bun:"id,pk,type:bigint"                               json:"id"`
 	Title         string     `bun:"title,notnull,type:varchar(500)"                 json:"title"`
 	Slug          string     `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
-	Excerpt       *string    `bun:"excerpt,nullzero,type:text"                      json:"excerpt,omitempty"`
+	Excerpt       *string    `bun:"excerpt,nullzero,type:text"                      json:"excerpt"`
 	Content       string     `bun:"content,notnull,type:text"                       json:"content"`
-	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url,omitempty"`
-	CategoryID    *uint64    `bun:"category_id,nullzero,type:bigint"                json:"category_id,omitempty"`
+	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url"`
+	CategoryID    *uint64    `bun:"category_id,nullzero,type:bigint"                json:"category_id"`
 	TagIDs        []uint64   `bun:"tag_ids,nullzero,type:bigint[]" json:"tag_ids,omitempty"`
 	Status        PostStatus `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
-	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at,omitempty"`
-	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at,omitempty"`
+	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at"`
+	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at"`
 	ViewCount     uint64     `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
 	AuthorID      uint64     `bun:"author_id,notnull,type:bigint"                   json:"author_id"`
 	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`

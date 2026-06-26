@@ -15,7 +15,7 @@ type Profile struct {
 
 type LoginResponse struct {
 	ID           uint64   `json:"_"`
-	Email        string   `json:"_"`
+	Email        string   `json:""`
 	AccessToken  string   `json:"access_token"`
 	RefreshToken string   `json:"refresh_token"`
 	User         *Profile `json:"user"`
