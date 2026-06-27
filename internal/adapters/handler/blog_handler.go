@@ -22,7 +22,7 @@ func NewBlogHandler(categorySvc *services.BlogCategoryService, postSvc *services
 func (h *BlogHandler) CreateCategory(ctx *gin.Context) {
 	var req domain.CreateBlogCategoryRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	category, err := h.categorySvc.CreateCategory(req)
