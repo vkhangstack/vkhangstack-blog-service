@@ -27,12 +27,12 @@ func (h *LoginHandler) LoginAccount(ctx *gin.Context) {
 
 	response, err := h.sva.LoginAccount(user.Username, user.Password)
 	if err != nil {
-		HandleError(ctx, http.StatusBadRequest, nil, err.Error())
+		HandleError(ctx, http.StatusBadRequest, nil, "Username or password is incorrect")
 		return
 	}
 	profile, err := h.sva.ProfileAccount(response.ID)
 	if err != nil {
-		HandleError(ctx, http.StatusBadRequest, nil, err.Error())
+		HandleError(ctx, http.StatusBadRequest, nil, "Username or password is incorrect")
 		return
 	}
 
