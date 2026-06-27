@@ -52,3 +52,19 @@ const (
 	ErrorCodeBlogPostNotFound     = -469
 	ErrorCodeBlogSlugExists       = -468
 )
+
+type PostType string
+
+const (
+	PostTypePost     PostType = "post"
+	PostTypePage     PostType = "page"
+	PostTypeTemplate PostType = "template"
+)
+
+type PostVisibility string
+
+const (
+	PostVisibilityPublic  PostVisibility = "public"
+	PostVisibilityPrivate PostVisibility = "private"
+	PostVisibilityMembers PostVisibility = "members"
+)

@@ -215,22 +215,25 @@ type BlogCategory struct {
 
 type BlogPost struct {
 	bun.BaseModel `bun:"table:blog_posts,alias:bp"`
-	ID            string     `bun:"id,pk,type:varchar(20)"                               json:"id"`
-	Title         string     `bun:"title,notnull,type:varchar(500)"                 json:"title"`
-	Slug          string     `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
-	Excerpt       *string    `bun:"excerpt,nullzero,type:text"                      json:"excerpt"`
-	Content       string     `bun:"content,notnull,type:text"                       json:"content"`
-	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url"`
-	CategoryID    *string    `bun:"category_id,nullzero,type:varchar(20)"                json:"category_id"`
-	Status        PostStatus `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
-	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at"`
-	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at"`
-	ViewCount     uint64     `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
-	LexicalState  *string    `bun:"lexical_state,nullzero,type:text"                 json:"lexical_state"`
-	AuthorID      string     `bun:"author_id,notnull,type:varchar(20)"                   json:"author_id"`
-	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
-	UpdatedAt     time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
-	DeletedAt     time.Time  `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	ID            string         `bun:"id,pk,type:varchar(20)"                               json:"id"`
+	Title         string         `bun:"title,notnull,type:varchar(500)"                 json:"title"`
+	Slug          string         `bun:"slug,notnull,type:varchar(500)"                  json:"slug"`
+	Excerpt       *string        `bun:"excerpt,nullzero,type:text"                      json:"excerpt"`
+	Content       string         `bun:"content,notnull,type:text"                       json:"content"`
+	CoverImageURL *string        `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url"`
+	CategoryID    *string        `bun:"category_id,nullzero,type:varchar(20)"                json:"category_id"`
+	Status        PostStatus     `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
+	PublishedAt   *time.Time     `bun:"published_at,nullzero,type:timestamptz"          json:"published_at"`
+	ScheduledAt   *time.Time     `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at"`
+	ViewCount     uint64         `bun:"view_count,notnull,default:0,type:bigint"        json:"view_count"`
+	LexicalState  *string        `bun:"lexical_state,nullzero,type:text"                 json:"lexical_state"`
+	AuthorID      string         `bun:"author_id,notnull,type:varchar(20)"                   json:"author_id"`
+	Type          PostType       `bun:"type,notnull,default:'post',type:varchar(50)"    json:"type"`
+	Visibility    PostVisibility `bun:"visibility,notnull,default:'public',type:varchar(50)" json:"visibility"`
+	Locale        *string        `bun:"locale,nullzero,type:varchar(10)"                 json:"locale"`
+	CreatedAt     time.Time      `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time      `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time      `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
 }
 
 type BlogCategoryWithPostCount struct {

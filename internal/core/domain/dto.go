@@ -42,29 +42,34 @@ type CreateTagRequest struct {
 }
 
 type CreateBlogPostRequest struct {
-	Title         string     `json:"title"           binding:"required"`
-	Slug          string     `json:"slug"            binding:"required"`
-	Excerpt       *string    `json:"excerpt"`
-	Content       string     `json:"content"         binding:"required"`
-	CoverImageURL *string    `json:"cover_image_url"`
-	CategoryID    *string    `json:"category_id,omitempty"`
-	TagIDs        []string   `json:"tag_ids"`
-	Status        PostStatus `json:"status"`
-	ScheduledAt   *time.Time `json:"scheduled_at"`
-	LexicalState  *string    `json:"lexical_state"`
+	Title         string          `json:"title"           binding:"required"`
+	Slug          string          `json:"slug"            binding:"required"`
+	Excerpt       *string         `json:"excerpt"`
+	Content       string          `json:"content"         binding:"required"`
+	CoverImageURL *string         `json:"cover_image_url"`
+	CategoryID    *string         `json:"category_id,omitempty"`
+	TagIDs        []string        `json:"tag_ids"`
+	Status        PostStatus      `json:"status"`
+	ScheduledAt   *time.Time      `json:"scheduled_at"`
+	LexicalState  *string         `json:"lexical_state"`
+	Type          *PostType       `json:"type,omitempty"`
+	Locale        *string         `json:"locale,omitempty"`
+	Visibility    *PostVisibility `json:"visibility,omitempty"`
 }
 
 type UpdateBlogPostRequest struct {
-	Title         *string     `json:"title"`
-	Slug          *string     `json:"slug"`
-	Excerpt       *string     `json:"excerpt"`
-	Content       *string     `json:"content"`
-	CoverImageURL *string     `json:"cover_image_url"`
-	CategoryID    *string     `json:"category_id,omitempty"`
-	TagIDs        []string    `json:"tag_ids"`
-	Status        *PostStatus `json:"status"`
-	ScheduledAt   *time.Time  `json:"scheduled_at"`
-	LexicalState  *string     `json:"lexical_state"`
+	Title         *string         `json:"title"`
+	Slug          *string         `json:"slug"`
+	Excerpt       *string         `json:"excerpt"`
+	Content       *string         `json:"content"`
+	CoverImageURL *string         `json:"cover_image_url"`
+	CategoryID    *string         `json:"category_id,omitempty"`
+	TagIDs        []string        `json:"tag_ids"`
+	Status        *PostStatus     `json:"status"`
+	ScheduledAt   *time.Time      `json:"scheduled_at"`
+	LexicalState  *string         `json:"lexical_state"`
+	Locale        *string         `json:"locale,omitempty"`
+	Visibility    *PostVisibility `json:"visibility,omitempty"`
 }
 
 type BlogPostFilter struct {
