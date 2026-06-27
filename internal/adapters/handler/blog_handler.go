@@ -153,12 +153,12 @@ func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	post, err := h.postSvc.UpdatePost(id, req)
+	err = h.postSvc.UpdatePost(id, req)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
-	HandleSuccess(ctx, post, "Post updated")
+	HandleSuccess(ctx, nil, "Post updated")
 }
 
 // DeletePost handles DELETE /v1/cms/posts/:id
@@ -182,12 +182,12 @@ func (h *BlogHandler) PublishPost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	post, err := h.postSvc.PublishPost(id)
+	err = h.postSvc.PublishPost(id)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
-	HandleSuccess(ctx, post, "Post published")
+	HandleSuccess(ctx, nil, "Post published")
 }
 
 // GetPostBySlug handles GET /v1/blog/posts/:slug

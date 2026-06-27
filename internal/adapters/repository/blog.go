@@ -87,7 +87,7 @@ func (u *DB) GetCategory(id string) (*domain.BlogCategory, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("category not found")
 	}
-	u.cache.Set(utils.CacheKeyCategoryPrefix+id, category, time.Duration(utils.CacheTTLOneWeek))
+	u.cache.Set(utils.CacheKeyCategoryPrefix+id, category, time.Duration(utils.CacheTTLOneWeek)*time.Second)
 	return category, err
 }
 
@@ -166,7 +166,7 @@ func (u *DB) GetPost(id string) (*domain.BlogPost, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("post not found")
 	}
-	u.cache.Set(utils.CacheKeyPostPrefix+id, post, time.Duration(utils.CacheTTLOneWeek))
+	u.cache.Set(utils.CacheKeyPostPrefix+id, post, time.Duration(utils.CacheTTLOneWeek)*time.Second)
 	return post, err
 }
 
@@ -184,7 +184,7 @@ func (u *DB) GetPostBySlug(slug string) (*domain.BlogPost, error) {
 	if err == sql.ErrNoRows {
 		return nil, errors.New("post not found")
 	}
-	u.cache.Set(utils.CacheKeyPostPrefix+post.Slug, post, time.Duration(utils.CacheTTLOneWeek))
+	u.cache.Set(utils.CacheKeyPostPrefix+post.Slug, post, time.Duration(utils.CacheTTLOneWeek)*time.Second)
 	return post, err
 }
 

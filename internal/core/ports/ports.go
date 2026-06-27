@@ -122,9 +122,9 @@ type BlogPostService interface {
 	GetPost(id string) (*domain.BlogPost, error)
 	GetPostBySlug(slug string) (*domain.BlogPost, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	UpdatePost(id string, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error)
+	UpdatePost(id string, req domain.UpdateBlogPostRequest) error
 	DeletePost(id string) error
-	PublishPost(id string) (*domain.BlogPost, error)
+	PublishPost(id string) error
 }
 
 type UploadService interface {

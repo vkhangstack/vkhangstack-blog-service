@@ -63,10 +63,10 @@ func (s *BlogPostService) ListPosts(filter domain.BlogPostFilter) ([]*domain.Blo
 	return s.repo.ListPosts(filter)
 }
 
-func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest) (*domain.BlogPost, error) {
+func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest) error {
 	existing, err := s.repo.GetPost(id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if req.Title != nil {
 		existing.Title = *req.Title
@@ -102,13 +102,13 @@ func (s *BlogPostService) DeletePost(id string) error {
 	return s.repo.DeletePost(id)
 }
 
-func (s *BlogPostService) PublishPost(id string) (*domain.BlogPost, error) {
+func (s *BlogPostService) PublishPost(id string) error {
 	existing, err := s.repo.GetPost(id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 	if existing.Status == domain.PostStatusPublished {
-		return nil, errors.New("post is already published")
+		return errors.New("post is already published")
 	}
 	now := time.Now()
 	existing.Status = domain.PostStatusPublished
