@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gin-gonic/gin"
 	customhttp "github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
@@ -66,7 +67,7 @@ func (h *BlogHandler) UpdateCategory(ctx *gin.Context) {
 	}
 	var req domain.UpdateBlogCategoryRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	category, err := h.categorySvc.UpdateCategory(id, req)
@@ -100,7 +101,7 @@ func (h *BlogHandler) CreatePost(ctx *gin.Context) {
 	}
 	var req domain.CreateBlogPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	post, err := h.postSvc.CreatePost(authorID, req)
@@ -150,7 +151,7 @@ func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 	}
 	var req domain.UpdateBlogPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	err = h.postSvc.UpdatePost(id, req)
@@ -169,7 +170,7 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 		return
 	}
 	if err := h.postSvc.DeletePost(id); err != nil {
-		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	HandleSuccess(ctx, nil, "Post deleted")
@@ -179,7 +180,7 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 func (h *BlogHandler) PublishPost(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
-		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	err = h.postSvc.PublishPost(id)

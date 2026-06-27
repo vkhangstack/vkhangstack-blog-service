@@ -87,7 +87,10 @@ func setupV1Routes(
 		}
 
 		// Auth routes
-		v1.POST("/login", loginHandler.LoginAccount)
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", loginHandler.LoginAccount)
+		}
 
 		// Webhook routes
 		v1.POST("/membership/webhooks", customerHandler.UpdateMembershipStatus)

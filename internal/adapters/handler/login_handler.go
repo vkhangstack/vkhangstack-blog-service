@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 )
@@ -21,7 +22,7 @@ func NewLoginHandler(sva services.AccountService) *LoginHandler {
 func (h *LoginHandler) LoginAccount(ctx *gin.Context) {
 	var user domain.LoginRequest
 	if err := ctx.ShouldBindJSON(&user); err != nil {
-		HandleError(ctx, http.StatusBadRequest, nil, err.Error())
+		HandleError(ctx, http.StatusBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 
