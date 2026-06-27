@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS blog_tags (
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(100) NOT NULL UNIQUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS blog_categories (
@@ -25,7 +26,6 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     content         TEXT NOT NULL,
     cover_image_url VARCHAR(1000),
     category_id     VARCHAR(20) NULL,
-    tag_ids         TEXT[] NULL,
     status          VARCHAR(50) NOT NULL DEFAULT 'draft',
     published_at    TIMESTAMPTZ,
     scheduled_at    TIMESTAMPTZ,

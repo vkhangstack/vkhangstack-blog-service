@@ -191,6 +191,7 @@ type Tag struct {
 	Name          string    `bun:"name,notnull,type:varchar(100)" json:"name"`
 	Slug          string    `bun:"slug,notnull,type:varchar(100)" json:"slug"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 }
 
 type BlogPostTag struct {
@@ -221,7 +222,6 @@ type BlogPost struct {
 	Content       string     `bun:"content,notnull,type:text"                       json:"content"`
 	CoverImageURL *string    `bun:"cover_image_url,nullzero,type:varchar(1000)"     json:"cover_image_url"`
 	CategoryID    *string    `bun:"category_id,nullzero,type:varchar(20)"                json:"category_id"`
-	TagIDs        []string   `bun:"tag_ids,nullzero,type:text[]" json:"tag_ids,omitempty"`
 	Status        PostStatus `bun:"status,notnull,default:'draft',type:varchar(50)" json:"status"`
 	PublishedAt   *time.Time `bun:"published_at,nullzero,type:timestamptz"          json:"published_at"`
 	ScheduledAt   *time.Time `bun:"scheduled_at,nullzero,type:timestamptz"          json:"scheduled_at"`
@@ -231,4 +231,9 @@ type BlogPost struct {
 	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time  `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time  `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+}
+
+type BlogCategoryWithPostCount struct {
+	*BlogCategory
+	PostCount int `bun:"post_count" json:"post_count"`
 }

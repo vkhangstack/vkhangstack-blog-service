@@ -101,10 +101,17 @@ func (u *DB) GetCategoryBySlug(slug string) (*domain.BlogCategory, error) {
 	return category, err
 }
 
-func (u *DB) ListCategories() ([]*domain.BlogCategory, error) {
+func (u *DB) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
 	ctx := context.Background()
-	var categories []*domain.BlogCategory
-	err := u.db.NewSelect().Model(&categories).Order("bc.created_at ASC").Scan(ctx)
+	var categories []*domain.BlogCategoryWithPostCount
+	err := u.db.NewSelect().
+		Model((*domain.BlogCategory)(nil)).
+		ColumnExpr("bc.*").
+		ColumnExpr("COUNT(bp.id) AS post_count").
+		Join("LEFT JOIN blog_posts AS bp ON bp.category_id = bc.id").
+		GroupExpr("bc.id").
+		OrderExpr("bc.created_at ASC").
+		Scan(ctx, &categories)
 	if err != nil {
 		return nil, fmt.Errorf("categories not found: %v", err)
 	}
@@ -266,4 +273,13 @@ func (u *DB) IncrementViewCount(id string) error {
 		Where("id = ?", id).
 		Exec(ctx)
 	return err
+}
+
+func (u *DB) CountPostsByCategory(categoryID string) (int, error) {
+	ctx := context.Background()
+	count, err := u.db.NewSelect().Model((*domain.BlogPost)(nil)).Where("bp.category_id = ?", categoryID).Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count posts by category: %v", err)
+	}
+	return count, nil
 }

@@ -94,7 +94,7 @@ type BlogCategoryRepository interface {
 	CreateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
 	GetCategory(id string) (*domain.BlogCategory, error)
 	GetCategoryBySlug(slug string) (*domain.BlogCategory, error)
-	ListCategories() ([]*domain.BlogCategory, error)
+	ListCategories() ([]*domain.BlogCategoryWithPostCount, error)
 	UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
 	DeleteCategory(id string) error
 }
@@ -107,11 +107,12 @@ type BlogPostRepository interface {
 	UpdatePost(post domain.BlogPost, tagIDs []string) error
 	DeletePost(id string) error
 	IncrementViewCount(id string) error
+	CountPostsByCategory(categoryID string) (int, error)
 }
 
 type BlogCategoryService interface {
 	CreateCategory(req domain.CreateBlogCategoryRequest) (*domain.BlogCategory, error)
-	GetCategory(id string) (*domain.BlogCategory, error)
+	GetCategory(id string) (*domain.BlogCategoryWithPostCount, error)
 	ListCategories() ([]*domain.BlogCategory, error)
 	UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error)
 	DeleteCategory(id string) error

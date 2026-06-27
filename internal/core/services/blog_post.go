@@ -30,7 +30,6 @@ func (s *BlogPostService) CreatePost(authorID string, req domain.CreateBlogPostR
 		CategoryID:    req.CategoryID,
 		Status:        status,
 		AuthorID:      authorID,
-		TagIDs:        req.TagIDs,
 		LexicalState:  req.LexicalState,
 	}
 	if post.Status == domain.PostStatusPublished {

@@ -28,7 +28,7 @@ func (s *BlogCategoryService) GetCategory(id string) (*domain.BlogCategory, erro
 	return s.repo.GetCategory(id)
 }
 
-func (s *BlogCategoryService) ListCategories() ([]*domain.BlogCategory, error) {
+func (s *BlogCategoryService) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
 	return s.repo.ListCategories()
 }
 
