@@ -20,13 +20,16 @@ func NewAccountService(repo ports.AccountRepository) *AccountService {
 }
 
 func (a *AccountService) CreateAccountRoot() error {
-	password := "random@123" // In production, ensure to hash passwords and use secure practices
+	password, err := utils.GeneratePassword(12)
+	if err != nil {
+		return err
+	}
 	account := domain.Account{
 		Username: "root",
 		Password: password, // In production, ensure to hash passwords and use secure practices
 		Role:     domain.RoleRoot,
 		Email:    nil,
-		FullName: "Root User",
+		FullName: "Super Admin",
 	}
 	existingAccount, err := a.repo.FindAccountByUsername(account.Username)
 
