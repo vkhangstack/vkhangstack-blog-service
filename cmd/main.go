@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
@@ -50,6 +51,10 @@ func main() {
 		cfg.DB.User, cfg.DB.Password, cfg.DB.Host, cfg.DB.Port, cfg.DB.DBName)
 
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
+	sqldb.SetMaxOpenConns(25)
+	sqldb.SetMaxIdleConns(25)
+	sqldb.SetConnMaxLifetime(5 * time.Minute)
+	sqldb.SetConnMaxIdleTime(2 * time.Minute)
 	db := bun.NewDB(sqldb, pgdialect.New())
 	db.RegisterModel((*domain.BlogPostTag)(nil))
 
