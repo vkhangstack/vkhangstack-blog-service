@@ -31,6 +31,7 @@ func (s *BlogPostService) CreatePost(authorID string, req domain.CreateBlogPostR
 		Status:        status,
 		AuthorID:      authorID,
 		TagIDs:        req.TagIDs,
+		LexicalState:  req.LexicalState,
 	}
 	if post.Status == domain.PostStatusPublished {
 		now := time.Now()
@@ -90,6 +91,9 @@ func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest
 	}
 	if req.ScheduledAt != nil {
 		existing.ScheduledAt = req.ScheduledAt
+	}
+	if req.LexicalState != nil {
+		existing.LexicalState = req.LexicalState
 	}
 	return s.repo.UpdatePost(*existing, req.TagIDs)
 }

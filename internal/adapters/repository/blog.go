@@ -224,23 +224,23 @@ func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, e
 	return posts, total, nil
 }
 
-func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error) {
+func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) error {
 	ctx := context.Background()
 	_, err := u.db.NewUpdate().Model(&post).WherePK().Exec(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("post not updated: %v", err)
+		return fmt.Errorf("post not updated: %v", err)
 	}
 	if tagIDs != nil {
 		if err := u.DetachTags(post.ID); err != nil {
-			return nil, err
+			return fmt.Errorf("failed to detach tags: %v", err)
 		}
 		if err := u.AttachTags(post.ID, tagIDs); err != nil {
-			return nil, err
+			return fmt.Errorf("failed to attach tags: %v", err)
 		}
 	}
 	u.cache.Delete(utils.CacheKeyPostPrefix + post.Slug) // Invalidate cache
 	u.cache.Delete(utils.CacheKeyPostPrefix + post.ID)   // Invalidate cache
-	return u.GetPost(post.ID)
+	return nil
 }
 
 func (u *DB) DeletePost(id string) error {

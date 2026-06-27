@@ -104,7 +104,7 @@ type BlogPostRepository interface {
 	GetPost(id string) (*domain.BlogPost, error)
 	GetPostBySlug(slug string) (*domain.BlogPost, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	UpdatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error)
+	UpdatePost(post domain.BlogPost, tagIDs []string) error
 	DeletePost(id string) error
 	IncrementViewCount(id string) error
 }

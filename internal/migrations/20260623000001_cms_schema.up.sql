@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     published_at    TIMESTAMPTZ,
     scheduled_at    TIMESTAMPTZ,
     view_count      BIGINT NOT NULL DEFAULT 0,
+    lexical_state   TEXT NULL,
     author_id       VARCHAR(20) NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),

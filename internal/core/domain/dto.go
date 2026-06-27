@@ -14,8 +14,8 @@ type Profile struct {
 }
 
 type LoginResponse struct {
-	ID           string   `json:"_"`
-	Email        string   `json:""`
+	ID           string   `json:"-"`
+	Email        string   `json:"-"`
 	AccessToken  string   `json:"access_token"`
 	RefreshToken string   `json:"refresh_token"`
 	User         *Profile `json:"user"`
@@ -51,6 +51,7 @@ type CreateBlogPostRequest struct {
 	TagIDs        []string   `json:"tag_ids"`
 	Status        PostStatus `json:"status"`
 	ScheduledAt   *time.Time `json:"scheduled_at"`
+	LexicalState  *string    `json:"lexical_state"`
 }
 
 type UpdateBlogPostRequest struct {
@@ -63,6 +64,7 @@ type UpdateBlogPostRequest struct {
 	TagIDs        []string    `json:"tag_ids"`
 	Status        *PostStatus `json:"status"`
 	ScheduledAt   *time.Time  `json:"scheduled_at"`
+	LexicalState  *string     `json:"lexical_state"`
 }
 
 type BlogPostFilter struct {
