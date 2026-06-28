@@ -14,6 +14,7 @@ import (
 	transfermanager "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
@@ -167,11 +168,13 @@ func (a *S3Adapter) GetInfo(ctx context.Context, key string) (*ObjectInfo, error
 }
 
 func (a *S3Adapter) Delete(ctx context.Context, key string, bucket string) error {
-	fmt.Println("Deleting object:", key, "from bucket:", bucket)
 	if bucket == "" {
 		bucket = a.bucket
 	}
-	fmt.Println("Deleting object:", key, "from bucket:", bucket)
+	logger.Log.WithFields(map[string]interface{}{
+		"key":    key,
+		"bucket": bucket,
+	}).Debug("deleting s3 object")
 	_, err := a.client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket:                    aws.String(bucket),
 		Key:                       aws.String(utils.CleanKey(key)),

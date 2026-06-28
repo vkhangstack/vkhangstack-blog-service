@@ -3,9 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
-	"os"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +10,7 @@ import (
 	"github.com/stripe/stripe-go/webhook"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
@@ -67,7 +65,7 @@ func handleWebhook(c *gin.Context) {
 	const MaxBodyBytes = int64(65536)
 	payload, err := c.GetRawData()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading request body: %v\n", err)
+		logger.Log.WithError(err).Error("error reading stripe webhook body")
 		HandleError(c, domain.ErrorCodePayloadBadRequest, nil, "Error reading request body")
 		return
 	}
@@ -75,48 +73,39 @@ func handleWebhook(c *gin.Context) {
 	event := stripe.Event{}
 
 	if err := json.Unmarshal(payload, &event); err != nil {
-		fmt.Fprintf(os.Stderr, "⚠️  Webhook error while parsing basic request. %v\n", err.Error())
+		logger.Log.WithError(err).Error("stripe webhook: error parsing basic request")
 		HandleError(c, domain.ErrorCodePayloadBadRequest, nil, "Webhook error while parsing basic request")
 		return
 	}
 
-	// Replace this endpoint secret with your endpoint's unique secret
-	// If you are testing with the CLI, find the secret by running 'stripe listen'
-	// If you are using an endpoint defined with the API or dashboard, look in your webhook settings
-	// at https://dashboard.stripe.com/webhooks
 	endpointSecret := "whsec_"
 	signatureHeader := c.GetHeader("Stripe-Signature")
 	event, err = webhook.ConstructEvent(payload, signatureHeader, endpointSecret)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "⚠️  Webhook signature verification failed. %v\n", err)
+		logger.Log.WithError(err).Error("stripe webhook: signature verification failed")
 		HandleError(c, domain.ErrorCodePayloadBadRequest, nil, "Webhook signature verification failed")
 		return
 	}
-	// Unmarshal the event data into an appropriate struct depending on its Type
 	switch event.Type {
 	case "payment_intent.succeeded":
 		var paymentIntent stripe.PaymentIntent
 		err := json.Unmarshal(event.Data.Raw, &paymentIntent)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing webhook JSON: %v\n", err)
+			logger.Log.WithError(err).Error("stripe webhook: error parsing payment_intent JSON")
 			HandleError(c, domain.ErrorCodePayloadBadRequest, nil, "Error parsing webhook JSON")
 			return
 		}
-		log.Printf("Successful payment for %d.", paymentIntent.Amount)
-		// Then define and call a func to handle the successful payment intent.
-		// handlePaymentIntentSucceeded(paymentIntent)
+		logger.Log.WithField("amount", paymentIntent.Amount).Info("stripe: payment_intent.succeeded")
 	case "payment_method.attached":
 		var paymentMethod stripe.PaymentMethod
 		err := json.Unmarshal(event.Data.Raw, &paymentMethod)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error parsing webhook JSON: %v\n", err)
+			logger.Log.WithError(err).Error("stripe webhook: error parsing payment_method JSON")
 			HandleError(c, domain.ErrorCodePayloadBadRequest, nil, "Error parsing webhook JSON")
 			return
 		}
-		// Then define and call a func to handle the successful attachment of a PaymentMethod.
-		// handlePaymentMethodAttached(paymentMethod)
 	default:
-		fmt.Fprintf(os.Stderr, "Unhandled event type: %s\n", event.Type)
+		logger.Log.WithField("event_type", event.Type).Warn("stripe webhook: unhandled event type")
 	}
 
 	HandleSuccess(c, nil, "Webhook updated successfully")

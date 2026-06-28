@@ -9,6 +9,7 @@ import (
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
@@ -53,7 +54,7 @@ func (u *DB) ReadUser(id uint64) (*domain.Customer, error) {
 	}
 
 	if cacheErr := u.cache.Set(cacheKey, user, time.Minute*10); cacheErr != nil {
-		fmt.Printf("Error storing user in cache: %v", cacheErr)
+		logger.Log.WithError(cacheErr).Warn("error storing user in cache")
 	}
 	return user, nil
 }
@@ -98,7 +99,7 @@ func (u *DB) UpdateUser(id, email, password string) error {
 	}
 
 	if cacheErr := u.cache.Delete(id); cacheErr != nil {
-		fmt.Printf("Error deleting user in cache: %v", cacheErr)
+		logger.Log.WithError(cacheErr).Warn("error deleting user from cache")
 	}
 	return nil
 }
@@ -115,7 +116,7 @@ func (u *DB) DeleteUser(id uint64) error {
 		return errors.New("user not found")
 	}
 	if cacheErr := u.cache.Delete(utils.Uint64ToString(id)); cacheErr != nil {
-		fmt.Printf("Error deleting user in cache: %v", cacheErr)
+		logger.Log.WithError(cacheErr).Warn("error deleting user from cache")
 	}
 	return nil
 }

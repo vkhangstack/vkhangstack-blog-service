@@ -6,6 +6,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
@@ -35,16 +36,17 @@ func (a *AccountService) CreateAccountRoot() error {
 	existingAccount, err := a.repo.FindAccountByUsername(account.Username)
 
 	if existingAccount != nil {
-		fmt.Println("Root account already exists")
+		logger.Log.Info("root account already exists")
 		return nil
 	}
 	_, err = a.repo.CreateAccount(account)
 	if err != nil {
-		fmt.Printf("Error creating account: %v\n", err)
+		logger.Log.WithError(err).Error("failed to create root account")
 	} else {
-		fmt.Println("Root account created successfully")
-		fmt.Printf("Username: %s\n", "root")
-		fmt.Printf("Password: %s\n", password)
+		logger.Log.WithFields(map[string]interface{}{
+			"username": "root",
+			"password": password,
+		}).Info("root account created")
 	}
 	return err
 }

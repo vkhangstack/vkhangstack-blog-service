@@ -47,20 +47,32 @@ func TracingMiddleware() gin.HandlerFunc {
 		// Add trace ID to response headers
 		c.Writer.Header().Set("X-Trace-ID", traceID)
 
-		// Log request start
-		// log.Printf("[TRACE:%s] --> %s %s from %s",
-		// 	traceID, c.Request.Method, c.Request.URL.Path, c.ClientIP())
-		logger.Log.Trace("[TRACE:%s] --> %s %s from %s", traceID, c.Request.Method, c.Request.URL.Path, c.ClientIP())
-		// Process request
+		logger.Log.WithFields(map[string]interface{}{
+			"trace_id": traceID,
+			"method":   c.Request.Method,
+			"path":     c.Request.URL.Path,
+			"client":   c.ClientIP(),
+		}).Debug("request started")
+
 		c.Next()
 
-		// Calculate request duration
 		duration := time.Since(start)
 		statusCode := c.Writer.Status()
 
-		// Log request completion
-		logger.Log.Trace("[TRACE:%s] <-- %s %s - Status: %d - Duration: %v",
-			traceID, c.Request.Method, c.Request.URL.Path, statusCode, duration)
+		entry := logger.Log.WithFields(map[string]interface{}{
+			"trace_id": traceID,
+			"method":   c.Request.Method,
+			"path":     c.Request.URL.Path,
+			"status":   statusCode,
+			"duration": duration.String(),
+		})
+		if statusCode >= 500 {
+			entry.Error("request completed")
+		} else if statusCode >= 400 {
+			entry.Warn("request completed")
+		} else {
+			entry.Info("request completed")
+		}
 	}
 }
 
