@@ -62,7 +62,7 @@ func (u *DB) DeleteTask(id string) error {
 
 func (u *DB) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error) {
 	ctx := context.Background()
-	var tasks []*domain.Task
+	tasks := make([]*domain.Task, 0)
 	query := u.db.NewSelect().Model(&tasks)
 
 	if filter.Status != "" {
@@ -136,7 +136,7 @@ func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int)
 
 func (u *DB) ListAllTasks() ([]*domain.Task, error) {
 	ctx := context.Background()
-	var tasks []*domain.Task
+	tasks := make([]*domain.Task, 0)
 	err := u.db.NewSelect().Model(&tasks).Order("t.created_at DESC").Scan(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("tasks not found: %v", err)
@@ -156,6 +156,15 @@ func (u *DB) CountTasksByStatus(status domain.TaskStatus) (int, error) {
 func (u *DB) CountTasksByPriority(priority domain.TaskPriority) (int, error) {
 	ctx := context.Background()
 	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("priority = ?", priority).Count(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("failed to count tasks: %v", err)
+	}
+	return count, nil
+}
+
+func (u *DB) GetCount() (int, error) {
+	ctx := context.Background()
+	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
 	}

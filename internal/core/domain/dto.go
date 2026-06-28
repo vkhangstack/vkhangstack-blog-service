@@ -115,7 +115,6 @@ type UploadFileResponseTinyEditor struct {
 }
 
 type CreateTaskRequest struct {
-	TaskID      string       `json:"task_id"      binding:"required"`
 	Title       string       `json:"title"        binding:"required"`
 	Status      TaskStatus   `json:"status"`
 	Label       TaskLabel    `json:"label"        binding:"required"`

@@ -5,38 +5,23 @@ import (
 	"fmt"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
+	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 )
 
 type TaskService struct {
-	repo TaskRepository
+	repo ports.TaskRepository
 }
 
-type TaskRepository interface {
-	CreateTask(task domain.Task) (*domain.Task, error)
-	GetTaskByID(id string) (*domain.Task, error)
-	GetTaskByTaskID(taskID string) (*domain.Task, error)
-	UpdateTask(id string, updates domain.Task) (*domain.Task, error)
-	DeleteTask(id string) error
-	ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error)
-	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, error)
-	ListAllTasks() ([]*domain.Task, error)
-	CountTasksByStatus(status domain.TaskStatus) (int, error)
-	CountTasksByPriority(priority domain.TaskPriority) (int, error)
-}
-
-func NewTaskService(repo TaskRepository) *TaskService {
+func NewTaskService(repo ports.TaskRepository) *TaskService {
 	return &TaskService{repo: repo}
 }
 
 func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, error) {
-	if req.TaskID == "" || req.Title == "" || req.Label == "" {
-		return nil, errors.New("task_id, title, and label are required")
+	countTask, err := s.repo.GetCount()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get task count: %v", err)
 	}
-
-	existing, _ := s.repo.GetTaskByTaskID(req.TaskID)
-	if existing != nil {
-		return nil, fmt.Errorf("task with id %s already exists", req.TaskID)
-	}
+	taskID := "TASK-" + fmt.Sprintf("%04d", countTask+1)
 
 	status := domain.TaskStatusTodo
 	if req.Status != "" {
@@ -49,7 +34,7 @@ func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, er
 	}
 
 	task := domain.Task{
-		TaskID:      req.TaskID,
+		TaskID:      taskID,
 		Title:       req.Title,
 		Status:      status,
 		Label:       req.Label,
