@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS accounts (
     email      TEXT UNIQUE,
     full_name  TEXT NOT NULL,
     role       TEXT NOT NULL,
+    is_active  BOOLEAN NOT NULL DEFAULT FALSE,
+    last_login TIMESTAMPTZ,
+    blocked_at TIMESTAMPTZ,
+    failed_login_attempts INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ
@@ -133,5 +137,8 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE TABLE IF NOT EXISTS jti_sessions (
     id      BIGINT PRIMARY KEY,
     user_id TEXT NOT NULL,
-    jti     TEXT NOT NULL
+    jti     TEXT NOT NULL,
+    is_revoked BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NULL
 );

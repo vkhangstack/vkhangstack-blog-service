@@ -2,10 +2,11 @@ package utils
 
 const (
 	// CacheKeyPrefix is the prefix used for cache keys to avoid collisions.
-	CacheKeyPrefix         = "cache:"
-	CacheKeyUserPrefix     = "user:"
-	CacheKeyPostPrefix     = "post:"
-	CacheKeyCategoryPrefix = "category:"
+	CacheKeyPrefix                   = "cache:"
+	CacheKeyUserPrefix               = "user:"
+	CacheKeyTemporarilyBlockedPrefix = "temp_blocked:"
+	CacheKeyPostPrefix               = "post:"
+	CacheKeyCategoryPrefix           = "category:"
 )
 
 type CacheTTL int64

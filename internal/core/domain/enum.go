@@ -29,6 +29,7 @@ const (
 	ErrorCodeForbidden           = -403
 	ErrorCodeInternalServerError = -500
 	ErrorCodeTooManyRequests     = -429
+	ErrorCodeInvalidCredentials  = -413
 )
 
 const (

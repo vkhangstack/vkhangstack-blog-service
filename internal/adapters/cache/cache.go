@@ -63,6 +63,23 @@ func (c *RedisCache) Delete(key string) error {
 	return nil
 }
 
+func (c *RedisCache) SetString(key, value string, duration time.Duration) error {
+	if err := c.client.Set(context.Background(), key, value, duration).Err(); err != nil {
+		return fmt.Errorf("failed to set string value for key %q: %v", key, err)
+	}
+	return nil
+}
+
+func (c *RedisCache) GetString(key string) (string, error) {
+	value, err := c.client.Get(context.Background(), key).Result()
+	if err == redis.Nil {
+		return "", fmt.Errorf("cache miss for key %q", key)
+	} else if err != nil {
+		return "", fmt.Errorf("failed to get string value for key %q: %v", key, err)
+	}
+	return value, nil
+}
+
 func (c *RedisCache) GetClient() *redis.Client {
 	return c.client
 }

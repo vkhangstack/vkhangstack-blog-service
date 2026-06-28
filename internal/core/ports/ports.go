@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"time"
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
@@ -53,6 +54,13 @@ type AccountRepository interface {
 	FindAccountByUsername(username string) (*domain.Account, error)
 	LoginAccount(username, password string) (*string, error)
 	ProfileAccount(userID string) (*domain.Account, error)
+	CheckAccountExists(username string) (bool, error)
+	CheckAccountIsBlocked(username string) (bool, error)
+	CheckAccountTemporarilyBlocked(username string) (bool, error)
+	SetAccountTemporarilyBlocked(username string, duration time.Duration) error
+	SetAccountBlocked(username string, blocked bool) error
+	IncrementFailedLoginAttempts(username string) error
+	ResetFailedLoginAttempts(username string) error
 }
 
 type AccountService interface {

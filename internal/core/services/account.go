@@ -30,6 +30,7 @@ func (a *AccountService) CreateAccountRoot() error {
 		Role:     domain.RoleRoot,
 		Email:    nil,
 		FullName: "Super Admin",
+		IsActive: true,
 	}
 	existingAccount, err := a.repo.FindAccountByUsername(account.Username)
 

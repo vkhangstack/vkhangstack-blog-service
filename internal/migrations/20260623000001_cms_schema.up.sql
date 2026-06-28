@@ -2,7 +2,7 @@ CREATE TABLE IF NOT EXISTS blog_tags (
     id         VARCHAR(20) PRIMARY KEY,
     name       VARCHAR(100) NOT NULL,
     slug       VARCHAR(100) NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -26,13 +26,13 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     content         TEXT NOT NULL,
     cover_image_url VARCHAR(1000),
     category_id     VARCHAR(20) NULL,
-    `status`          VARCHAR(50) NOT NULL DEFAULT 'draft',
+    status            VARCHAR(50) NOT NULL DEFAULT 'draft',
     published_at    TIMESTAMPTZ,
     scheduled_at    TIMESTAMPTZ,
     view_count      BIGINT NOT NULL DEFAULT 0,
     lexical_state   TEXT NULL,
     author_id       VARCHAR(20) NULL,
-    `type`            VARCHAR(50) NOT NULL DEFAULT 'post',
+    type              VARCHAR(50) NOT NULL DEFAULT 'post',
     visibility      VARCHAR(50) NOT NULL DEFAULT 'public',
     locale          VARCHAR(10) NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -35,16 +35,20 @@ func (b *Base) BeforeUpdate(_ context.Context, _ *bun.UpdateQuery) error {
 }
 
 type Account struct {
-	bun.BaseModel `bun:"table:accounts"`
-	ID            string    `bun:"id,pk"`
-	Username      string    `bun:"username,notnull"`
-	Password      string    `bun:"password,notnull"`
-	Email         *string   `bun:"email"`
-	FullName      string    `bun:"full_name,notnull"`
-	Role          string    `bun:"role,notnull"`
-	CreatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	UpdatedAt     time.Time `bun:",nullzero,notnull,default:current_timestamp"`
-	DeletedAt     time.Time `bun:",soft_delete,nullzero"`
+	bun.BaseModel       `bun:"table:accounts"`
+	ID                  string     `bun:"id,pk"`
+	Username            string     `bun:"username,notnull"`
+	Password            string     `bun:"password,notnull"`
+	Email               *string    `bun:"email"`
+	FullName            string     `bun:"full_name,notnull"`
+	Role                string     `bun:"role,notnull"`
+	IsActive            bool       `bun:"is_active,notnull,default:false"`
+	LastLogin           *time.Time `bun:"last_login"`
+	BlockedAt           *time.Time `bun:"blocked_at"`
+	FailedLoginAttempts int        `bun:"failed_login_attempts,notnull,default:0"`
+	CreatedAt           time.Time  `bun:",nullzero,notnull,default:current_timestamp"`
+	UpdatedAt           time.Time  `bun:",nullzero,notnull,default:current_timestamp"`
+	DeletedAt           time.Time  `bun:",soft_delete,nullzero"`
 }
 
 type Store struct {
@@ -174,9 +178,12 @@ type OrderInfo struct {
 
 type JtiSession struct {
 	bun.BaseModel `bun:"table:jti_sessions"`
-	ID            uint64 `bun:"id,pk"`
-	UserID        string `bun:"user_id,notnull"`
-	Jti           string `bun:"jti,notnull"`
+	ID            uint64     `bun:"id,pk"`
+	UserID        string     `bun:"user_id,notnull"`
+	Jti           string     `bun:"jti,notnull"`
+	IsRevoked     bool       `bun:"is_revoked,notnull,default:false"`
+	CreatedAt     time.Time  `bun:"created_at,notnull,default:current_timestamp"`
+	ExpiresAt     *time.Time `bun:"expires_at"`
 }
 
 type FirebaseInfo struct {

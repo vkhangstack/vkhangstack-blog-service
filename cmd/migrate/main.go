@@ -27,7 +27,10 @@ func main() {
 	db := bun.NewDB(sqldb, pgdialect.New())
 	defer db.Close()
 
-	migrator := migrate.NewMigrator(db, migrations.Migrations)
+	// WithMarkAppliedOnSuccess(true): only insert into bun_migrations after SQL succeeds.
+	// Without this (default false), bun records the migration BEFORE running the SQL,
+	// so a failed migration is permanently marked as applied and never retried.
+	migrator := migrate.NewMigrator(db, migrations.Migrations, migrate.WithMarkAppliedOnSuccess(true))
 
 	ctx := context.Background()
 	if err := migrator.Init(ctx); err != nil {
@@ -43,6 +46,12 @@ func main() {
 	case "up":
 		group, err := migrator.Migrate(ctx)
 		if err != nil {
+			if group != nil && len(group.Migrations) > 0 {
+				fmt.Printf("applied %d migration(s) before error:\n", len(group.Migrations))
+				for _, m := range group.Migrations {
+					fmt.Printf("  + %s\n", m.Name)
+				}
+			}
 			log.Fatalf("up: %v", err)
 		}
 		if group.IsZero() {
@@ -75,6 +84,54 @@ func main() {
 			fmt.Printf("%-45s %s\n", m.Name, status)
 		}
 
+	case "mark-applied":
+		if len(os.Args) < 3 {
+			log.Fatal("usage: migrate mark-applied <migration-name>")
+		}
+		name := os.Args[2]
+		ms, err := migrator.MigrationsWithStatus(ctx)
+		if err != nil {
+			log.Fatalf("mark-applied: %v", err)
+		}
+		for i := range ms {
+			if ms[i].Name == name {
+				if ms[i].IsApplied() {
+					fmt.Printf("already applied: %s\n", name)
+					return
+				}
+				if err := migrator.MarkApplied(ctx, &ms[i]); err != nil {
+					log.Fatalf("mark-applied: %v", err)
+				}
+				fmt.Printf("marked as applied: %s\n", name)
+				return
+			}
+		}
+		log.Fatalf("migration not found: %s", name)
+
+	case "mark-unapplied":
+		if len(os.Args) < 3 {
+			log.Fatal("usage: migrate mark-unapplied <migration-name>")
+		}
+		name := os.Args[2]
+		ms, err := migrator.MigrationsWithStatus(ctx)
+		if err != nil {
+			log.Fatalf("mark-unapplied: %v", err)
+		}
+		for i := range ms {
+			if ms[i].Name == name {
+				if !ms[i].IsApplied() {
+					fmt.Printf("already unapplied: %s\n", name)
+					return
+				}
+				if err := migrator.MarkUnapplied(ctx, &ms[i]); err != nil {
+					log.Fatalf("mark-unapplied: %v", err)
+				}
+				fmt.Printf("marked as unapplied: %s\n", name)
+				return
+			}
+		}
+		log.Fatalf("migration not found: %s", name)
+
 	case "create":
 		if len(os.Args) < 3 {
 			log.Fatal("usage: migrate create <name>")
@@ -88,7 +145,7 @@ func main() {
 		}
 
 	default:
-		fmt.Fprintln(os.Stderr, "usage: migrate <up|down|status|create <name>>")
+		fmt.Fprintln(os.Stderr, "usage: migrate <up|down|status|create <name>|mark-applied <name>|mark-unapplied <name>>")
 		os.Exit(1)
 	}
 }
