@@ -69,3 +69,11 @@ const (
 	PostVisibilityPrivate PostVisibility = "private"
 	PostVisibilityMembers PostVisibility = "members"
 )
+
+type FailedLoginAttemptsNumber int
+
+const (
+	FailedLoginAttemptsNumberMax          FailedLoginAttemptsNumber = 5
+	FailedLoginAttemptsNumberMin          FailedLoginAttemptsNumber = 0
+	FailedLoginAttemptsNumberBlockMinutes FailedLoginAttemptsNumber = 15
+)

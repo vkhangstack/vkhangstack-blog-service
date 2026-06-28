@@ -38,21 +38,27 @@ func (u *DB) FindAccountByUsername(username string) (*domain.Account, error) {
 
 func (u *DB) LoginAccount(username, password string) (*string, error) {
 	ctx := context.Background()
+
+	if isBlocked, _ := u.CheckAccountTemporarilyBlocked(username); isBlocked {
+		return nil, fmt.Errorf("account is temporarily blocked due to multiple failed login attempts")
+	}
+
 	var account domain.Account
 	err := u.db.NewSelect().Model(&account).Where("username = ? AND is_active = ?", username, true).Limit(1).Scan(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if account.FailedLoginAttempts >= 5 {
-		if account.BlockedAt == nil || account.BlockedAt.Add(time.Minute*15).After(time.Now().UTC()) {
+	if account.FailedLoginAttempts >= int(domain.FailedLoginAttemptsNumberMax) {
+		if account.BlockedAt == nil || account.BlockedAt.Add(time.Minute*time.Duration(domain.FailedLoginAttemptsNumberBlockMinutes)).After(time.Now().UTC()) {
 			err := u.SetAccountBlocked(username, true)
+			u.SetAccountTemporarilyBlocked(username, time.Minute*time.Duration(domain.FailedLoginAttemptsNumberBlockMinutes))
 			if err != nil {
 				return nil, fmt.Errorf("failed to set account blocked: %w", err)
 			}
 		}
 	}
-	if account.BlockedAt != nil && account.BlockedAt.Add(time.Minute*15).After(time.Now().UTC()) {
+	if account.BlockedAt != nil && account.BlockedAt.Add(time.Minute*time.Duration(domain.FailedLoginAttemptsNumberBlockMinutes)).After(time.Now().UTC()) {
 		u.IncrementFailedLoginAttempts(username)
 		return nil, fmt.Errorf("account is temporarily blocked due to multiple failed login attempts")
 	}
