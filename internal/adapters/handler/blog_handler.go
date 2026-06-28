@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	customhttp "github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
+	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type BlogHandler struct {
@@ -56,6 +59,30 @@ func (h *BlogHandler) ListCategories(ctx *gin.Context) {
 		return
 	}
 	HandleSuccess(ctx, categories, "Success")
+}
+
+// ListCategoriesCursor handles GET /v1/cms/categories/cursor with cursor-based pagination
+func (h *BlogHandler) ListCategoriesCursor(ctx *gin.Context) {
+	cursor := ctx.Query("cursor")
+	limit := 20
+	if l := ctx.Query("limit"); l != "" {
+		if parsed, err := parseLimit(l); err == nil {
+			limit = parsed
+		}
+	}
+
+	categories, nextCursor, err := h.categorySvc.ListCategoriesCursor(cursor, limit)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
+		return
+	}
+
+	response := utils.CursorPaginationResponse{
+		Items:      categories,
+		NextCursor: nextCursor,
+		HasMore:    nextCursor != nil,
+	}
+	HandleSuccess(ctx, response, "Success")
 }
 
 // UpdateCategory handles PUT /v1/cms/categories/:id
@@ -142,6 +169,36 @@ func (h *BlogHandler) ListPosts(ctx *gin.Context) {
 	HandleSuccess(ctx, domain.BlogPostListResponse{Total: total, Posts: posts}, "Success")
 }
 
+// ListPostsCursor handles GET /v1/cms/posts/cursor with cursor-based pagination
+func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
+	cursor := ctx.Query("cursor")
+	limit := 10
+	if l := ctx.Query("limit"); l != "" {
+		if parsed, err := parseLimit(l); err == nil {
+			limit = parsed
+		}
+	}
+
+	var filter domain.BlogPostFilter
+	if err := ctx.ShouldBindQuery(&filter); err != nil {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		return
+	}
+
+	posts, nextCursor, _, err := h.postSvc.ListPostsCursor(filter, cursor, limit)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
+		return
+	}
+
+	response := utils.CursorPaginationResponse{
+		Items:      posts,
+		NextCursor: nextCursor,
+		HasMore:    nextCursor != nil,
+	}
+	HandleSuccess(ctx, response, "Success")
+}
+
 // UpdatePost handles PUT /v1/cms/posts/:id
 func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
@@ -220,6 +277,12 @@ func (h *BlogHandler) ListPublishedPosts(ctx *gin.Context) {
 
 func parseIDParam(ctx *gin.Context) (string, error) {
 	return ctx.Param("id"), nil
+}
+
+func parseLimit(limitStr string) (int, error) {
+	var limit int
+	_, err := fmt.Sscanf(limitStr, "%d", &limit)
+	return limit, err
 }
 
 func getAuthorID(ctx *gin.Context) (string, error) {

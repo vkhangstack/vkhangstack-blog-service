@@ -32,6 +32,7 @@ var (
 	blogCategoryService *services.BlogCategoryService
 	blogPostService     *services.BlogPostService
 	tagService          *services.TagService
+	taskService         *services.TaskService
 )
 
 func main() {
@@ -57,6 +58,7 @@ func main() {
 	sqldb.SetConnMaxIdleTime(2 * time.Minute)
 	db := bun.NewDB(sqldb, pgdialect.New())
 	db.RegisterModel((*domain.BlogPostTag)(nil))
+	db.RegisterModel((*domain.Task)(nil))
 
 	redisCache, err := cache.NewRedisCache(cfg.Cache.Host, cfg.Cache.Password)
 	if err != nil {
@@ -98,10 +100,11 @@ func main() {
 	blogCategoryService = services.NewBlogCategoryService(store)
 	blogPostService = services.NewBlogPostService(store)
 	tagService = services.NewTagService(store)
+	taskService = services.NewTaskService(store)
 	uploadService := services.NewUploadService(storageAdapter)
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, uploadService, rateLimiter)
+	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter)
 }

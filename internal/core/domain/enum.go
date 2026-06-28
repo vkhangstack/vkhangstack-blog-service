@@ -77,3 +77,31 @@ const (
 	FailedLoginAttemptsNumberMin          FailedLoginAttemptsNumber = 0
 	FailedLoginAttemptsNumberBlockMinutes FailedLoginAttemptsNumber = 15
 )
+
+type TaskStatus string
+
+const (
+	TaskStatusTodo       TaskStatus = "todo"
+	TaskStatusInProgress TaskStatus = "in_progress"
+	TaskStatusDone       TaskStatus = "done"
+	TaskStatusCancelled  TaskStatus = "cancelled"
+)
+
+type TaskPriority string
+
+const (
+	TaskPriorityLow    TaskPriority = "low"
+	TaskPriorityMedium TaskPriority = "medium"
+	TaskPriorityHigh   TaskPriority = "high"
+	TaskPriorityCritical TaskPriority = "critical"
+)
+
+type TaskLabel string
+
+const (
+	TaskLabelDocumentation TaskLabel = "documentation"
+	TaskLabelFeature       TaskLabel = "feature"
+	TaskLabelBugFix        TaskLabel = "bug_fix"
+	TaskLabelRefactor      TaskLabel = "refactor"
+	TaskLabelTesting       TaskLabel = "testing"
+)

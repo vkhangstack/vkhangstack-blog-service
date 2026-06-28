@@ -20,6 +20,7 @@ func InitRoutes(
 	blogCategoryService *services.BlogCategoryService,
 	blogPostService *services.BlogPostService,
 	tagService *services.TagService,
+	taskService *services.TaskService,
 	uploadService *services.UploadService,
 	rateLimiter *services.RateLimiter,
 ) {
@@ -37,10 +38,11 @@ func InitRoutes(
 	loginHandler := handler.NewLoginHandler(*accountService)
 	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService)
 	tagHandler := handler.NewTagHandler(tagService)
+	taskHandler := handler.NewTaskHandler(taskService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, uploadHandler, rateLimiter)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -55,6 +57,7 @@ func setupV1Routes(
 	loginHandler *handler.LoginHandler,
 	blogHandler *handler.BlogHandler,
 	tagHandler *handler.TagHandler,
+	taskHandler *handler.TaskHandler,
 	uploadHandler *handler.UploadHandler,
 	rateLimiter *services.RateLimiter,
 ) {
@@ -103,6 +106,7 @@ func setupV1Routes(
 			{
 				categories.POST("", blogHandler.CreateCategory)
 				categories.GET("", blogHandler.ListCategories)
+				categories.GET("/cursor", blogHandler.ListCategoriesCursor)
 				categories.GET("/:id", blogHandler.GetCategory)
 				categories.PUT("/:id", blogHandler.UpdateCategory)
 				categories.DELETE("/:id", blogHandler.DeleteCategory)
@@ -112,6 +116,7 @@ func setupV1Routes(
 			{
 				posts.POST("", blogHandler.CreatePost)
 				posts.GET("", blogHandler.ListPosts)
+				posts.GET("/cursor", blogHandler.ListPostsCursor)
 				posts.GET("/:id", blogHandler.GetPost)
 				posts.PUT("/:id", blogHandler.UpdatePost)
 				posts.DELETE("/:id", blogHandler.DeletePost)
@@ -122,6 +127,17 @@ func setupV1Routes(
 			{
 				tags.POST("", tagHandler.CreateTag)
 				tags.GET("", tagHandler.ListTags)
+			}
+
+			tasks := cms.Group("/tasks")
+			{
+				tasks.POST("", taskHandler.CreateTask)
+				tasks.GET("", taskHandler.ListTasks)
+				tasks.GET("/cursor", taskHandler.ListTasksCursor)
+				tasks.GET("/statistics", taskHandler.GetTaskStatistics)
+				tasks.GET("/:id", taskHandler.GetTask)
+				tasks.PUT("/:id", taskHandler.UpdateTask)
+				tasks.DELETE("/:id", taskHandler.DeleteTask)
 			}
 		}
 

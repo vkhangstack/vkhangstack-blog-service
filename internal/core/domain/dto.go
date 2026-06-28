@@ -21,6 +21,25 @@ type LoginResponse struct {
 	User         *Profile `json:"user"`
 }
 
+// CursorPaginationResponse represents a paginated response with cursor
+type CursorPaginationResponse struct {
+	Items      interface{} `json:"items"`
+	NextCursor *string     `json:"next_cursor,omitempty"`
+	HasMore    bool        `json:"has_more"`
+}
+
+// Pagination holds page/limit query parameters and computes the SQL offset.
+type Pagination struct {
+	Page  int `form:"page"  json:"page"`
+	Limit int `form:"limit" json:"limit"`
+}
+
+// CursorPagination represents cursor-based pagination parameters
+type CursorPagination struct {
+	Cursor string `form:"cursor" json:"cursor"`
+	Limit  int    `form:"limit"  json:"limit"`
+}
+
 type CreateBlogCategoryRequest struct {
 	Name        string  `json:"name"        binding:"required"`
 	Slug        string  `json:"slug"        binding:"required"`
@@ -93,4 +112,38 @@ type UploadFileResponse struct {
 type UploadFileResponseTinyEditor struct {
 	FileKey string `json:"file_key"`
 	URL     string `json:"url"`
+}
+
+type CreateTaskRequest struct {
+	TaskID      string       `json:"task_id"      binding:"required"`
+	Title       string       `json:"title"        binding:"required"`
+	Status      TaskStatus   `json:"status"`
+	Label       TaskLabel    `json:"label"        binding:"required"`
+	Priority    TaskPriority `json:"priority"`
+	HTML        *string      `json:"html"`
+	Lexical     *string      `json:"lexical"`
+	Description *string      `json:"description"`
+}
+
+type UpdateTaskRequest struct {
+	Title       *string       `json:"title"`
+	Status      *TaskStatus   `json:"status"`
+	Label       *TaskLabel    `json:"label"`
+	Priority    *TaskPriority `json:"priority"`
+	HTML        *string       `json:"html"`
+	Lexical     *string       `json:"lexical"`
+	Description *string       `json:"description"`
+}
+
+type TaskListResponse struct {
+	Total int     `json:"total"`
+	Tasks []*Task `json:"tasks"`
+}
+
+type TaskFilter struct {
+	Status   string `form:"status"`
+	Label    string `form:"label"`
+	Priority string `form:"priority"`
+	Page     int    `form:"page"`
+	Limit    int    `form:"limit"`
 }

@@ -62,6 +62,13 @@ func (s *BlogPostService) ListPosts(filter domain.BlogPostFilter) ([]*domain.Blo
 	return s.repo.ListPosts(filter)
 }
 
+func (s *BlogPostService) ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	return s.repo.ListPostsCursor(filter, cursor, limit)
+}
+
 func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest) error {
 	existing, err := s.repo.GetPost(id)
 	if err != nil {

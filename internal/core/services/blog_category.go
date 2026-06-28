@@ -32,6 +32,13 @@ func (s *BlogCategoryService) ListCategories() ([]*domain.BlogCategoryWithPostCo
 	return s.repo.ListCategories()
 }
 
+func (s *BlogCategoryService) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
+	if limit <= 0 || limit > 100 {
+		limit = 20
+	}
+	return s.repo.ListCategoriesCursor(cursor, limit)
+}
+
 func (s *BlogCategoryService) UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error) {
 	existing, err := s.repo.GetCategory(id)
 	if err != nil {

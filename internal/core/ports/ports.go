@@ -103,6 +103,7 @@ type BlogCategoryRepository interface {
 	GetCategory(id string) (*domain.BlogCategory, error)
 	GetCategoryBySlug(slug string) (*domain.BlogCategory, error)
 	ListCategories() ([]*domain.BlogCategoryWithPostCount, error)
+	ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error)
 	UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
 	DeleteCategory(id string) error
 }
@@ -112,6 +113,7 @@ type BlogPostRepository interface {
 	GetPost(id string) (*domain.BlogPost, error)
 	GetPostBySlug(slug string) (*domain.BlogPost, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
+	ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error)
 	UpdatePost(post domain.BlogPost, tagIDs []string) error
 	DeletePost(id string) error
 	IncrementViewCount(id string) error

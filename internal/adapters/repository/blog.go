@@ -118,6 +118,51 @@ func (u *DB) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
 	return categories, nil
 }
 
+// ListCategoriesCursor returns categories using cursor-based pagination
+func (u *DB) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
+	ctx := context.Background()
+
+	var cursorID string
+	if cursor != "" {
+		id, err := utils.DecodeCursor(cursor)
+		if err != nil {
+			return nil, nil, err
+		}
+		cursorID = id
+	}
+
+	var categories []*domain.BlogCategoryWithPostCount
+	query := u.db.NewSelect().
+		Model((*domain.BlogCategory)(nil)).
+		ColumnExpr("bc.*").
+		ColumnExpr("COUNT(bp.id) AS post_count").
+		Join("LEFT JOIN blog_posts AS bp ON bp.category_id = bc.id").
+		GroupExpr("bc.id").
+		OrderExpr("bc.created_at ASC", "bc.id ASC")
+
+	if cursorID != "" {
+		cursorCat := &domain.BlogCategory{}
+		err := u.db.NewSelect().Model(cursorCat).Where("id = ?", cursorID).Limit(1).Scan(ctx)
+		if err != nil {
+			return nil, nil, fmt.Errorf("cursor category not found: %v", err)
+		}
+		query = query.Where("(bc.created_at, bc.id) > (?, ?)", cursorCat.CreatedAt, cursorID)
+	}
+
+	err := query.Limit(limit + 1).Scan(ctx, &categories)
+	if err != nil {
+		return nil, nil, fmt.Errorf("categories not found: %v", err)
+	}
+
+	var nextCursor *string
+	if len(categories) > limit {
+		categories = categories[:limit]
+		nextCursor = utils.StringPtr(utils.EncodeCursor(categories[len(categories)-1].ID))
+	}
+
+	return categories, nextCursor, nil
+}
+
 func (u *DB) UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error) {
 	ctx := context.Background()
 	_, err := u.db.NewUpdate().Model(&category).WherePK().Exec(ctx)
@@ -229,6 +274,67 @@ func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, e
 		return nil, 0, fmt.Errorf("posts not found: %v", err)
 	}
 	return posts, total, nil
+}
+
+// ListPostsCursor returns posts using cursor-based pagination
+func (u *DB) ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
+	ctx := context.Background()
+
+	applyFilters := func(q *bun.SelectQuery) *bun.SelectQuery {
+		if filter.Status != "" {
+			q = q.Where("bp.status = ?", filter.Status)
+		}
+		if filter.CategoryID != nil {
+			q = q.Where("bp.category_id = ?", *filter.CategoryID)
+		}
+		if filter.Tag != "" {
+			q = q.Join("JOIN blog_post_tags bpt ON bpt.post_id = bp.id").
+				Join("JOIN tags tg ON tg.id = bpt.tag_id").
+				Where("tg.slug = ?", filter.Tag)
+		}
+		return q
+	}
+
+	total, err := applyFilters(u.db.NewSelect().Model((*domain.BlogPost)(nil))).Count(ctx)
+	if err != nil {
+		return nil, nil, 0, err
+	}
+
+	var cursorID string
+	if cursor != "" {
+		id, err := utils.DecodeCursor(cursor)
+		if err != nil {
+			return nil, nil, 0, err
+		}
+		cursorID = id
+	}
+
+	var posts []*domain.BlogPost
+	query := applyFilters(u.db.NewSelect().Model(&posts)).
+		Order("bp.created_at DESC", "bp.id DESC")
+
+	if cursorID != "" {
+		cursorPost := &domain.BlogPost{}
+		err := u.db.NewSelect().Model(cursorPost).Where("id = ?", cursorID).Limit(1).Scan(ctx)
+		if err != nil {
+			return nil, nil, 0, fmt.Errorf("cursor post not found: %v", err)
+		}
+		query = query.Where("(bp.created_at, bp.id) < (?, ?)", cursorPost.CreatedAt, cursorID)
+	}
+
+	err = query.Limit(limit + 1).Scan(ctx)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("posts not found: %v", err)
+	}
+
+	var nextCursor *string
+	hasMore := len(posts) > limit
+	if hasMore {
+		posts = posts[:limit]
+		nextCursor = utils.StringPtr(utils.EncodeCursor(posts[len(posts)-1].ID))
+	}
+
+	return posts, nextCursor, total, nil
 }
 
 func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) error {

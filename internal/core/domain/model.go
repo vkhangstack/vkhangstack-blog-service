@@ -247,3 +247,19 @@ type BlogCategoryWithPostCount struct {
 	*BlogCategory
 	PostCount int `bun:"post_count" json:"post_count"`
 }
+
+type Task struct {
+	bun.BaseModel `bun:"table:tasks,alias:t"`
+	ID            string       `bun:"id,pk,type:varchar(20)"                              json:"id"`
+	TaskID        string       `bun:"task_id,notnull,type:varchar(50),unique"             json:"task_id"`
+	Title         string       `bun:"title,notnull,type:varchar(500)"                     json:"title"`
+	Status        TaskStatus   `bun:"status,notnull,default:'todo',type:varchar(50)"      json:"status"`
+	Label         TaskLabel    `bun:"label,notnull,type:varchar(50)"                      json:"label"`
+	Priority      TaskPriority `bun:"priority,notnull,default:'medium',type:varchar(50)"  json:"priority"`
+	HTML          *string      `bun:"html,nullzero,type:text"                             json:"html"`
+	Lexical       *string      `bun:"lexical,nullzero,type:text"                          json:"lexical"`
+	Description   *string      `bun:"description,nullzero,type:text"                      json:"description"`
+	CreatedAt     time.Time    `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time    `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+}
