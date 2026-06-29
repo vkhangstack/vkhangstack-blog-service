@@ -92,7 +92,7 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 		return
 	}
 
-	tasks, nextCursor, err := h.svc.ListTasksCursor(filter, cursor, limit)
+	tasks, nextCursor, total, err := h.svc.ListTasksCursor(filter, cursor, limit)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -102,6 +102,7 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 		Items:      tasks,
 		NextCursor: nextCursor,
 		HasMore:    nextCursor != nil,
+		Total:      &total,
 	}
 	HandleSuccess(ctx, response, "Success")
 }

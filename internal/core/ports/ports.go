@@ -157,7 +157,7 @@ type TaskRepository interface {
 	UpdateTask(id string, updates domain.Task) (*domain.Task, error)
 	DeleteTask(id string) error
 	ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error)
-	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, error)
+	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
 	ListAllTasks() ([]*domain.Task, error)
 	CountTasksByStatus(status domain.TaskStatus) (int, error)
 	CountTasksByPriority(priority domain.TaskPriority) (int, error)
@@ -170,7 +170,7 @@ type TaskService interface {
 	UpdateTask(id string, req domain.UpdateTaskRequest) (*domain.Task, error)
 	DeleteTask(id string) error
 	ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error)
-	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, error)
+	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
 	ListAllTasks() ([]*domain.Task, error)
 	GetTaskStatistics() (map[string]interface{}, error)
 }

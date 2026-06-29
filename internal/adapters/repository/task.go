@@ -84,14 +84,14 @@ func (u *DB) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error) {
 }
 
 // ListTasksCursor returns tasks using cursor-based pagination
-func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, error) {
+func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
 	ctx := context.Background()
 
 	var cursorID string
 	if cursor != "" {
 		id, err := utils.DecodeCursor(cursor)
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, 0, err
 		}
 		cursorID = id
 	}
@@ -109,20 +109,21 @@ func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int)
 		query = query.Where("t.priority = ?", filter.Priority)
 	}
 
+	queryCount := query.Clone()
 	query = query.Order("t.created_at DESC", "t.id DESC")
 
 	if cursorID != "" {
 		cursorTask := &domain.Task{}
 		err := u.db.NewSelect().Model(cursorTask).Where("t.id = ?", cursorID).Limit(1).Scan(ctx)
 		if err != nil {
-			return nil, nil, fmt.Errorf("cursor task not found: %v", err)
+			return nil, nil, 0, fmt.Errorf("cursor task not found: %v", err)
 		}
 		query = query.Where("(t.created_at, t.id) < (?, ?)", cursorTask.CreatedAt, cursorID)
 	}
 
 	err := query.Limit(limit + 1).Scan(ctx)
 	if err != nil {
-		return nil, nil, fmt.Errorf("tasks not found: %v", err)
+		return nil, nil, 0, fmt.Errorf("tasks not found: %v", err)
 	}
 
 	var nextCursor *string
@@ -131,7 +132,8 @@ func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int)
 		nextCursor = utils.StringPtr(utils.EncodeCursor(tasks[len(tasks)-1].ID))
 	}
 
-	return tasks, nextCursor, nil
+	total, _ := queryCount.Count(ctx)
+	return tasks, nextCursor, total, nil
 }
 
 func (u *DB) ListAllTasks() ([]*domain.Task, error) {

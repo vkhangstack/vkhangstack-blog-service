@@ -134,7 +134,7 @@ func (s *TaskService) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, 
 	return tasks, total, nil
 }
 
-func (s *TaskService) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, error) {
+func (s *TaskService) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 10
 	}

@@ -59,6 +59,7 @@ type CursorPaginationResponse struct {
 	Items      interface{} `json:"items"`
 	NextCursor *string     `json:"next_cursor,omitempty"`
 	HasMore    bool        `json:"has_more"`
+	Total      *int        `json:"total,omitempty"`
 }
 
 // Normalize validates and normalizes cursor pagination parameters

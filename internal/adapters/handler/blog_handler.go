@@ -193,7 +193,7 @@ func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
 		return
 	}
 
-	posts, nextCursor, _, err := h.postSvc.ListPostsCursor(filter, cursor, limit)
+	posts, nextCursor, total, err := h.postSvc.ListPostsCursor(filter, cursor, limit)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list posts with cursor")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -204,6 +204,7 @@ func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
 		Items:      posts,
 		NextCursor: nextCursor,
 		HasMore:    nextCursor != nil,
+		Total:      &total,
 	}
 	HandleSuccess(ctx, response, "Success")
 }
