@@ -14,6 +14,7 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/migrate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/cache"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/meili"
 	storage "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/repository"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/snowflake"
@@ -93,6 +94,14 @@ func main() {
 		logger.Log.WithError(err).Fatal("failed to initialize S3 adapter")
 	}
 
+	searchEngineAdapter, err := meili.NewMeilisearchAdapter(ctx, meili.MeilisearchConfig{
+		Host:   cfg.Meilisearch.Host,
+		APIKey: cfg.Meilisearch.APIKey,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize Meilisearch adapter")
+	}
+
 	msgService = services.NewMessengerService(store)
 	customerService = services.NewCustomerService(store)
 	firebaseService = services.NewFirebaseService(store)
@@ -103,8 +112,9 @@ func main() {
 	taskService = services.NewTaskService(store)
 	uploadService := services.NewUploadService(storageAdapter)
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
+	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter)
+	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter, searchEngineService)
 }

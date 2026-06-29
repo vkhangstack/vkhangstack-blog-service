@@ -174,3 +174,12 @@ type TaskService interface {
 	ListAllTasks() ([]*domain.Task, error)
 	GetTaskStatistics() (map[string]interface{}, error)
 }
+type SearchEngineRepository interface {
+	IndexDocument(indexName string, document interface{}) error
+	Search(indexName string, query string, limit int) ([]map[string]interface{}, error)
+}
+
+type SearchEngineService interface {
+	IndexDocument(indexName string, document interface{}) error
+	Search(indexName string, query string, limit int) ([]map[string]interface{}, error)
+}

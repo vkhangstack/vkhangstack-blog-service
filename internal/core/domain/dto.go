@@ -103,6 +103,11 @@ type BlogPostListResponse struct {
 	Total int         `json:"total"`
 	Posts []*BlogPost `json:"posts"`
 }
+type BlogUserSearchResult struct {
+	Slug    string `json:"slug"`
+	Title   string `json:"title"`
+	Excerpt string `json:"excerpt"`
+}
 
 type UploadFileResponse struct {
 	FileKey string `json:"file_key"`

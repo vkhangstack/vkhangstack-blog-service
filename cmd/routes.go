@@ -23,6 +23,7 @@ func InitRoutes(
 	taskService *services.TaskService,
 	uploadService *services.UploadService,
 	rateLimiter *services.RateLimiter,
+	searchEngineService *services.SearchEngineService,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -36,7 +37,7 @@ func InitRoutes(
 	messageHandler := handler.NewMessageHandler(*msgService)
 	customerHandler := handler.NewUserHandler(*customerService, *firebaseService)
 	loginHandler := handler.NewLoginHandler(*accountService)
-	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService)
+	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService, searchEngineService)
 	tagHandler := handler.NewTagHandler(tagService)
 	taskHandler := handler.NewTaskHandler(taskService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
@@ -121,6 +122,7 @@ func setupV1Routes(
 				posts.PUT("/:id", blogHandler.UpdatePost)
 				posts.DELETE("/:id", blogHandler.DeletePost)
 				posts.POST("/:id/publish", blogHandler.PublishPost)
+				posts.GET("/search", blogHandler.SearchPosts)
 			}
 
 			tags := cms.Group("/tags")
@@ -148,6 +150,7 @@ func setupV1Routes(
 			blog.GET("/posts", blogHandler.ListPublishedPosts)
 			blog.GET("/posts/:slug", blogHandler.GetPostBySlug)
 			blog.GET("/tags", tagHandler.ListTags)
+			blog.GET("/search", blogHandler.SearchBlogPostsPublic)
 		}
 		// Upload routes
 		upload := v1.Group("/upload")

@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	customhttp "github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
@@ -13,12 +14,13 @@ import (
 )
 
 type BlogHandler struct {
-	categorySvc *services.BlogCategoryService
-	postSvc     *services.BlogPostService
+	categorySvc     *services.BlogCategoryService
+	postSvc         *services.BlogPostService
+	searchEngineSvc *services.SearchEngineService
 }
 
-func NewBlogHandler(categorySvc *services.BlogCategoryService, postSvc *services.BlogPostService) *BlogHandler {
-	return &BlogHandler{categorySvc: categorySvc, postSvc: postSvc}
+func NewBlogHandler(categorySvc *services.BlogCategoryService, postSvc *services.BlogPostService, searchEngineSvc *services.SearchEngineService) *BlogHandler {
+	return &BlogHandler{categorySvc: categorySvc, postSvc: postSvc, searchEngineSvc: searchEngineSvc}
 }
 
 // CreateCategory handles POST /v1/cms/categories
@@ -73,6 +75,7 @@ func (h *BlogHandler) ListCategoriesCursor(ctx *gin.Context) {
 
 	categories, nextCursor, err := h.categorySvc.ListCategoriesCursor(cursor, limit)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to list categories with cursor")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -136,6 +139,11 @@ func (h *BlogHandler) CreatePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
+	if req.Status == domain.PostStatusPublished {
+		go func() {
+			h.searchEngineSvc.IndexDocument(string(domain.SearchEngineIndexNamePosts), post)
+		}()
+	}
 	HandleSuccess(ctx, post, "Post created")
 }
 
@@ -187,6 +195,7 @@ func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
 
 	posts, nextCursor, _, err := h.postSvc.ListPostsCursor(filter, cursor, limit)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to list posts with cursor")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -216,6 +225,20 @@ func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
+	go func() {
+		post, err := h.postSvc.GetPost(id)
+		if err != nil {
+			return
+		}
+		if post.Status != domain.PostStatusPublished {
+			err = h.searchEngineSvc.DeleteDocument(string(domain.SearchEngineIndexNamePosts), id)
+		} else {
+			err = h.searchEngineSvc.IndexDocument(string(domain.SearchEngineIndexNamePosts), post)
+		}
+		if err != nil {
+			logger.Log.Errorf("Failed to update post in search engine: %v\n", err)
+		}
+	}()
 	HandleSuccess(ctx, nil, "Post updated")
 }
 
@@ -230,6 +253,12 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
+	go func() {
+		err := h.searchEngineSvc.DeleteDocument(string(domain.SearchEngineIndexNamePosts), id)
+		if err != nil {
+			logger.Log.Errorf("Failed to delete post from search engine: %v\n", err)
+		}
+	}()
 	HandleSuccess(ctx, nil, "Post deleted")
 }
 
@@ -273,6 +302,50 @@ func (h *BlogHandler) ListPublishedPosts(ctx *gin.Context) {
 		return
 	}
 	HandleSuccess(ctx, domain.BlogPostListResponse{Total: total, Posts: posts}, "Success")
+}
+
+func (h *BlogHandler) SearchPosts(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit := 10
+	if l := ctx.Query("limit"); l != "" {
+		if parsed, err := parseLimit(l); err == nil {
+			limit = parsed
+		}
+	}
+
+	results, err := h.searchEngineSvc.Search(string(domain.SearchEngineIndexNamePosts), query, limit)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
+		return
+	}
+	HandleSuccess(ctx, results, "Success")
+}
+
+func (h *BlogHandler) SearchBlogPostsPublic(ctx *gin.Context) {
+	query := ctx.Query("query")
+	limit := 10
+	if l := ctx.Query("limit"); l != "" {
+		if parsed, err := parseLimit(l); err == nil {
+			limit = parsed
+		}
+	}
+
+	results, err := h.searchEngineSvc.Search(string(domain.SearchEngineIndexNamePosts), query, limit)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
+		return
+	}
+	response := make([]*domain.BlogUserSearchResult, 0, len(results))
+	for _, result := range results {
+		post := &domain.BlogUserSearchResult{}
+		if err := utils.MapToStruct(result, post); err != nil {
+			logger.Log.WithError(err).Error("Failed to map search result to BlogUserSearchResult")
+			HandleError(ctx, domain.ErrorCodeInternalServerError, nil, fmt.Sprintf("Failed to map search result to BlogUserSearchResult: %v", err))
+			return
+		}
+		response = append(response, post)
+	}
+	HandleSuccess(ctx, response, "Success")
 }
 
 func parseIDParam(ctx *gin.Context) (string, error) {

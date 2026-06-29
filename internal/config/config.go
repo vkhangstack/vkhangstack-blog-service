@@ -38,13 +38,18 @@ type S3Config struct {
 type TinyEditorConfig struct {
 	Bucket string
 }
+type MeilisearchConfig struct {
+	Host   string
+	APIKey string
+}
 
 type Config struct {
-	App        AppConfig
-	DB         DBConfig
-	Cache      CacheConfig
-	S3         S3Config
-	TinyEditor TinyEditorConfig
+	App         AppConfig
+	DB          DBConfig
+	Cache       CacheConfig
+	S3          S3Config
+	TinyEditor  TinyEditorConfig
+	Meilisearch MeilisearchConfig
 }
 
 func LoadConfig() Config {
@@ -80,6 +85,10 @@ func LoadConfig() Config {
 		},
 		TinyEditor: TinyEditorConfig{
 			Bucket: getEnv("TINY_EDITOR_BUCKET", "tiny-editor"),
+		},
+		Meilisearch: MeilisearchConfig{
+			Host:   getEnv("MEILISEARCH_HOST", "http://localhost:7700"),
+			APIKey: getEnv("MEILISEARCH_API_KEY", "masterKey"),
 		},
 	}
 }

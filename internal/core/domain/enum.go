@@ -90,9 +90,9 @@ const (
 type TaskPriority string
 
 const (
-	TaskPriorityLow    TaskPriority = "low"
-	TaskPriorityMedium TaskPriority = "medium"
-	TaskPriorityHigh   TaskPriority = "high"
+	TaskPriorityLow      TaskPriority = "low"
+	TaskPriorityMedium   TaskPriority = "medium"
+	TaskPriorityHigh     TaskPriority = "high"
 	TaskPriorityCritical TaskPriority = "critical"
 )
 
@@ -104,4 +104,11 @@ const (
 	TaskLabelBugFix        TaskLabel = "bug_fix"
 	TaskLabelRefactor      TaskLabel = "refactor"
 	TaskLabelTesting       TaskLabel = "testing"
+)
+
+type SearchEngineIndexName string
+
+const (
+	SearchEngineIndexNamePosts SearchEngineIndexName = "posts"
+	SearchEngineIndexNameUsers SearchEngineIndexName = "users"
 )
