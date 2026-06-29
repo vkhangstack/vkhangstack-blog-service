@@ -108,6 +108,21 @@ type BlogUserSearchResult struct {
 	Title   string `json:"title"`
 	Excerpt string `json:"excerpt"`
 }
+type BlogPostBySlugResponse struct {
+	ID            string         `json:"id"`
+	Title         string         `json:"title"`
+	Slug          string         `json:"slug"`
+	Excerpt       *string        `json:"excerpt"`
+	Content       string         `json:"content"`
+	CoverImageURL *string        `json:"cover_image_url"`
+	CategoryID    *string        `json:"category_id,omitempty"`
+	Status        PostStatus     `json:"status"`
+	ViewCount     uint64         `json:"view_count"`
+	AuthorID      string         `json:"author_id"`
+	Type          PostType       `json:"type"`
+	Visibility    PostVisibility `json:"visibility"`
+	Locale        *string        `json:"locale,omitempty"`
+}
 
 type UploadFileResponse struct {
 	FileKey string `json:"file_key"`

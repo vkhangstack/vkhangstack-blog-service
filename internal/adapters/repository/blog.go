@@ -149,7 +149,7 @@ func (u *DB) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCateg
 		query = query.Where("(bc.created_at, bc.id) > (?, ?)", cursorCat.CreatedAt, cursorID)
 	}
 
-	err := query.Limit(limit + 1).Scan(ctx, &categories)
+	err := query.Limit(limit+1).Scan(ctx, &categories)
 	if err != nil {
 		return nil, nil, fmt.Errorf("categories not found: %v", err)
 	}
@@ -231,6 +231,7 @@ func (u *DB) GetPostBySlug(slug string) (*domain.BlogPost, error) {
 	}
 
 	err = u.db.NewSelect().Model(post).
+		Column("id", "bp.title", "bp.slug", "bp.excerpt", "bp.content", "bp.cover_image_url", "bp.category_id", "bp.status", "bp.viewed_count", "bp.author_id", "bp.type", "bp.visibility", "bp.locale").
 		Where("bp.slug = ?", slug).
 		Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -388,4 +389,28 @@ func (u *DB) CountPostsByCategory(categoryID string) (int, error) {
 		return 0, fmt.Errorf("failed to count posts by category: %v", err)
 	}
 	return count, nil
+}
+
+func (u *DB) GetTagByID(id string) (*domain.Tag, error) {
+	ctx := context.Background()
+	tag := &domain.Tag{}
+	err := u.db.NewSelect().Model(tag).Where("t.id = ?", id).Limit(1).Scan(ctx)
+	if err == sql.ErrNoRows {
+		return nil, errors.New("tag not found")
+	}
+	return tag, err
+}
+
+func (u *DB) DeleteTag(id string) error {
+	ctx := context.Background()
+	tag := &domain.Tag{}
+	res, err := u.db.NewDelete().Model(tag).Where("id = ?", id).Exec(ctx)
+	if err != nil {
+		return err
+	}
+	n, _ := res.RowsAffected()
+	if n == 0 {
+		return errors.New("tag not found")
+	}
+	return nil
 }

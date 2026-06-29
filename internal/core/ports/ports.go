@@ -91,11 +91,15 @@ type TagRepository interface {
 	ListTags() ([]*domain.Tag, error)
 	AttachTags(postID string, tagIDs []string) error
 	DetachTags(postID string) error
+	GetTagByID(id string) (*domain.Tag, error)
+	DeleteTag(id string) error
 }
 
 type TagService interface {
 	CreateTag(req domain.CreateTagRequest) (*domain.Tag, error)
 	ListTags() ([]*domain.Tag, error)
+	GetTagByID(id string) (*domain.Tag, error)
+	DeleteTag(id string) error
 }
 
 type BlogCategoryRepository interface {
@@ -131,7 +135,7 @@ type BlogCategoryService interface {
 type BlogPostService interface {
 	CreatePost(authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error)
 	GetPost(id string) (*domain.BlogPost, error)
-	GetPostBySlug(slug string) (*domain.BlogPost, error)
+	GetPostBySlug(slug string) (*domain.BlogPostBySlugResponse, error)
 	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
 	UpdatePost(id string, req domain.UpdateBlogPostRequest) error
 	DeletePost(id string) error

@@ -23,3 +23,11 @@ func (s *TagService) CreateTag(req domain.CreateTagRequest) (*domain.Tag, error)
 func (s *TagService) ListTags() ([]*domain.Tag, error) {
 	return s.repo.ListTags()
 }
+
+func (s *TagService) GetTagByID(id string) (*domain.Tag, error) {
+	return s.repo.GetTagByID(id)
+}
+
+func (s *TagService) DeleteTag(id string) error {
+	return s.repo.DeleteTag(id)
+}

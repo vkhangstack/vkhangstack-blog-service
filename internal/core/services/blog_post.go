@@ -43,13 +43,27 @@ func (s *BlogPostService) GetPost(id string) (*domain.BlogPost, error) {
 	return s.repo.GetPost(id)
 }
 
-func (s *BlogPostService) GetPostBySlug(slug string) (*domain.BlogPost, error) {
+func (s *BlogPostService) GetPostBySlug(slug string) (*domain.BlogPostBySlugResponse, error) {
 	post, err := s.repo.GetPostBySlug(slug)
 	if err != nil {
 		return nil, err
 	}
 	_ = s.repo.IncrementViewCount(post.ID)
-	return post, nil
+	return &domain.BlogPostBySlugResponse{
+		ID:            post.ID,
+		Title:         post.Title,
+		Slug:          post.Slug,
+		Excerpt:       post.Excerpt,
+		Content:       post.Content,
+		CoverImageURL: post.CoverImageURL,
+		CategoryID:    post.CategoryID,
+		Status:        post.Status,
+		ViewCount:     post.ViewCount,
+		AuthorID:      post.AuthorID,
+		Type:          post.Type,
+		Visibility:    post.Visibility,
+		Locale:        post.Locale,
+	}, nil
 }
 
 func (s *BlogPostService) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error) {
