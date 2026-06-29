@@ -2,7 +2,7 @@ services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: golang-hexagonal-postgres
+    container_name: cms_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
@@ -14,7 +14,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./internal/migrations:/docker-entrypoint-initdb.d
     networks:
-      - hexagonal-network
+      - cms-network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
       interval: 10s
@@ -24,7 +24,7 @@ services:
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: golang-hexagonal-redis
+    container_name: cms_redis
     restart: unless-stopped
     command: redis-server --requirepass ${CACHE_PASSWORD:-redis123}
     ports:
@@ -32,7 +32,7 @@ services:
     volumes:
       - redis_data:/data
     networks:
-      - hexagonal-network
+      - cms-network
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
@@ -56,10 +56,26 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  meilisearch:
+    image: getmeili/meilisearch:v1.37
+    container_name: cms_meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: ${MEILI_ENV:-development}
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKey}
+    ports:
+      - "7700:7700"
+    volumes:
+      - meilisearch_data:/meili_data
+    networks:
+      - cms-network
   # Application
   app:
-    image: golang-hexagonal:latest
-    container_name: golang-hexagonal-app
+    # image: golang-hexagonal:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cms_app
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -91,7 +107,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - hexagonal-network
+      - cms-network
     # Uncomment if you need to mount .env or credentials file
     # volumes:
     #   - ./.env:/home/appuser/.env:ro
@@ -102,7 +118,9 @@ volumes:
     driver: local
   redis_data:
     driver: local
+  meilisearch_data:
+    driver: local
 
 networks:
-  hexagonal-network:
+  cms-network:
     driver: bridge
