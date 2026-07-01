@@ -7,6 +7,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 )
 
 type UploadHandler struct {
@@ -23,6 +24,7 @@ func (h *UploadHandler) UploadFile(ctx *gin.Context) {
 
 	file, header, err := ctx.Request.FormFile("file") // "file" is name of <input type="file">
 	if err != nil {
+		logger.Log.WithError(err).Error("UploadFile: Failed to get form file")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "")
 		return
 	}
@@ -33,6 +35,7 @@ func (h *UploadHandler) UploadFile(ctx *gin.Context) {
 
 	keyName, err := h.uploadSvc.UploadFile(ctx.Request.Context(), header.Filename, reader, header.Header.Get("Content-Type"))
 	if err != nil {
+		logger.Log.WithError(err).Error("UploadFile: Failed to upload file")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "upload failed")
 		return
 	}
@@ -47,12 +50,14 @@ func (h *UploadHandler) UploadFile(ctx *gin.Context) {
 func (h *UploadHandler) DeleteFile(ctx *gin.Context) {
 	fileKey := ctx.Query("fileKey")
 	if fileKey == "" {
+		logger.Log.Error("DeleteFile: fileKey is required")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "fileKey is required")
 		return
 	}
 
 	err := h.uploadSvc.DeleteFile(ctx.Request.Context(), fileKey)
 	if err != nil {
+		logger.Log.WithError(err).Error("DeleteFile: failed to delete file")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "delete failed")
 		return
 	}
@@ -66,6 +71,7 @@ func (h *UploadHandler) UploadFileTinyEditor(ctx *gin.Context) {
 
 	file, header, err := ctx.Request.FormFile("file") // "file" is name of <input type="file">
 	if err != nil {
+		logger.Log.WithError(err).Error("UploadFileTinyEditor: Failed to get form file")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "")
 		return
 	}
@@ -76,6 +82,7 @@ func (h *UploadHandler) UploadFileTinyEditor(ctx *gin.Context) {
 
 	keyName, err := h.uploadSvc.UploadFileWithBucket(ctx.Request.Context(), config.LoadConfig().TinyEditor.Bucket, header.Filename, reader, header.Header.Get("Content-Type"))
 	if err != nil {
+		logger.Log.WithError(err).Error("UploadFileTinyEditor: Failed to upload file")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "upload failed")
 		return
 	}
@@ -90,12 +97,14 @@ func (h *UploadHandler) UploadFileTinyEditor(ctx *gin.Context) {
 func (h *UploadHandler) DeleteFileTinyEditor(ctx *gin.Context) {
 	fileKey := ctx.Query("fileKey")
 	if fileKey == "" {
+		logger.Log.Error("DeleteFileTinyEditor: fileKey is required")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "fileKey is required")
 		return
 	}
 
 	err := h.uploadSvc.DeleteFileWithBucket(ctx.Request.Context(), config.LoadConfig().TinyEditor.Bucket, fileKey)
 	if err != nil {
+		logger.Log.WithError(err).Error("DeleteFileTinyEditor: failed to delete file")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "delete failed")
 		return
 	}

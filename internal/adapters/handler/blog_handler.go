@@ -32,6 +32,7 @@ func (h *BlogHandler) CreateCategory(ctx *gin.Context) {
 	}
 	category, err := h.categorySvc.CreateCategory(req)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to create category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -42,11 +43,13 @@ func (h *BlogHandler) CreateCategory(ctx *gin.Context) {
 func (h *BlogHandler) GetCategory(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to parse ID param for GetCategory")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	category, err := h.categorySvc.GetCategory(id)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to get category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -57,6 +60,7 @@ func (h *BlogHandler) GetCategory(ctx *gin.Context) {
 func (h *BlogHandler) ListCategories(ctx *gin.Context) {
 	categories, err := h.categorySvc.ListCategories()
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to list categories")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -92,16 +96,19 @@ func (h *BlogHandler) ListCategoriesCursor(ctx *gin.Context) {
 func (h *BlogHandler) UpdateCategory(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to parse ID param for UpdateCategory")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	var req domain.UpdateBlogCategoryRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		logger.Log.WithError(err).Error("Failed to bind JSON for UpdateCategory")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	category, err := h.categorySvc.UpdateCategory(id, req)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to update category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -112,10 +119,12 @@ func (h *BlogHandler) UpdateCategory(ctx *gin.Context) {
 func (h *BlogHandler) DeleteCategory(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to parse ID param for DeleteCategory")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	if err := h.categorySvc.DeleteCategory(id); err != nil {
+		logger.Log.WithError(err).Error("Failed to delete category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
 	}
@@ -126,16 +135,19 @@ func (h *BlogHandler) DeleteCategory(ctx *gin.Context) {
 func (h *BlogHandler) CreatePost(ctx *gin.Context) {
 	authorID, err := getAuthorID(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to get author ID from context")
 		HandleError(ctx, domain.ErrorCodeUnAuthorization, nil, err.Error())
 		return
 	}
 	var req domain.CreateBlogPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		logger.Log.WithError(err).Error("Failed to bind JSON for CreatePost")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	post, err := h.postSvc.CreatePost(authorID, req)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to create post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -151,11 +163,13 @@ func (h *BlogHandler) CreatePost(ctx *gin.Context) {
 func (h *BlogHandler) GetPost(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to parse ID param for GetPost")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	post, err := h.postSvc.GetPost(id)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to get post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -166,11 +180,13 @@ func (h *BlogHandler) GetPost(ctx *gin.Context) {
 func (h *BlogHandler) ListPosts(ctx *gin.Context) {
 	var filter domain.BlogPostFilter
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
+		logger.Log.WithError(err).Error("Failed to bind query parameters for ListPosts")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	posts, total, err := h.postSvc.ListPosts(filter)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to list posts")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -189,6 +205,7 @@ func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
 
 	var filter domain.BlogPostFilter
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
+		logger.Log.WithError(err).Error("Failed to bind query parameters for ListPostsCursor")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
@@ -218,17 +235,20 @@ func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 	}
 	var req domain.UpdateBlogPostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		logger.Log.Errorf("Failed to bind JSON for UpdatePost: %v", err)
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	err = h.postSvc.UpdatePost(id, req)
 	if err != nil {
+		logger.Log.Errorf("Failed to update post: %v", err)
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
 	go func() {
 		post, err := h.postSvc.GetPost(id)
 		if err != nil {
+			logger.Log.Errorf("Failed to get post: %v", err)
 			return
 		}
 		if post.Status != domain.PostStatusPublished {
@@ -251,6 +271,7 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 		return
 	}
 	if err := h.postSvc.DeletePost(id); err != nil {
+		logger.Log.Errorf("Failed to delete post error %s", err.Error())
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
@@ -267,11 +288,13 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 func (h *BlogHandler) PublishPost(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.Errorf("Failed to parse ID param for PublishPost: %v", err)
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	err = h.postSvc.PublishPost(id)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to publish post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -283,6 +306,7 @@ func (h *BlogHandler) GetPostBySlug(ctx *gin.Context) {
 	slug := ctx.Param("slug")
 	post, err := h.postSvc.GetPostBySlug(slug)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to get post by slug")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -293,12 +317,14 @@ func (h *BlogHandler) GetPostBySlug(ctx *gin.Context) {
 func (h *BlogHandler) ListPublishedPosts(ctx *gin.Context) {
 	var filter domain.BlogPostFilter
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
+		logger.Log.WithError(err).Error("Failed to bind query parameters for ListPublishedPosts")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	filter.Status = string(domain.PostStatusPublished)
 	posts, total, err := h.postSvc.ListPosts(filter)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to list published posts")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
@@ -333,6 +359,7 @@ func (h *BlogHandler) SearchBlogPostsPublic(ctx *gin.Context) {
 
 	results, err := h.searchEngineSvc.Search(string(domain.SearchEngineIndexNamePosts), query, limit)
 	if err != nil {
+		logger.Log.WithError(err).Error("Failed to search blog posts")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}

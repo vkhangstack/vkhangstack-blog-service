@@ -7,6 +7,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
+	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
@@ -111,16 +112,19 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 func (h *TaskHandler) UpdateTask(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("UpdateTask: Invalid task ID")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	var req domain.UpdateTaskRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		logger.Log.WithError(err).Error("UpdateTask: Invalid request payload")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
 	task, err := h.svc.UpdateTask(id, req)
 	if err != nil {
+		logger.Log.WithError(err).Error("UpdateTask: Failed to update task")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
@@ -131,10 +135,12 @@ func (h *TaskHandler) UpdateTask(ctx *gin.Context) {
 func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 	id, err := parseIDParam(ctx)
 	if err != nil {
+		logger.Log.WithError(err).Error("DeleteTask: Invalid task ID")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
 	if err := h.svc.DeleteTask(id); err != nil {
+		logger.Log.WithError(err).Error("DeleteTask: Failed to delete task")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
@@ -145,6 +151,7 @@ func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 func (h *TaskHandler) GetTaskStatistics(ctx *gin.Context) {
 	stats, err := h.svc.GetTaskStatistics()
 	if err != nil {
+		logger.Log.WithError(err).Error("GetTaskStatistics: Failed to get task statistics")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
