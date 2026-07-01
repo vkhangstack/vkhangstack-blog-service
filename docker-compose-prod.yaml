@@ -1,0 +1,110 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: cms_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-cms}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - ./database_data:/var/lib/postgresql/data
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:8.8.0-alpine
+    container_name: cms_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${CACHE_PASSWORD:-redis123}
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - ./redis_data:/data
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+  rustfs:
+    image: rustfs/rustfs:latest
+    environment:
+      environment:
+      RUSTFS_SERVER_DOMAINS: localhost
+      RUSTFS_CONSOLE_ENABLE: true
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+    volumes:
+      - ./rustfs_data:/data
+    ports:
+      - "9001:9001"
+      - "9000:9000"
+    container_name: cms_rustfs
+    restart: unless-stopped
+    networks:
+      - cms-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  meilisearch:
+    image: getmeili/meilisearch:v1.37
+    container_name: cms_meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_ENV: ${MEILI_ENV:-development}
+      MEILI_MASTER_KEY: ${MEILI_MASTER_KEY:-masterKey}
+    ports:
+      - "7700:7700"
+    volumes:
+      - ./meilisearch_data:/meili_data
+    networks:
+      - cms-network
+  # Application
+  app:
+    image: ghcr.io/vkhangstack/vkhangstack-blog-service:${APP_VERSION:-latest}
+    container_name: cms_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cms-network
+    volumes:
+      - ./app_data/logs:/home/appuser/logs
+  backoffice:
+    image: ghcr.io/vkhangstack/vkhangstack-blog-backoffice:${BACKOFFICE_VERSION:-latest}
+    container_name: cms_backoffice
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8081:80"
+    networks:
+      - cms-network
+networks:
+  cms-network:
+    driver: bridge
