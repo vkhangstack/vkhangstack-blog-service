@@ -169,27 +169,47 @@ func (u *DB) DetachNoteTags(ctx context.Context, noteID string) error {
 	return err
 }
 
-func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string][]string, error) {
+func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string][]*domain.TagView, error) {
 	if len(noteIDs) == 0 {
-		return map[string][]string{}, nil
+		return map[string][]*domain.TagView{}, nil
 	}
 
-	tagMap := make(map[string][]string, len(noteIDs))
-	for _, noteID := range noteIDs {
-		tagMap[noteID] = []string{}
-	}
+	var rows []domain.NoteTagRow
 
-	var noteTags []*domain.NoteTag
+	subq := u.db.NewSelect().
+		Model((*domain.NoteTag)(nil)).
+		ColumnExpr("note_id, tag_id").
+		Where("note_id IN (?)", bun.List(noteIDs))
+
 	err := u.db.NewSelect().
-		Model(&noteTags).
-		Where("note_id IN (?)", bun.List(noteIDs)).
-		Scan(ctx)
+		TableExpr("blog_tags AS t").
+		ColumnExpr("nt.note_id").
+		ColumnExpr("t.id").
+		ColumnExpr("t.name").
+		ColumnExpr("t.slug").
+		Join("JOIN (?) AS nt ON nt.tag_id = t.id", subq).
+		Scan(ctx, &rows)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tags for notes: %w", err)
 	}
 
-	for _, noteTag := range noteTags {
-		tagMap[noteTag.NoteID] = append(tagMap[noteTag.NoteID], noteTag.TagID)
+	tagMap := make(map[string][]*domain.TagView, len(noteIDs))
+
+	for _, id := range noteIDs {
+		tagMap[id] = make([]*domain.TagView, 0)
+	}
+
+	for _, r := range rows {
+		if _, ok := tagMap[r.NoteID]; !ok {
+			// nếu bạn chỉ quan tâm những noteIDs đã cho
+			continue
+		}
+
+		tagMap[r.NoteID] = append(tagMap[r.NoteID], &domain.TagView{
+			ID:   r.ID,
+			Name: r.Name,
+			Slug: r.Slug,
+		})
 	}
 
 	return tagMap, nil

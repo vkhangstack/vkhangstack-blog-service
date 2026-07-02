@@ -291,3 +291,10 @@ type NoteTag struct {
 	NoteID        string `bun:"note_id,pk,type:varchar(20)" json:"note_id"`
 	TagID         string `bun:"tag_id,pk,type:varchar(20)" json:"tag_id"`
 }
+
+type NoteTagRow struct {
+	NoteID string `bun:"note_id"`
+	ID     string `bun:"id"`
+	Name   string `bun:"name"`
+	Slug   string `bun:"slug"`
+}

@@ -206,9 +206,16 @@ type NoteFilter struct {
 	Limit     int     `form:"limit"`
 	CreatedBy *string `form:"created_by"`
 }
+
+type TagView struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
 type NoteHasTag struct {
 	*Note
-	Tags []string `json:"tags"`
+	Tags []*TagView `json:"tags"`
 }
 
 type NoteListResponse struct {
