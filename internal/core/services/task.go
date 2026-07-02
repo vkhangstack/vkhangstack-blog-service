@@ -6,6 +6,7 @@ import (
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
+	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type TaskService struct {
@@ -34,14 +35,19 @@ func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, er
 	}
 
 	task := domain.Task{
-		TaskID:      taskID,
-		Title:       req.Title,
-		Status:      status,
-		Label:       req.Label,
-		Priority:    priority,
-		HTML:        req.HTML,
-		Lexical:     req.Lexical,
-		Description: req.Description,
+		TaskID:       taskID,
+		Title:        req.Title,
+		Status:       status,
+		Label:        req.Label,
+		Priority:     priority,
+		HTML:         req.HTML,
+		Lexical:      req.Lexical,
+		Description:  req.Description,
+		DueAt:        req.DueAt,
+		AssigneeID:   req.AssigneeID,
+		EnableNotice: req.EnableNotice,
+		ReminderAt:   req.ReminderAt,
+		TypeReminder: req.TypeReminder,
 	}
 
 	created, err := s.repo.CreateTask(task)
@@ -75,27 +81,18 @@ func (s *TaskService) UpdateTask(id string, req domain.UpdateTaskRequest) (*doma
 		return nil, fmt.Errorf("task not found: %v", err)
 	}
 
-	if req.Title != nil {
-		existing.Title = *req.Title
-	}
-	if req.Status != nil {
-		existing.Status = *req.Status
-	}
-	if req.Label != nil {
-		existing.Label = *req.Label
-	}
-	if req.Priority != nil {
-		existing.Priority = *req.Priority
-	}
-	if req.HTML != nil {
-		existing.HTML = req.HTML
-	}
-	if req.Lexical != nil {
-		existing.Lexical = req.Lexical
-	}
-	if req.Description != nil {
-		existing.Description = req.Description
-	}
+	utils.SetIfNotNil(&existing.Title, req.Title)
+	utils.SetIfNotNil(&existing.Status, req.Status)
+	utils.SetIfNotNil(&existing.Label, req.Label)
+	utils.SetIfNotNil(&existing.Priority, req.Priority)
+	utils.SetIfNotNil(&existing.HTML, &req.HTML)
+	utils.SetIfNotNil(&existing.Lexical, &req.Lexical)
+	utils.SetIfNotNil(&existing.Description, &req.Description)
+	utils.SetIfNotNil(&existing.DueAt, &req.DueAt)
+	utils.SetIfNotNil(&existing.AssigneeID, &req.AssigneeID)
+	utils.SetIfNotNil(&existing.EnableNotice, &req.EnableNotice)
+	utils.SetIfNotNil(&existing.ReminderAt, &req.ReminderAt)
+	utils.SetIfNotNil(&existing.TypeReminder, &req.TypeReminder)
 
 	updated, err := s.repo.UpdateTask(id, *existing)
 	if err != nil {

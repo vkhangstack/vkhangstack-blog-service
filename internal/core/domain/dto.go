@@ -135,23 +135,33 @@ type UploadFileResponseTinyEditor struct {
 }
 
 type CreateTaskRequest struct {
-	Title       string       `json:"title"        binding:"required"`
-	Status      TaskStatus   `json:"status"`
-	Label       TaskLabel    `json:"label"        binding:"required"`
-	Priority    TaskPriority `json:"priority"`
-	HTML        *string      `json:"html"`
-	Lexical     *string      `json:"lexical"`
-	Description *string      `json:"description"`
+	Title        string       `json:"title"        binding:"required"`
+	Status       TaskStatus   `json:"status"`
+	Label        TaskLabel    `json:"label"        binding:"required"`
+	Priority     TaskPriority `json:"priority"`
+	HTML         *string      `json:"html"`
+	Lexical      *string      `json:"lexical"`
+	Description  *string      `json:"description"`
+	DueAt        *time.Time   `json:"due_at"`
+	AssigneeID   *string      `json:"assignee_id"`
+	EnableNotice *bool        `json:"enable_notice"`
+	ReminderAt   *time.Time   `json:"reminder_at"`
+	TypeReminder *int         `json:"type_reminder"`
 }
 
 type UpdateTaskRequest struct {
-	Title       *string       `json:"title"`
-	Status      *TaskStatus   `json:"status"`
-	Label       *TaskLabel    `json:"label"`
-	Priority    *TaskPriority `json:"priority"`
-	HTML        *string       `json:"html"`
-	Lexical     *string       `json:"lexical"`
-	Description *string       `json:"description"`
+	Title        *string       `json:"title"`
+	Status       *TaskStatus   `json:"status"`
+	Label        *TaskLabel    `json:"label"`
+	Priority     *TaskPriority `json:"priority"`
+	HTML         *string       `json:"html"`
+	Lexical      *string       `json:"lexical"`
+	Description  *string       `json:"description"`
+	DueAt        *time.Time    `json:"due_at"`
+	AssigneeID   *string       `json:"assignee_id"`
+	EnableNotice *bool         `json:"enable_notice"`
+	ReminderAt   *time.Time    `json:"reminder_at"`
+	TypeReminder *int          `json:"type_reminder"`
 }
 
 type TaskListResponse struct {

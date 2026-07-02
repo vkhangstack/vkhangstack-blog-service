@@ -1,4 +1,4 @@
-.PHONY: help build run test clean docker-build docker-run docker-stop docker-clean compose-up compose-down compose-logs migrate lint fmt vet
+.PHONY: help build run test clean docker-build docker-run docker-stop docker-clean compose-up compose-down compose-logs migrate migrate-create lint fmt vet
 
 # Variables
 APP_NAME := golang-hexagonal
@@ -131,6 +131,15 @@ migrate-up: ## Run database migrations
 	else \
 		echo "Migration file not found"; \
 	fi
+
+migrate-create: ## Create a new migration file (usage: make migrate-create NAME=migration_name)
+	@if [ -z "$(NAME)" ]; then echo "Usage: make migrate-create NAME=<migration_name>"; exit 1; fi
+	@mkdir -p ./internal/migrations
+	$(eval TIMESTAMP := $(shell date +%Y%m%d%H%M%S))
+	@touch ./internal/migrations/$(TIMESTAMP)_$(NAME).up.sql
+	@touch ./internal/migrations/$(TIMESTAMP)_$(NAME).down.sql
+	@echo "Created migration: ./internal/migrations/$(TIMESTAMP)_$(NAME).up.sql and ./internal/migrations/$(TIMESTAMP)_$(NAME).down.sql"
+	@echo "Please edit the migration files to add your SQL statements."
 
 migrate-down: ## Rollback database migrations
 	@echo "Rolling back database migrations..."

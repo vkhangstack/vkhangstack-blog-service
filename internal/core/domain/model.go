@@ -259,6 +259,11 @@ type Task struct {
 	HTML          *string      `bun:"html,nullzero,type:text"                             json:"html"`
 	Lexical       *string      `bun:"lexical,nullzero,type:text"                          json:"lexical"`
 	Description   *string      `bun:"description,nullzero,type:text"                      json:"description"`
+	DueAt         *time.Time   `bun:"due_at,nullzero,type:timestamptz"                    json:"due_at"`
+	AssigneeID    *string      `bun:"assignee_id,nullzero,type:varchar(36)"               json:"assignee_id"`
+	EnableNotice  *bool        `bun:"enable_notice,nullzero,type:bool,default:false"      json:"enable_notice"`
+	ReminderAt    *time.Time   `bun:"reminder_at,nullzero,type:timestamptz"               json:"reminder_at"`
+	TypeReminder  *int         `bun:"type_reminder,nullzero,type:int,default:0"           json:"type_reminder"`
 	CreatedAt     time.Time    `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time    `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
