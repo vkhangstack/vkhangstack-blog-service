@@ -27,7 +27,7 @@ func (u *DB) GetNoteByID(ctx context.Context, id string) (*domain.Note, error) {
 	return note, nil
 }
 
-func (u *DB) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.Note, int, error) {
+func (u *DB) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error) {
 	var notes []*domain.Note
 	query := u.db.NewSelect().Model(&notes)
 
@@ -47,8 +47,23 @@ func (u *DB) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain
 	if err != nil {
 		return nil, 0, fmt.Errorf("failed to list notes: %v", err)
 	}
+	var noteIDs []string
 
-	return notes, total, nil
+	for _, note := range notes {
+		noteIDs = append(noteIDs, note.ID)
+	}
+
+	tags, err := u.getTagsForNotes(ctx, noteIDs)
+
+	var noteMap = []*domain.NoteHasTag{}
+	for _, note := range notes {
+		noteMap = append(noteMap, &domain.NoteHasTag{
+			Note: note,
+			Tags: tags[note.ID],
+		})
+	}
+
+	return noteMap, total, nil
 }
 
 func (u *DB) UpdateNote(ctx context.Context, id string, updates domain.Note) (*domain.Note, error) {
@@ -69,7 +84,7 @@ func (u *DB) DeleteNote(ctx context.Context, id string) error {
 	return nil
 }
 
-func (u *DB) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.Note, *string, int, error) {
+func (u *DB) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error) {
 	var cursorID string
 	if cursor != "" {
 		id, err := utils.DecodeCursor(cursor)
@@ -110,13 +125,30 @@ func (u *DB) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, curs
 	}
 
 	var nextCursor *string
+	var noteIDs []string
+
 	if len(notes) > limit {
 		notes = notes[:limit]
 		nextCursor = utils.StringPtr(utils.EncodeCursor(notes[len(notes)-1].ID))
 	}
-
 	total, _ := queryCount.Count(ctx)
-	return notes, nextCursor, total, nil
+
+	for _, note := range notes {
+		noteIDs = append(noteIDs, note.ID)
+	}
+
+	tags, err := u.getTagsForNotes(ctx, noteIDs)
+	if err != nil {
+		return nil, nil, 0, fmt.Errorf("failed to get tags for notes: %v", err)
+	}
+	var noteMap = []*domain.NoteHasTag{}
+	for _, note := range notes {
+		noteMap = append(noteMap, &domain.NoteHasTag{
+			Note: note,
+			Tags: tags[note.ID],
+		})
+	}
+	return noteMap, nextCursor, total, nil
 }
 
 func (u *DB) AttachNoteTags(noteID string, tagIDs []string) error {
@@ -136,4 +168,24 @@ func (u *DB) DetachNoteTags(noteID string) error {
 	ctx := context.Background()
 	_, err := u.db.NewDelete().Model((*domain.NoteTag)(nil)).Where("note_id = ?", noteID).Exec(ctx)
 	return err
+}
+
+func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string][]string, error) {
+	if len(noteIDs) == 0 {
+		return map[string][]string{}, nil
+	}
+
+	var noteTags []*domain.NoteTag
+	err := u.db.NewSelect().Model(&noteTags).
+		Where("note_id IN (?)", noteIDs).Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags for notes: %v", err)
+	}
+
+	tagMap := make(map[string][]string)
+	for _, noteTag := range noteTags {
+		tagMap[noteTag.NoteID] = append(tagMap[noteTag.NoteID], noteTag.TagID)
+	}
+
+	return tagMap, nil
 }

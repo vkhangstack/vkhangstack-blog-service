@@ -45,11 +45,11 @@ func (n *NoteService) GetNote(ctx context.Context, id string) (*domain.Note, err
 	return n.repo.GetNoteByID(ctx, id)
 }
 
-func (n *NoteService) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.Note, int, error) {
+func (n *NoteService) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error) {
 	return n.repo.ListNotes(ctx, filter)
 }
 
-func (n *NoteService) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.Note, *string, int, error) {
+func (n *NoteService) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 100
 	}

@@ -193,8 +193,8 @@ type NoteRepository interface {
 	GetNoteByID(ctx context.Context, id string) (*domain.Note, error)
 	UpdateNote(ctx context.Context, id string, updates domain.Note) (*domain.Note, error)
 	DeleteNote(ctx context.Context, id string) error
-	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.Note, int, error)
-	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.Note, *string, int, error)
+	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error)
+	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error)
 	AttachNoteTags(noteID string, tagIDs []string) error
 	DetachNoteTags(noteID string) error
 }
@@ -202,8 +202,8 @@ type NoteRepository interface {
 type NoteService interface {
 	CreateNote(ctx context.Context, authorID string, req domain.CreateNoteRequest) (*domain.Note, error)
 	GetNote(ctx context.Context, id string) (*domain.Note, error)
-	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.Note, int, error)
-	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.Note, *string, int, error)
+	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error)
+	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error)
 	UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) (*domain.Note, error)
 	DeleteNote(ctx context.Context, id string) error
 }

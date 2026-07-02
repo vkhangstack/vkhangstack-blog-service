@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type LoginRequest struct {
 	Username string `json:"username" binding:"required"`
@@ -204,8 +206,12 @@ type NoteFilter struct {
 	Limit     int     `form:"limit"`
 	CreatedBy *string `form:"created_by"`
 }
+type NoteHasTag struct {
+	*Note
+	Tags []string `json:"tags"`
+}
 
 type NoteListResponse struct {
-	Total int     `json:"total"`
-	Notes []*Note `json:"notes"`
+	Total int           `json:"total"`
+	Notes []*NoteHasTag `json:"notes"`
 }
