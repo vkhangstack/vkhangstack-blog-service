@@ -5,6 +5,7 @@ import (
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
+	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type NoteService struct {
@@ -57,16 +58,22 @@ func (n *NoteService) ListNotesCursor(ctx context.Context, filter domain.NoteFil
 }
 
 func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) (*domain.Note, error) {
-	note := domain.Note{
-		ID:          id,
-		Title:       *req.Title,
-		SourceUrl:   req.SourceURL,
-		Status:      *req.Status,
-		HTML:        req.HTML,
-		Lexical:     req.Lexical,
-		Description: req.Description,
-		UpdatedBy:   ctx.Value("user_id").(string),
+	noteInfo, err := n.repo.GetNoteByID(ctx, id)
+	if err != nil {
+		return nil, err
 	}
+
+	note := domain.Note{
+		UpdatedBy: ctx.Value("user_id").(string),
+	}
+	utils.SetIfNotNil(&note.Title, req.Title)
+	utils.SetIfNotNil(&note.SourceUrl, &req.SourceURL)
+	utils.SetIfNotNil(&note.Status, req.Status)
+	utils.SetIfNotNil(&note.HTML, &req.HTML)
+	utils.SetIfNotNil(&note.Lexical, &req.Lexical)
+	utils.SetIfNotNil(&note.Description, &req.Description)
+	utils.SetIfNotNil(&note.CreatedBy, &noteInfo.CreatedBy)
+
 	return n.repo.UpdateNote(ctx, id, note)
 }
 

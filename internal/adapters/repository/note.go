@@ -181,6 +181,9 @@ func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string]
 	if err != nil {
 		return nil, fmt.Errorf("failed to get tags for notes: %v", err)
 	}
+	if len(noteTags) == 0 {
+		return map[string][]string{}, nil
+	}
 
 	tagMap := make(map[string][]string)
 	for _, noteTag := range noteTags {
