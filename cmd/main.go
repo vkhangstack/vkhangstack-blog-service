@@ -113,8 +113,9 @@ func main() {
 	uploadService := services.NewUploadService(storageAdapter)
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
+	noteService := services.NewNoteService(store)
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter, searchEngineService)
+	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter, searchEngineService, noteService)
 }

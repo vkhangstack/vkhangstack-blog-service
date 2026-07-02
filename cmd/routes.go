@@ -24,6 +24,7 @@ func InitRoutes(
 	uploadService *services.UploadService,
 	rateLimiter *services.RateLimiter,
 	searchEngineService *services.SearchEngineService,
+	noteService *services.NoteService,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -41,9 +42,10 @@ func InitRoutes(
 	tagHandler := handler.NewTagHandler(tagService)
 	taskHandler := handler.NewTaskHandler(taskService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
+	noteHandler := handler.NewNoteHandler(*noteService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -61,6 +63,7 @@ func setupV1Routes(
 	taskHandler *handler.TaskHandler,
 	uploadHandler *handler.UploadHandler,
 	rateLimiter *services.RateLimiter,
+	noteHandler *handler.NoteHandler,
 ) {
 
 	// Health check route
@@ -140,6 +143,16 @@ func setupV1Routes(
 				tasks.GET("/:id", taskHandler.GetTask)
 				tasks.PUT("/:id", taskHandler.UpdateTask)
 				tasks.DELETE("/:id", taskHandler.DeleteTask)
+			}
+
+			notes := cms.Group("/notes")
+			{
+				notes.POST("", noteHandler.CreateNote)
+				notes.GET("", noteHandler.ListNotes)
+				notes.GET("/cursor", noteHandler.ListNotesCursor)
+				notes.GET("/:id", noteHandler.GetNote)
+				notes.PUT("/:id", noteHandler.UpdateNote)
+				notes.DELETE("/:id", noteHandler.DeleteNote)
 			}
 		}
 

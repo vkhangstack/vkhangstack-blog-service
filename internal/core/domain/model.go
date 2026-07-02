@@ -268,3 +268,26 @@ type Task struct {
 	UpdatedAt     time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time    `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
 }
+
+type Note struct {
+	bun.BaseModel `bun:"table:notes,alias:n"`
+	ID            string    `bun:"id,pk,type:varchar(20)"                              json:"id"`
+	Title         string    `bun:"title,notnull,type:varchar(255)"                     json:"title"`
+	SourceUrl     []string  `bun:"source_url,notnull,type:varchar(2048)[]"             json:"source_url"`
+	Status        string    `bun:"status,notnull,default:'draft',type:varchar(50)"     json:"status"`
+	HTML          *string   `bun:"html,nullzero,type:text"                             json:"html"`
+	Lexical       *string   `bun:"lexical,nullzero,type:text"                          json:"lexical"`
+	Description   *string   `bun:"description,nullzero,type:text"                      json:"description"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     string    `bun:"created_by,notnull,type:varchar(36)"                 json:"created_by"`
+	UpdatedBy     string    `bun:"updated_by,notnull,type:varchar(36)"                 json:"updated_by"`
+	DeletedBy     string    `bun:"deleted_by,notnull,type:varchar(36)"                 json:"deleted_by"`
+}
+
+type NoteTag struct {
+	bun.BaseModel `bun:"table:note_tags"`
+	NoteID        string `bun:"note_id,pk,type:varchar(20)" json:"note_id"`
+	TagID         string `bun:"tag_id,pk,type:varchar(20)" json:"tag_id"`
+}

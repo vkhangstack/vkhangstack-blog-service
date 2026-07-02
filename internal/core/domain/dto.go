@@ -176,3 +176,36 @@ type TaskFilter struct {
 	Page     int    `form:"page"`
 	Limit    int    `form:"limit"`
 }
+
+type CreateNoteRequest struct {
+	Title       string   `json:"title" binding:"required"`
+	SourceURL   []string `json:"source_url"`
+	Status      string   `json:"status"`
+	HTML        *string  `json:"html"`
+	Lexical     *string  `json:"lexical"`
+	Description *string  `json:"description"`
+	TagIDs      []string `json:"tag_ids"`
+}
+
+type UpdateNoteRequest struct {
+	Title       *string  `json:"title,omitempty"`
+	SourceURL   []string `json:"source_url"`
+	Status      *string  `json:"status"`
+	HTML        *string  `json:"html"`
+	Lexical     *string  `json:"lexical"`
+	Description *string  `json:"description"`
+	TagIDs      []string `json:"tag_ids"`
+}
+
+type NoteFilter struct {
+	Status    *string `form:"status"`
+	Title     *string `form:"title"`
+	Page      int     `form:"page"`
+	Limit     int     `form:"limit"`
+	CreatedBy *string `form:"created_by"`
+}
+
+type NoteListResponse struct {
+	Total int     `json:"total"`
+	Notes []*Note `json:"notes"`
+}

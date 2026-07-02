@@ -262,8 +262,8 @@ Response `200`:
 CREATE TABLE notes (
   id          VARCHAR(20)   PRIMARY KEY,
   title       VARCHAR(255)  NOT NULL,
-  source_url  VARCHAR(2048),
-  status      VARCHAR(50)   NOT NULL DEFAULT 'reading',
+  source_url  VARCHAR(2048)[],
+  status      VARCHAR(50)   NOT NULL DEFAULT 'draft',
   html        TEXT,
   lexical     TEXT,
   description TEXT,

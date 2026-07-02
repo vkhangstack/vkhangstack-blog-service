@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"path"
 	"strings"
 
@@ -43,4 +44,10 @@ func GetFileExtension(fileName string) string {
 		return strings.ToLower(ext[1:]) // Remove the dot and convert to lowercase
 	}
 	return ""
+}
+
+func ParseLimit(limitStr string) (int, error) {
+	var limit int
+	_, err := fmt.Sscanf(limitStr, "%d", &limit)
+	return limit, err
 }
