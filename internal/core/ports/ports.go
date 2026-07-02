@@ -191,12 +191,12 @@ type SearchEngineService interface {
 type NoteRepository interface {
 	CreateNote(ctx context.Context, note domain.Note) (*domain.Note, error)
 	GetNoteByID(ctx context.Context, id string) (*domain.Note, error)
-	UpdateNote(ctx context.Context, id string, updates domain.Note) (*domain.Note, error)
+	UpdateNote(ctx context.Context, id string, updates domain.Note) error
 	DeleteNote(ctx context.Context, id string) error
 	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error)
 	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error)
-	AttachNoteTags(noteID string, tagIDs []string) error
-	DetachNoteTags(noteID string) error
+	AttachNoteTags(ctx context.Context, noteID string, tagIDs []string) error
+	DetachNoteTags(ctx context.Context, noteID string) error
 }
 
 type NoteService interface {
@@ -204,6 +204,6 @@ type NoteService interface {
 	GetNote(ctx context.Context, id string) (*domain.Note, error)
 	ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain.NoteHasTag, int, error)
 	ListNotesCursor(ctx context.Context, filter domain.NoteFilter, cursor string, limit int) ([]*domain.NoteHasTag, *string, int, error)
-	UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) (*domain.Note, error)
+	UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) error
 	DeleteNote(ctx context.Context, id string) error
 }

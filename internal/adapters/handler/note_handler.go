@@ -136,13 +136,13 @@ func (h *NoteHandler) UpdateNote(ctx *gin.Context) {
 		return
 	}
 
-	note, err := h.svc.UpdateNote(ctx, id, req)
+	err = h.svc.UpdateNote(ctx, id, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("UpdateNote: Failed to update note")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
-	HandleSuccess(ctx, note, "Note updated")
+	HandleSuccess(ctx, nil, "Note updated")
 }
 
 // DeleteNote handles DELETE /v1/cms/notes/:id

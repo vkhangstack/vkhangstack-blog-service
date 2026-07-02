@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/uptrace/bun"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
@@ -66,13 +67,13 @@ func (u *DB) ListNotes(ctx context.Context, filter domain.NoteFilter) ([]*domain
 	return noteMap, total, nil
 }
 
-func (u *DB) UpdateNote(ctx context.Context, id string, updates domain.Note) (*domain.Note, error) {
+func (u *DB) UpdateNote(ctx context.Context, id string, updates domain.Note) error {
 	updates.ID = id
 	_, err := u.db.NewUpdate().Model(&updates).WherePK().Exec(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("note not updated: %v", err)
+		return fmt.Errorf("note not updated: %v", err)
 	}
-	return u.GetNoteByID(ctx, id)
+	return nil
 }
 
 func (u *DB) DeleteNote(ctx context.Context, id string) error {
@@ -151,11 +152,10 @@ func (u *DB) ListNotesCursor(ctx context.Context, filter domain.NoteFilter, curs
 	return noteMap, nextCursor, total, nil
 }
 
-func (u *DB) AttachNoteTags(noteID string, tagIDs []string) error {
+func (u *DB) AttachNoteTags(ctx context.Context, noteID string, tagIDs []string) error {
 	if len(tagIDs) == 0 {
 		return nil
 	}
-	ctx := context.Background()
 	joins := make([]domain.NoteTag, 0, len(tagIDs))
 	for _, tagID := range tagIDs {
 		joins = append(joins, domain.NoteTag{NoteID: noteID, TagID: tagID})
@@ -164,8 +164,7 @@ func (u *DB) AttachNoteTags(noteID string, tagIDs []string) error {
 	return err
 }
 
-func (u *DB) DetachNoteTags(noteID string) error {
-	ctx := context.Background()
+func (u *DB) DetachNoteTags(ctx context.Context, noteID string) error {
 	_, err := u.db.NewDelete().Model((*domain.NoteTag)(nil)).Where("note_id = ?", noteID).Exec(ctx)
 	return err
 }
@@ -175,17 +174,20 @@ func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string]
 		return map[string][]string{}, nil
 	}
 
-	var noteTags []*domain.NoteTag
-	err := u.db.NewSelect().Model(&noteTags).
-		Where("note_id IN (?)", noteIDs).Scan(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get tags for notes: %v", err)
-	}
-	if len(noteTags) == 0 {
-		return map[string][]string{}, nil
+	tagMap := make(map[string][]string, len(noteIDs))
+	for _, noteID := range noteIDs {
+		tagMap[noteID] = []string{}
 	}
 
-	tagMap := make(map[string][]string)
+	var noteTags []*domain.NoteTag
+	err := u.db.NewSelect().
+		Model(&noteTags).
+		Where("note_id IN (?)", bun.List(noteIDs)).
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get tags for notes: %w", err)
+	}
+
 	for _, noteTag := range noteTags {
 		tagMap[noteTag.NoteID] = append(tagMap[noteTag.NoteID], noteTag.TagID)
 	}

@@ -34,7 +34,7 @@ func (n *NoteService) CreateNote(ctx context.Context, authorID string, req domai
 		return nil, err
 	}
 	if len(req.TagIDs) > 0 {
-		err = n.repo.AttachNoteTags(res.ID, req.TagIDs)
+		err = n.repo.AttachNoteTags(ctx, res.ID, req.TagIDs)
 		if err != nil {
 			return nil, err
 		}
@@ -57,10 +57,10 @@ func (n *NoteService) ListNotesCursor(ctx context.Context, filter domain.NoteFil
 	return n.repo.ListNotesCursor(ctx, filter, cursor, limit)
 }
 
-func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) (*domain.Note, error) {
+func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) error {
 	noteInfo, err := n.repo.GetNoteByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	note := domain.Note{
@@ -78,6 +78,6 @@ func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.Upda
 }
 
 func (n *NoteService) DeleteNote(ctx context.Context, id string) error {
-	n.repo.DetachNoteTags(id)
+	n.repo.DetachNoteTags(ctx, id)
 	return n.repo.DeleteNote(ctx, id)
 }
