@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS tasks (
 );
 
 -- Create indexes
-CREATE INDEX idx_tasks_status ON tasks(status);
-CREATE INDEX idx_tasks_label ON tasks(label);
-CREATE INDEX idx_tasks_priority ON tasks(priority);
-CREATE INDEX idx_tasks_created_at ON tasks(created_at DESC);
+CREATE INDEX idx_tasks_status IF NOT EXISTS ON tasks(status);
+CREATE INDEX idx_tasks_label IF NOT EXISTS ON tasks(label);
+CREATE INDEX idx_tasks_priority IF NOT EXISTS ON tasks(priority);
+CREATE INDEX idx_tasks_created_at IF NOT EXISTS ON tasks(created_at DESC);
