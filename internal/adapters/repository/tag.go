@@ -28,9 +28,13 @@ func (u *DB) GetTagBySlug(ctx context.Context, slug string) (*domain.Tag, error)
 	return tag, err
 }
 
-func (u *DB) ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error) {
+func (u *DB) ListTags(ctx context.Context, authorID string, tagType string) ([]*domain.Tag, error) {
 	var tags []*domain.Tag
-	err := u.db.NewSelect().Model(&tags).Where("t.author_id = ?", authorID).Order("t.name ASC").Scan(ctx)
+	query := u.db.NewSelect().Model(&tags).Where("t.author_id = ?", authorID).Order("t.name ASC")
+	if tagType != "" {
+		query = query.Where("t.type = ?", tagType)
+	}
+	err := query.Scan(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("tags not found: %v", err)
 	}

@@ -88,7 +88,7 @@ type FirebaseRepository interface {
 type TagRepository interface {
 	CreateTag(ctx context.Context, tag domain.Tag) (*domain.Tag, error)
 	GetTagBySlug(ctx context.Context, slug string) (*domain.Tag, error)
-	ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error)
+	ListTags(ctx context.Context, authorID string, tagType string) ([]*domain.Tag, error)
 	AttachTags(ctx context.Context, postID string, tagIDs []string) error
 	DetachTags(ctx context.Context, postID string) error
 	GetTagByID(ctx context.Context, id string) (*domain.Tag, error)
@@ -97,7 +97,7 @@ type TagRepository interface {
 
 type TagService interface {
 	CreateTag(ctx context.Context, authorID string, req domain.CreateTagRequest) (*domain.Tag, error)
-	ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error)
+	ListTags(ctx context.Context, authorID string, tagType string) ([]*domain.Tag, error)
 	GetTagByID(ctx context.Context, id string) (*domain.Tag, error)
 	DeleteTag(ctx context.Context, id string) error
 }

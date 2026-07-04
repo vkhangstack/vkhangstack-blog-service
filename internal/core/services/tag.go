@@ -24,8 +24,8 @@ func (s *TagService) CreateTag(ctx context.Context, authorID string, req domain.
 	})
 }
 
-func (s *TagService) ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error) {
-	return s.repo.ListTags(ctx, authorID)
+func (s *TagService) ListTags(ctx context.Context, authorID string, tagType string) ([]*domain.Tag, error) {
+	return s.repo.ListTags(ctx, authorID, tagType)
 }
 
 func (s *TagService) GetTagByID(ctx context.Context, id string) (*domain.Tag, error) {

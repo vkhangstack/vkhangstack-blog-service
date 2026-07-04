@@ -36,12 +36,13 @@ func (h *TagHandler) CreateTag(ctx *gin.Context) {
 // ListTags handles GET /v1/cms/tags
 func (h *TagHandler) ListTags(ctx *gin.Context) {
 	userID, err := http.GetUserID(ctx)
+	tagType := ctx.Query("type")
 	if err != nil {
 		logger.Log.WithError(err).Error("ListTags: Failed to get user ID")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	tags, err := h.svc.ListTags(ctx, userID)
+	tags, err := h.svc.ListTags(ctx, userID, tagType)
 	if err != nil {
 		logger.Log.WithError(err).Error("ListTags: Failed to list tags")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
