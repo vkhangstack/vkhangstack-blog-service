@@ -7,7 +7,10 @@ CREATE TABLE IF NOT EXISTS blog_categories (
     is_active   BOOLEAN NOT NULL DEFAULT TRUE,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at  TIMESTAMPTZ
+    deleted_at  TIMESTAMPTZ,
+    created_by  VARCHAR(20),
+    updated_by  VARCHAR(20),
+    deleted_by  VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS blog_posts (
