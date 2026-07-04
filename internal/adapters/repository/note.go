@@ -182,7 +182,7 @@ func (u *DB) getTagsForNotes(ctx context.Context, noteIDs []string) (map[string]
 		Where("note_id IN (?)", bun.List(noteIDs))
 
 	err := u.db.NewSelect().
-		TableExpr("blog_tags AS t").
+		TableExpr("tags AS t").
 		ColumnExpr("nt.note_id").
 		ColumnExpr("t.id").
 		ColumnExpr("t.name").
