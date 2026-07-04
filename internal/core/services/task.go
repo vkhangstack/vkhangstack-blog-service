@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -17,8 +18,8 @@ func NewTaskService(repo ports.TaskRepository) *TaskService {
 	return &TaskService{repo: repo}
 }
 
-func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, error) {
-	countTask, err := s.repo.GetCount()
+func (s *TaskService) CreateTask(ctx context.Context, req domain.CreateTaskRequest) (*domain.Task, error) {
+	countTask, err := s.repo.GetCount(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task count: %v", err)
 	}
@@ -50,7 +51,7 @@ func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, er
 		TypeReminder: req.TypeReminder,
 	}
 
-	created, err := s.repo.CreateTask(task)
+	created, err := s.repo.CreateTask(ctx, task)
 	if err != nil {
 		return nil, err
 	}
@@ -58,12 +59,12 @@ func (s *TaskService) CreateTask(req domain.CreateTaskRequest) (*domain.Task, er
 	return created, nil
 }
 
-func (s *TaskService) GetTask(id string) (*domain.Task, error) {
+func (s *TaskService) GetTask(ctx context.Context, id string) (*domain.Task, error) {
 	if id == "" {
 		return nil, errors.New("task id is required")
 	}
 
-	task, err := s.repo.GetTaskByID(id)
+	task, err := s.repo.GetTaskByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -71,12 +72,12 @@ func (s *TaskService) GetTask(id string) (*domain.Task, error) {
 	return task, nil
 }
 
-func (s *TaskService) UpdateTask(id string, req domain.UpdateTaskRequest) (*domain.Task, error) {
+func (s *TaskService) UpdateTask(ctx context.Context, id string, req domain.UpdateTaskRequest) (*domain.Task, error) {
 	if id == "" {
 		return nil, errors.New("task id is required")
 	}
 
-	existing, err := s.repo.GetTaskByID(id)
+	existing, err := s.repo.GetTaskByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("task not found: %v", err)
 	}
@@ -94,7 +95,7 @@ func (s *TaskService) UpdateTask(id string, req domain.UpdateTaskRequest) (*doma
 	utils.SetIfNotNil(&existing.ReminderAt, &req.ReminderAt)
 	utils.SetIfNotNil(&existing.TypeReminder, &req.TypeReminder)
 
-	updated, err := s.repo.UpdateTask(id, *existing)
+	updated, err := s.repo.UpdateTask(ctx, id, *existing)
 	if err != nil {
 		return nil, err
 	}
@@ -102,12 +103,12 @@ func (s *TaskService) UpdateTask(id string, req domain.UpdateTaskRequest) (*doma
 	return updated, nil
 }
 
-func (s *TaskService) DeleteTask(id string) error {
+func (s *TaskService) DeleteTask(ctx context.Context, id string) error {
 	if id == "" {
 		return errors.New("task id is required")
 	}
 
-	err := s.repo.DeleteTask(id)
+	err := s.repo.DeleteTask(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -115,7 +116,7 @@ func (s *TaskService) DeleteTask(id string) error {
 	return nil
 }
 
-func (s *TaskService) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error) {
+func (s *TaskService) ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain.Task, int, error) {
 	if filter.Page <= 0 {
 		filter.Page = 1
 	}
@@ -123,7 +124,7 @@ func (s *TaskService) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, 
 		filter.Limit = 10
 	}
 
-	tasks, total, err := s.repo.ListTasks(filter)
+	tasks, total, err := s.repo.ListTasks(ctx, filter)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -131,28 +132,28 @@ func (s *TaskService) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, 
 	return tasks, total, nil
 }
 
-func (s *TaskService) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
+func (s *TaskService) ListTasksCursor(ctx context.Context, filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 10
 	}
-	return s.repo.ListTasksCursor(filter, cursor, limit)
+	return s.repo.ListTasksCursor(ctx, filter, cursor, limit)
 }
 
-func (s *TaskService) ListAllTasks() ([]*domain.Task, error) {
-	tasks, err := s.repo.ListAllTasks()
+func (s *TaskService) ListAllTasks(ctx context.Context) ([]*domain.Task, error) {
+	tasks, err := s.repo.ListAllTasks(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return tasks, nil
 }
 
-func (s *TaskService) GetTaskStatistics() (map[string]interface{}, error) {
+func (s *TaskService) GetTaskStatistics(ctx context.Context) (map[string]interface{}, error) {
 	stats := make(map[string]interface{})
 
-	todoCount, _ := s.repo.CountTasksByStatus(domain.TaskStatusTodo)
-	inProgressCount, _ := s.repo.CountTasksByStatus(domain.TaskStatusInProgress)
-	doneCount, _ := s.repo.CountTasksByStatus(domain.TaskStatusDone)
-	cancelledCount, _ := s.repo.CountTasksByStatus(domain.TaskStatusCancelled)
+	todoCount, _ := s.repo.CountTasksByStatus(ctx, domain.TaskStatusTodo)
+	inProgressCount, _ := s.repo.CountTasksByStatus(ctx, domain.TaskStatusInProgress)
+	doneCount, _ := s.repo.CountTasksByStatus(ctx, domain.TaskStatusDone)
+	cancelledCount, _ := s.repo.CountTasksByStatus(ctx, domain.TaskStatusCancelled)
 
 	stats["by_status"] = map[string]int{
 		"todo":        todoCount,
@@ -161,8 +162,8 @@ func (s *TaskService) GetTaskStatistics() (map[string]interface{}, error) {
 		"cancelled":   cancelledCount,
 	}
 
-	highCount, _ := s.repo.CountTasksByPriority(domain.TaskPriorityHigh)
-	criticalCount, _ := s.repo.CountTasksByPriority(domain.TaskPriorityCritical)
+	highCount, _ := s.repo.CountTasksByPriority(ctx, domain.TaskPriorityHigh)
+	criticalCount, _ := s.repo.CountTasksByPriority(ctx, domain.TaskPriorityCritical)
 
 	stats["by_priority"] = map[string]int{
 		"high":     highCount,

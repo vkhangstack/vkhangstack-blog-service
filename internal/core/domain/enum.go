@@ -112,3 +112,13 @@ const (
 	SearchEngineIndexNamePosts SearchEngineIndexName = "posts"
 	SearchEngineIndexNameUsers SearchEngineIndexName = "users"
 )
+
+type TagType string
+
+const (
+	TagTypePost TagType = "post"
+	TagTypeNote TagType = "note"
+	TagTypeTask TagType = "task"
+	TagTypePage TagType = "page"
+	TagTypeUser TagType = "user"
+)

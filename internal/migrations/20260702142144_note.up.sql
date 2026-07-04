@@ -9,16 +9,18 @@ CREATE TABLE IF NOT EXISTS notes (
   created_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ   NOT NULL DEFAULT NOW(),
   deleted_at  TIMESTAMPTZ,
-  created_by  VARCHAR(36),
-  updated_by  VARCHAR(36),
-  deleted_by  VARCHAR(36)
+  created_by  VARCHAR(20),
+  updated_by  VARCHAR(20),
+  deleted_by  VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS note_tags (
-  note_id  VARCHAR(20) NOT NULL REFERENCES notes(id) ON DELETE CASCADE,
-  tag_id   VARCHAR(20) NOT NULL REFERENCES blog_tags(id) ON DELETE CASCADE,
+  note_id  VARCHAR(20) NOT NULL,
+  tag_id   VARCHAR(20) NOT NULL,
   PRIMARY KEY (note_id, tag_id)
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_status ON notes(status);
 CREATE INDEX IF NOT EXISTS idx_notes_created_at ON notes(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_note_tags_note_id ON note_tags(note_id);
+CREATE INDEX IF NOT EXISTS idx_note_tags_tag_id ON note_tags(tag_id);

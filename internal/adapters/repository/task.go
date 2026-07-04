@@ -10,8 +10,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
-func (u *DB) CreateTask(task domain.Task) (*domain.Task, error) {
-	ctx := context.Background()
+func (u *DB) CreateTask(ctx context.Context, task domain.Task) (*domain.Task, error) {
 	task.ID = u.snowflakeNode.GenerateID()
 	_, err := u.db.NewInsert().Model(&task).Exec(ctx)
 	if err != nil {
@@ -20,8 +19,7 @@ func (u *DB) CreateTask(task domain.Task) (*domain.Task, error) {
 	return &task, nil
 }
 
-func (u *DB) GetTaskByID(id string) (*domain.Task, error) {
-	ctx := context.Background()
+func (u *DB) GetTaskByID(ctx context.Context, id string) (*domain.Task, error) {
 	task := &domain.Task{}
 	err := u.db.NewSelect().Model(task).Where("t.id = ?", id).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -30,8 +28,7 @@ func (u *DB) GetTaskByID(id string) (*domain.Task, error) {
 	return task, err
 }
 
-func (u *DB) GetTaskByTaskID(taskID string) (*domain.Task, error) {
-	ctx := context.Background()
+func (u *DB) GetTaskByTaskID(ctx context.Context, taskID string) (*domain.Task, error) {
 	task := &domain.Task{}
 	err := u.db.NewSelect().Model(task).Where("t.task_id = ?", taskID).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -40,18 +37,16 @@ func (u *DB) GetTaskByTaskID(taskID string) (*domain.Task, error) {
 	return task, err
 }
 
-func (u *DB) UpdateTask(id string, updates domain.Task) (*domain.Task, error) {
-	ctx := context.Background()
+func (u *DB) UpdateTask(ctx context.Context, id string, updates domain.Task) (*domain.Task, error) {
 	updates.ID = id
 	_, err := u.db.NewUpdate().Model(&updates).WherePK().Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("task not updated: %v", err)
 	}
-	return u.GetTaskByID(id)
+	return u.GetTaskByID(ctx, id)
 }
 
-func (u *DB) DeleteTask(id string) error {
-	ctx := context.Background()
+func (u *DB) DeleteTask(ctx context.Context, id string) error {
 	task := &domain.Task{ID: id}
 	_, err := u.db.NewDelete().Model(task).WherePK().Exec(ctx)
 	if err != nil {
@@ -60,8 +55,7 @@ func (u *DB) DeleteTask(id string) error {
 	return nil
 }
 
-func (u *DB) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error) {
-	ctx := context.Background()
+func (u *DB) ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain.Task, int, error) {
 	tasks := make([]*domain.Task, 0)
 	query := u.db.NewSelect().Model(&tasks)
 
@@ -84,8 +78,7 @@ func (u *DB) ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error) {
 }
 
 // ListTasksCursor returns tasks using cursor-based pagination
-func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
-	ctx := context.Background()
+func (u *DB) ListTasksCursor(ctx context.Context, filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error) {
 
 	var cursorID string
 	if cursor != "" {
@@ -136,8 +129,7 @@ func (u *DB) ListTasksCursor(filter domain.TaskFilter, cursor string, limit int)
 	return tasks, nextCursor, total, nil
 }
 
-func (u *DB) ListAllTasks() ([]*domain.Task, error) {
-	ctx := context.Background()
+func (u *DB) ListAllTasks(ctx context.Context) ([]*domain.Task, error) {
 	tasks := make([]*domain.Task, 0)
 	err := u.db.NewSelect().Model(&tasks).Order("t.created_at DESC").Scan(ctx)
 	if err != nil {
@@ -146,8 +138,7 @@ func (u *DB) ListAllTasks() ([]*domain.Task, error) {
 	return tasks, nil
 }
 
-func (u *DB) CountTasksByStatus(status domain.TaskStatus) (int, error) {
-	ctx := context.Background()
+func (u *DB) CountTasksByStatus(ctx context.Context, status domain.TaskStatus) (int, error) {
 	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("status = ?", status).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
@@ -155,8 +146,7 @@ func (u *DB) CountTasksByStatus(status domain.TaskStatus) (int, error) {
 	return count, nil
 }
 
-func (u *DB) CountTasksByPriority(priority domain.TaskPriority) (int, error) {
-	ctx := context.Background()
+func (u *DB) CountTasksByPriority(ctx context.Context, priority domain.TaskPriority) (int, error) {
 	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("priority = ?", priority).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
@@ -164,8 +154,7 @@ func (u *DB) CountTasksByPriority(priority domain.TaskPriority) (int, error) {
 	return count, nil
 }
 
-func (u *DB) GetCount() (int, error) {
-	ctx := context.Background()
+func (u *DB) GetCount(ctx context.Context) (int, error) {
 	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)

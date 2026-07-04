@@ -193,10 +193,12 @@ type FirebaseInfo struct {
 }
 
 type Tag struct {
-	bun.BaseModel `bun:"table:blog_tags,alias:t"`
+	bun.BaseModel `bun:"table:tags,alias:t"`
 	ID            string    `bun:"id,pk,type:varchar(20)"              json:"id"`
 	Name          string    `bun:"name,notnull,type:varchar(100)" json:"name"`
 	Slug          string    `bun:"slug,notnull,type:varchar(100)" json:"slug"`
+	Type          *TagType  `bun:"type,notnull,type:varchar(50)"  json:"type"`
+	AuthorID      *string   `bun:"author_id,nullzero,type:varchar(20)" json:"author_id"`
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 }
@@ -218,6 +220,9 @@ type BlogCategory struct {
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     *string   `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy     *string   `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy     *string   `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
 
 type BlogPost struct {
@@ -241,6 +246,9 @@ type BlogPost struct {
 	CreatedAt     time.Time      `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time      `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time      `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     *string        `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy     *string        `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy     *string        `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
 
 type BlogCategoryWithPostCount struct {
@@ -267,6 +275,9 @@ type Task struct {
 	CreatedAt     time.Time    `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time    `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     *string      `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy     *string      `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy     *string      `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
 
 type Note struct {
@@ -281,9 +292,9 @@ type Note struct {
 	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
-	CreatedBy     string    `bun:"created_by,notnull,type:varchar(36)"                 json:"created_by"`
-	UpdatedBy     string    `bun:"updated_by,notnull,type:varchar(36)"                 json:"updated_by"`
-	DeletedBy     string    `bun:"deleted_by,notnull,type:varchar(36)"                 json:"deleted_by"`
+	CreatedBy     *string   `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy     *string   `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy     *string   `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
 
 type NoteTag struct {

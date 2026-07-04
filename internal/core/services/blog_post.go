@@ -1,6 +1,7 @@
 package services
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -16,7 +17,7 @@ func NewBlogPostService(repo ports.BlogPostRepository) *BlogPostService {
 	return &BlogPostService{repo: repo}
 }
 
-func (s *BlogPostService) CreatePost(authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error) {
+func (s *BlogPostService) CreatePost(ctx context.Context, authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error) {
 	status := req.Status
 	if status == "" {
 		status = domain.PostStatusDraft
@@ -36,15 +37,15 @@ func (s *BlogPostService) CreatePost(authorID string, req domain.CreateBlogPostR
 		now := time.Now()
 		post.PublishedAt = &now
 	}
-	return s.repo.CreatePost(post, req.TagIDs)
+	return s.repo.CreatePost(ctx, post, req.TagIDs)
 }
 
-func (s *BlogPostService) GetPost(id string) (*domain.BlogPost, error) {
-	return s.repo.GetPost(id)
+func (s *BlogPostService) GetPost(ctx context.Context, id string) (*domain.BlogPost, error) {
+	return s.repo.GetPost(ctx, id)
 }
 
-func (s *BlogPostService) GetPostBySlug(slug string) (*domain.BlogPostBySlugResponse, error) {
-	post, err := s.repo.GetPostBySlug(slug)
+func (s *BlogPostService) GetPostBySlug(ctx context.Context, slug string) (*domain.BlogPostBySlugResponse, error) {
+	post, err := s.repo.GetPostBySlug(ctx, slug)
 	if err != nil {
 		return nil, err
 	}
@@ -66,25 +67,25 @@ func (s *BlogPostService) GetPostBySlug(slug string) (*domain.BlogPostBySlugResp
 	}, nil
 }
 
-func (s *BlogPostService) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error) {
+func (s *BlogPostService) ListPosts(ctx context.Context, filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error) {
 	if filter.Limit <= 0 {
 		filter.Limit = 20
 	}
 	if filter.Page <= 0 {
 		filter.Page = 1
 	}
-	return s.repo.ListPosts(filter)
+	return s.repo.ListPosts(ctx, filter)
 }
 
-func (s *BlogPostService) ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
+func (s *BlogPostService) ListPostsCursor(ctx context.Context, filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
-	return s.repo.ListPostsCursor(filter, cursor, limit)
+	return s.repo.ListPostsCursor(ctx, filter, cursor, limit)
 }
 
-func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest) error {
-	existing, err := s.repo.GetPost(id)
+func (s *BlogPostService) UpdatePost(ctx context.Context, id string, req domain.UpdateBlogPostRequest) error {
+	existing, err := s.repo.GetPost(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -115,15 +116,15 @@ func (s *BlogPostService) UpdatePost(id string, req domain.UpdateBlogPostRequest
 	if req.LexicalState != nil {
 		existing.LexicalState = req.LexicalState
 	}
-	return s.repo.UpdatePost(*existing, req.TagIDs)
+	return s.repo.UpdatePost(ctx, *existing, req.TagIDs)
 }
 
-func (s *BlogPostService) DeletePost(id string) error {
-	return s.repo.DeletePost(id)
+func (s *BlogPostService) DeletePost(ctx context.Context, id string) error {
+	return s.repo.DeletePost(ctx, id)
 }
 
-func (s *BlogPostService) PublishPost(id string) error {
-	existing, err := s.repo.GetPost(id)
+func (s *BlogPostService) PublishPost(ctx context.Context, id string) error {
+	existing, err := s.repo.GetPost(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -133,5 +134,5 @@ func (s *BlogPostService) PublishPost(id string) error {
 	now := time.Now()
 	existing.Status = domain.PostStatusPublished
 	existing.PublishedAt = &now
-	return s.repo.UpdatePost(*existing, nil)
+	return s.repo.UpdatePost(ctx, *existing, nil)
 }

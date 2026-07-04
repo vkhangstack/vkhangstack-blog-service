@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 )
@@ -13,7 +15,7 @@ func NewBlogCategoryService(repo ports.BlogCategoryRepository) *BlogCategoryServ
 	return &BlogCategoryService{repo: repo}
 }
 
-func (s *BlogCategoryService) CreateCategory(req domain.CreateBlogCategoryRequest) (*domain.BlogCategory, error) {
+func (s *BlogCategoryService) CreateCategory(ctx context.Context, req domain.CreateBlogCategoryRequest) (*domain.BlogCategory, error) {
 	category := domain.BlogCategory{
 		Name:        req.Name,
 		Slug:        req.Slug,
@@ -21,26 +23,26 @@ func (s *BlogCategoryService) CreateCategory(req domain.CreateBlogCategoryReques
 		ParentID:    req.ParentID,
 		IsActive:    true,
 	}
-	return s.repo.CreateCategory(category)
+	return s.repo.CreateCategory(ctx, category)
 }
 
-func (s *BlogCategoryService) GetCategory(id string) (*domain.BlogCategory, error) {
-	return s.repo.GetCategory(id)
+func (s *BlogCategoryService) GetCategory(ctx context.Context, id string) (*domain.BlogCategory, error) {
+	return s.repo.GetCategory(ctx, id)
 }
 
-func (s *BlogCategoryService) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
-	return s.repo.ListCategories()
+func (s *BlogCategoryService) ListCategories(ctx context.Context) ([]*domain.BlogCategoryWithPostCount, error) {
+	return s.repo.ListCategories(ctx)
 }
 
-func (s *BlogCategoryService) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
+func (s *BlogCategoryService) ListCategoriesCursor(ctx context.Context, cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
 	if limit <= 0 || limit > 100 {
 		limit = 20
 	}
-	return s.repo.ListCategoriesCursor(cursor, limit)
+	return s.repo.ListCategoriesCursor(ctx, cursor, limit)
 }
 
-func (s *BlogCategoryService) UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error) {
-	existing, err := s.repo.GetCategory(id)
+func (s *BlogCategoryService) UpdateCategory(ctx context.Context, id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error) {
+	existing, err := s.repo.GetCategory(ctx, id)
 	if err != nil {
 		return nil, err
 	}
@@ -59,9 +61,9 @@ func (s *BlogCategoryService) UpdateCategory(id string, req domain.UpdateBlogCat
 	if req.IsActive != nil {
 		existing.IsActive = *req.IsActive
 	}
-	return s.repo.UpdateCategory(*existing)
+	return s.repo.UpdateCategory(ctx, *existing)
 }
 
-func (s *BlogCategoryService) DeleteCategory(id string) error {
-	return s.repo.DeleteCategory(id)
+func (s *BlogCategoryService) DeleteCategory(ctx context.Context, id string) error {
+	return s.repo.DeleteCategory(ctx, id)
 }

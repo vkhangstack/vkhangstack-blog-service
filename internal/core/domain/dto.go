@@ -58,8 +58,9 @@ type UpdateBlogCategoryRequest struct {
 }
 
 type CreateTagRequest struct {
-	Name string `json:"name" binding:"required"`
-	Slug string `json:"slug" binding:"required"`
+	Name string   `json:"name" binding:"required"`
+	Slug string   `json:"slug" binding:"required"`
+	Type *TagType `json:"type" binding:"required"`
 }
 
 type CreateBlogPostRequest struct {

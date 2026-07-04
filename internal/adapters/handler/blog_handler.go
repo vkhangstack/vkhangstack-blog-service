@@ -30,7 +30,7 @@ func (h *BlogHandler) CreateCategory(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	category, err := h.categorySvc.CreateCategory(req)
+	category, err := h.categorySvc.CreateCategory(ctx, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to create category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
@@ -47,7 +47,7 @@ func (h *BlogHandler) GetCategory(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	category, err := h.categorySvc.GetCategory(id)
+	category, err := h.categorySvc.GetCategory(ctx, id)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to get category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
@@ -58,7 +58,7 @@ func (h *BlogHandler) GetCategory(ctx *gin.Context) {
 
 // ListCategories handles GET /v1/cms/categories and GET /v1/blog/categories
 func (h *BlogHandler) ListCategories(ctx *gin.Context) {
-	categories, err := h.categorySvc.ListCategories()
+	categories, err := h.categorySvc.ListCategories(ctx)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list categories")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
@@ -77,7 +77,7 @@ func (h *BlogHandler) ListCategoriesCursor(ctx *gin.Context) {
 		}
 	}
 
-	categories, nextCursor, err := h.categorySvc.ListCategoriesCursor(cursor, limit)
+	categories, nextCursor, err := h.categorySvc.ListCategoriesCursor(ctx, cursor, limit)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list categories with cursor")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
@@ -106,7 +106,7 @@ func (h *BlogHandler) UpdateCategory(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	category, err := h.categorySvc.UpdateCategory(id, req)
+	category, err := h.categorySvc.UpdateCategory(ctx, id, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to update category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
@@ -123,7 +123,7 @@ func (h *BlogHandler) DeleteCategory(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	if err := h.categorySvc.DeleteCategory(id); err != nil {
+	if err := h.categorySvc.DeleteCategory(ctx, id); err != nil {
 		logger.Log.WithError(err).Error("Failed to delete category")
 		HandleError(ctx, domain.ErrorCodeBlogCategoryNotFound, nil, err.Error())
 		return
@@ -145,7 +145,7 @@ func (h *BlogHandler) CreatePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	post, err := h.postSvc.CreatePost(authorID, req)
+	post, err := h.postSvc.CreatePost(ctx, authorID, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to create post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -167,7 +167,7 @@ func (h *BlogHandler) GetPost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	post, err := h.postSvc.GetPost(id)
+	post, err := h.postSvc.GetPost(ctx, id)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to get post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -184,7 +184,7 @@ func (h *BlogHandler) ListPosts(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	posts, total, err := h.postSvc.ListPosts(filter)
+	posts, total, err := h.postSvc.ListPosts(ctx, filter)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list posts")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -210,7 +210,7 @@ func (h *BlogHandler) ListPostsCursor(ctx *gin.Context) {
 		return
 	}
 
-	posts, nextCursor, total, err := h.postSvc.ListPostsCursor(filter, cursor, limit)
+	posts, nextCursor, total, err := h.postSvc.ListPostsCursor(ctx, filter, cursor, limit)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list posts with cursor")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -239,14 +239,14 @@ func (h *BlogHandler) UpdatePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	err = h.postSvc.UpdatePost(id, req)
+	err = h.postSvc.UpdatePost(ctx, id, req)
 	if err != nil {
 		logger.Log.Errorf("Failed to update post: %v", err)
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
 		return
 	}
 	go func() {
-		post, err := h.postSvc.GetPost(id)
+		post, err := h.postSvc.GetPost(ctx, id)
 		if err != nil {
 			logger.Log.Errorf("Failed to get post: %v", err)
 			return
@@ -270,7 +270,7 @@ func (h *BlogHandler) DeletePost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	if err := h.postSvc.DeletePost(id); err != nil {
+	if err := h.postSvc.DeletePost(ctx, id); err != nil {
 		logger.Log.Errorf("Failed to delete post error %s", err.Error())
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, validate.FormatValidationError(err), "Invalid request payload")
 		return
@@ -292,7 +292,7 @@ func (h *BlogHandler) PublishPost(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	err = h.postSvc.PublishPost(id)
+	err = h.postSvc.PublishPost(ctx, id)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to publish post")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -304,7 +304,7 @@ func (h *BlogHandler) PublishPost(ctx *gin.Context) {
 // GetPostBySlug handles GET /v1/blog/posts/:slug
 func (h *BlogHandler) GetPostBySlug(ctx *gin.Context) {
 	slug := ctx.Param("slug")
-	post, err := h.postSvc.GetPostBySlug(slug)
+	post, err := h.postSvc.GetPostBySlug(ctx, slug)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to get post by slug")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())
@@ -322,7 +322,7 @@ func (h *BlogHandler) ListPublishedPosts(ctx *gin.Context) {
 		return
 	}
 	filter.Status = string(domain.PostStatusPublished)
-	posts, total, err := h.postSvc.ListPosts(filter)
+	posts, total, err := h.postSvc.ListPosts(ctx, filter)
 	if err != nil {
 		logger.Log.WithError(err).Error("Failed to list published posts")
 		HandleError(ctx, domain.ErrorCodeBlogPostNotFound, nil, err.Error())

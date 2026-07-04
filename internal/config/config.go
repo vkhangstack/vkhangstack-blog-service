@@ -59,7 +59,7 @@ func LoadConfig() Config {
 			APIKey:    getEnv("API_KEY", "default_api_key"),
 			StripeKey: getEnv("STRIPE_KEY", "default_stripe_key"),
 			Host:      getEnv("API_HOST", "localhost"),
-			Port:      getEnv("API_PORT", "4000"),
+			Port:      getEnv("API_PORT", "8080"),
 			Mode:      getEnv("APP_MODE", "release"),
 			Node:      getEnv("NODE_ID", "1"),
 		},

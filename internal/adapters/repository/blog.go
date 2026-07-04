@@ -12,61 +12,9 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
-// --- Tag ---
-
-func (u *DB) CreateTag(tag domain.Tag) (*domain.Tag, error) {
-	ctx := context.Background()
-	tag.ID = u.snowflakeNode.GenerateID()
-	_, err := u.db.NewInsert().Model(&tag).Exec(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("tag not saved: %v", err)
-	}
-	return &tag, nil
-}
-
-func (u *DB) GetTagBySlug(slug string) (*domain.Tag, error) {
-	ctx := context.Background()
-	tag := &domain.Tag{}
-	err := u.db.NewSelect().Model(tag).Where("t.slug = ?", slug).Limit(1).Scan(ctx)
-	if err == sql.ErrNoRows {
-		return nil, errors.New("tag not found")
-	}
-	return tag, err
-}
-
-func (u *DB) ListTags() ([]*domain.Tag, error) {
-	ctx := context.Background()
-	var tags []*domain.Tag
-	err := u.db.NewSelect().Model(&tags).Order("t.name ASC").Scan(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("tags not found: %v", err)
-	}
-	return tags, nil
-}
-
-func (u *DB) AttachTags(postID string, tagIDs []string) error {
-	if len(tagIDs) == 0 {
-		return nil
-	}
-	ctx := context.Background()
-	joins := make([]domain.BlogPostTag, 0, len(tagIDs))
-	for _, tagID := range tagIDs {
-		joins = append(joins, domain.BlogPostTag{PostID: postID, TagID: tagID})
-	}
-	_, err := u.db.NewInsert().Model(&joins).On("CONFLICT DO NOTHING").Exec(ctx)
-	return err
-}
-
-func (u *DB) DetachTags(postID string) error {
-	ctx := context.Background()
-	_, err := u.db.NewDelete().Model((*domain.BlogPostTag)(nil)).Where("post_id = ?", postID).Exec(ctx)
-	return err
-}
-
 // --- Category ---
 
-func (u *DB) CreateCategory(category domain.BlogCategory) (*domain.BlogCategory, error) {
-	ctx := context.Background()
+func (u *DB) CreateCategory(ctx context.Context, category domain.BlogCategory) (*domain.BlogCategory, error) {
 	category.ID = u.snowflakeNode.GenerateID()
 	_, err := u.db.NewInsert().Model(&category).Exec(ctx)
 	if err != nil {
@@ -75,8 +23,7 @@ func (u *DB) CreateCategory(category domain.BlogCategory) (*domain.BlogCategory,
 	return &category, nil
 }
 
-func (u *DB) GetCategory(id string) (*domain.BlogCategory, error) {
-	ctx := context.Background()
+func (u *DB) GetCategory(ctx context.Context, id string) (*domain.BlogCategory, error) {
 	category := &domain.BlogCategory{}
 	err := u.cache.Get(utils.CacheKeyCategoryPrefix+id, category)
 	if err == nil {
@@ -91,8 +38,7 @@ func (u *DB) GetCategory(id string) (*domain.BlogCategory, error) {
 	return category, err
 }
 
-func (u *DB) GetCategoryBySlug(slug string) (*domain.BlogCategory, error) {
-	ctx := context.Background()
+func (u *DB) GetCategoryBySlug(ctx context.Context, slug string) (*domain.BlogCategory, error) {
 	category := &domain.BlogCategory{}
 	err := u.db.NewSelect().Model(category).Where("bc.slug = ?", slug).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -101,8 +47,7 @@ func (u *DB) GetCategoryBySlug(slug string) (*domain.BlogCategory, error) {
 	return category, err
 }
 
-func (u *DB) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
-	ctx := context.Background()
+func (u *DB) ListCategories(ctx context.Context) ([]*domain.BlogCategoryWithPostCount, error) {
 	var categories []*domain.BlogCategoryWithPostCount
 	err := u.db.NewSelect().
 		Model((*domain.BlogCategory)(nil)).
@@ -119,8 +64,7 @@ func (u *DB) ListCategories() ([]*domain.BlogCategoryWithPostCount, error) {
 }
 
 // ListCategoriesCursor returns categories using cursor-based pagination
-func (u *DB) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
-	ctx := context.Background()
+func (u *DB) ListCategoriesCursor(ctx context.Context, cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error) {
 
 	var cursorID string
 	if cursor != "" {
@@ -163,8 +107,7 @@ func (u *DB) ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCateg
 	return categories, nextCursor, nil
 }
 
-func (u *DB) UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error) {
-	ctx := context.Background()
+func (u *DB) UpdateCategory(ctx context.Context, category domain.BlogCategory) (*domain.BlogCategory, error) {
 	_, err := u.db.NewUpdate().Model(&category).WherePK().Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("category not updated: %v", err)
@@ -173,8 +116,7 @@ func (u *DB) UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory,
 	return &category, nil
 }
 
-func (u *DB) DeleteCategory(id string) error {
-	ctx := context.Background()
+func (u *DB) DeleteCategory(ctx context.Context, id string) error {
 	category := &domain.BlogCategory{}
 	res, err := u.db.NewDelete().Model(category).Where("id = ?", id).Exec(ctx)
 	if err != nil {
@@ -190,22 +132,20 @@ func (u *DB) DeleteCategory(id string) error {
 
 // --- Post ---
 
-func (u *DB) CreatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error) {
-	ctx := context.Background()
+func (u *DB) CreatePost(ctx context.Context, post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error) {
 	post.ID = u.snowflakeNode.GenerateID()
 
 	_, err := u.db.NewInsert().Model(&post).Exec(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("post not saved: %v", err)
 	}
-	if err := u.AttachTags(post.ID, tagIDs); err != nil {
+	if err := u.AttachTags(ctx, post.ID, tagIDs); err != nil {
 		return nil, fmt.Errorf("tags not attached: %v", err)
 	}
-	return u.GetPost(post.ID)
+	return u.GetPost(ctx, post.ID)
 }
 
-func (u *DB) GetPost(id string) (*domain.BlogPost, error) {
-	ctx := context.Background()
+func (u *DB) GetPost(ctx context.Context, id string) (*domain.BlogPost, error) {
 	post := &domain.BlogPost{}
 	err := u.cache.Get(utils.CacheKeyPostPrefix+id, post)
 	if err == nil {
@@ -222,8 +162,7 @@ func (u *DB) GetPost(id string) (*domain.BlogPost, error) {
 	return post, err
 }
 
-func (u *DB) GetPostBySlug(slug string) (*domain.BlogPost, error) {
-	ctx := context.Background()
+func (u *DB) GetPostBySlug(ctx context.Context, slug string) (*domain.BlogPost, error) {
 	post := &domain.BlogPost{}
 	err := u.cache.Get(utils.CacheKeyPostPrefix+slug, post)
 	if err == nil {
@@ -241,8 +180,7 @@ func (u *DB) GetPostBySlug(slug string) (*domain.BlogPost, error) {
 	return post, err
 }
 
-func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error) {
-	ctx := context.Background()
+func (u *DB) ListPosts(ctx context.Context, filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error) {
 
 	applyFilters := func(q *bun.SelectQuery) *bun.SelectQuery {
 		if filter.Status != "" {
@@ -278,8 +216,7 @@ func (u *DB) ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, e
 }
 
 // ListPostsCursor returns posts using cursor-based pagination
-func (u *DB) ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
-	ctx := context.Background()
+func (u *DB) ListPostsCursor(ctx context.Context, filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error) {
 
 	applyFilters := func(q *bun.SelectQuery) *bun.SelectQuery {
 		if filter.Status != "" {
@@ -338,17 +275,16 @@ func (u *DB) ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit 
 	return posts, nextCursor, total, nil
 }
 
-func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) error {
-	ctx := context.Background()
+func (u *DB) UpdatePost(ctx context.Context, post domain.BlogPost, tagIDs []string) error {
 	_, err := u.db.NewUpdate().Model(&post).WherePK().Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("post not updated: %v", err)
 	}
 	if tagIDs != nil {
-		if err := u.DetachTags(post.ID); err != nil {
+		if err := u.DetachTags(ctx, post.ID); err != nil {
 			return fmt.Errorf("failed to detach tags: %v", err)
 		}
-		if err := u.AttachTags(post.ID, tagIDs); err != nil {
+		if err := u.AttachTags(ctx, post.ID, tagIDs); err != nil {
 			return fmt.Errorf("failed to attach tags: %v", err)
 		}
 	}
@@ -357,8 +293,7 @@ func (u *DB) UpdatePost(post domain.BlogPost, tagIDs []string) error {
 	return nil
 }
 
-func (u *DB) DeletePost(id string) error {
-	ctx := context.Background()
+func (u *DB) DeletePost(ctx context.Context, id string) error {
 	post := &domain.BlogPost{}
 	res, err := u.db.NewDelete().Model(post).Where("id = ?", id).Exec(ctx)
 	if err != nil {
@@ -382,8 +317,7 @@ func (u *DB) IncrementViewCount(id string) error {
 	return err
 }
 
-func (u *DB) CountPostsByCategory(categoryID string) (int, error) {
-	ctx := context.Background()
+func (u *DB) CountPostsByCategory(ctx context.Context, categoryID string) (int, error) {
 	count, err := u.db.NewSelect().Model((*domain.BlogPost)(nil)).Where("bp.category_id = ?", categoryID).Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count posts by category: %v", err)
@@ -391,8 +325,7 @@ func (u *DB) CountPostsByCategory(categoryID string) (int, error) {
 	return count, nil
 }
 
-func (u *DB) GetTagByID(id string) (*domain.Tag, error) {
-	ctx := context.Background()
+func (u *DB) GetTagByID(ctx context.Context, id string) (*domain.Tag, error) {
 	tag := &domain.Tag{}
 	err := u.db.NewSelect().Model(tag).Where("t.id = ?", id).Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
@@ -401,8 +334,7 @@ func (u *DB) GetTagByID(id string) (*domain.Tag, error) {
 	return tag, err
 }
 
-func (u *DB) DeleteTag(id string) error {
-	ctx := context.Background()
+func (u *DB) DeleteTag(ctx context.Context, id string) error {
 	tag := &domain.Tag{}
 	res, err := u.db.NewDelete().Model(tag).Where("id = ?", id).Exec(ctx)
 	if err != nil {

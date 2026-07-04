@@ -1,11 +1,3 @@
-CREATE TABLE IF NOT EXISTS blog_tags (
-    id         VARCHAR(20) PRIMARY KEY,
-    name       VARCHAR(100) NOT NULL,
-    slug       VARCHAR(100) NOT NULL UNIQUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
 CREATE TABLE IF NOT EXISTS blog_categories (
     id          VARCHAR(20) PRIMARY KEY,
     name        VARCHAR(255) NOT NULL,
@@ -37,7 +29,10 @@ CREATE TABLE IF NOT EXISTS blog_posts (
     locale          VARCHAR(10) NULL,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    deleted_at      TIMESTAMPTZ
+    deleted_at      TIMESTAMPTZ,
+    created_by       VARCHAR(20),
+    updated_by       VARCHAR(20),
+    deleted_by       VARCHAR(20)
 );
 
 CREATE TABLE IF NOT EXISTS blog_post_tags (
@@ -46,9 +41,9 @@ CREATE TABLE IF NOT EXISTS blog_post_tags (
     PRIMARY KEY (post_id, tag_id)
 );
 
-CREATE INDEX idx_blog_posts_status    ON blog_posts(status)       WHERE deleted_at IS NULL;
-CREATE INDEX idx_blog_posts_scheduled ON blog_posts(scheduled_at) WHERE status = 'scheduled';
-CREATE INDEX idx_blog_posts_published ON blog_posts(published_at) WHERE status = 'published';
-CREATE INDEX idx_blog_posts_category  ON blog_posts(category_id)   WHERE deleted_at IS NULL;
-CREATE INDEX idx_blog_categories_slug ON blog_categories(slug)    WHERE deleted_at IS NULL;
-CREATE INDEX idx_blog_post_tags_tag   ON blog_post_tags(tag_id);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_status    ON blog_posts(status)       WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_blog_posts_scheduled ON blog_posts(scheduled_at) WHERE status = 'scheduled';
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON blog_posts(published_at) WHERE status = 'published';
+CREATE INDEX IF NOT EXISTS idx_blog_posts_category  ON blog_posts(category_id)   WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_blog_categories_slug ON blog_categories(slug)    WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_blog_post_tags_tag   ON blog_post_tags(tag_id);

@@ -1,6 +1,8 @@
 package services
 
 import (
+	"context"
+
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 )
@@ -13,21 +15,23 @@ func NewTagService(repo ports.TagRepository) *TagService {
 	return &TagService{repo: repo}
 }
 
-func (s *TagService) CreateTag(req domain.CreateTagRequest) (*domain.Tag, error) {
-	return s.repo.CreateTag(domain.Tag{
-		Name: req.Name,
-		Slug: req.Slug,
+func (s *TagService) CreateTag(ctx context.Context, authorID string, req domain.CreateTagRequest) (*domain.Tag, error) {
+	return s.repo.CreateTag(ctx, domain.Tag{
+		Name:     req.Name,
+		Slug:     req.Slug,
+		Type:     req.Type,
+		AuthorID: &authorID,
 	})
 }
 
-func (s *TagService) ListTags() ([]*domain.Tag, error) {
-	return s.repo.ListTags()
+func (s *TagService) ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error) {
+	return s.repo.ListTags(ctx, authorID)
 }
 
-func (s *TagService) GetTagByID(id string) (*domain.Tag, error) {
-	return s.repo.GetTagByID(id)
+func (s *TagService) GetTagByID(ctx context.Context, id string) (*domain.Tag, error) {
+	return s.repo.GetTagByID(ctx, id)
 }
 
-func (s *TagService) DeleteTag(id string) error {
-	return s.repo.DeleteTag(id)
+func (s *TagService) DeleteTag(ctx context.Context, id string) error {
+	return s.repo.DeleteTag(ctx, id)
 }

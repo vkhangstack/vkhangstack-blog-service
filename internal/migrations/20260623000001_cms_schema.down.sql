@@ -1,4 +1,3 @@
 DROP TABLE IF EXISTS blog_post_tags;
 DROP TABLE IF EXISTS blog_posts;
 DROP TABLE IF EXISTS blog_categories;
-DROP TABLE IF EXISTS blog_tags;

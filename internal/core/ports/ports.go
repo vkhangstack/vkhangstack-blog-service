@@ -86,60 +86,60 @@ type FirebaseRepository interface {
 }
 
 type TagRepository interface {
-	CreateTag(tag domain.Tag) (*domain.Tag, error)
-	GetTagBySlug(slug string) (*domain.Tag, error)
-	ListTags() ([]*domain.Tag, error)
-	AttachTags(postID string, tagIDs []string) error
-	DetachTags(postID string) error
-	GetTagByID(id string) (*domain.Tag, error)
-	DeleteTag(id string) error
+	CreateTag(ctx context.Context, tag domain.Tag) (*domain.Tag, error)
+	GetTagBySlug(ctx context.Context, slug string) (*domain.Tag, error)
+	ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error)
+	AttachTags(ctx context.Context, postID string, tagIDs []string) error
+	DetachTags(ctx context.Context, postID string) error
+	GetTagByID(ctx context.Context, id string) (*domain.Tag, error)
+	DeleteTag(ctx context.Context, id string) error
 }
 
 type TagService interface {
-	CreateTag(req domain.CreateTagRequest) (*domain.Tag, error)
-	ListTags() ([]*domain.Tag, error)
-	GetTagByID(id string) (*domain.Tag, error)
-	DeleteTag(id string) error
+	CreateTag(ctx context.Context, authorID string, req domain.CreateTagRequest) (*domain.Tag, error)
+	ListTags(ctx context.Context, authorID string) ([]*domain.Tag, error)
+	GetTagByID(ctx context.Context, id string) (*domain.Tag, error)
+	DeleteTag(ctx context.Context, id string) error
 }
 
 type BlogCategoryRepository interface {
-	CreateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
-	GetCategory(id string) (*domain.BlogCategory, error)
-	GetCategoryBySlug(slug string) (*domain.BlogCategory, error)
-	ListCategories() ([]*domain.BlogCategoryWithPostCount, error)
-	ListCategoriesCursor(cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error)
-	UpdateCategory(category domain.BlogCategory) (*domain.BlogCategory, error)
-	DeleteCategory(id string) error
+	CreateCategory(ctx context.Context, category domain.BlogCategory) (*domain.BlogCategory, error)
+	GetCategory(ctx context.Context, id string) (*domain.BlogCategory, error)
+	GetCategoryBySlug(ctx context.Context, slug string) (*domain.BlogCategory, error)
+	ListCategories(ctx context.Context) ([]*domain.BlogCategoryWithPostCount, error)
+	ListCategoriesCursor(ctx context.Context, cursor string, limit int) ([]*domain.BlogCategoryWithPostCount, *string, error)
+	UpdateCategory(ctx context.Context, category domain.BlogCategory) (*domain.BlogCategory, error)
+	DeleteCategory(ctx context.Context, id string) error
 }
 
 type BlogPostRepository interface {
-	CreatePost(post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error)
-	GetPost(id string) (*domain.BlogPost, error)
-	GetPostBySlug(slug string) (*domain.BlogPost, error)
-	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	ListPostsCursor(filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error)
-	UpdatePost(post domain.BlogPost, tagIDs []string) error
-	DeletePost(id string) error
+	CreatePost(ctx context.Context, post domain.BlogPost, tagIDs []string) (*domain.BlogPost, error)
+	GetPost(ctx context.Context, id string) (*domain.BlogPost, error)
+	GetPostBySlug(ctx context.Context, slug string) (*domain.BlogPost, error)
+	ListPosts(ctx context.Context, filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
+	ListPostsCursor(ctx context.Context, filter domain.BlogPostFilter, cursor string, limit int) ([]*domain.BlogPost, *string, int, error)
+	UpdatePost(ctx context.Context, post domain.BlogPost, tagIDs []string) error
+	DeletePost(ctx context.Context, id string) error
 	IncrementViewCount(id string) error
-	CountPostsByCategory(categoryID string) (int, error)
+	CountPostsByCategory(ctx context.Context, categoryID string) (int, error)
 }
 
 type BlogCategoryService interface {
 	CreateCategory(req domain.CreateBlogCategoryRequest) (*domain.BlogCategory, error)
-	GetCategory(id string) (*domain.BlogCategoryWithPostCount, error)
-	ListCategories() ([]*domain.BlogCategory, error)
-	UpdateCategory(id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error)
-	DeleteCategory(id string) error
+	GetCategory(ctx context.Context, id string) (*domain.BlogCategoryWithPostCount, error)
+	ListCategories(ctx context.Context) ([]*domain.BlogCategory, error)
+	UpdateCategory(ctx context.Context, id string, req domain.UpdateBlogCategoryRequest) (*domain.BlogCategory, error)
+	DeleteCategory(ctx context.Context, id string) error
 }
 
 type BlogPostService interface {
 	CreatePost(authorID string, req domain.CreateBlogPostRequest) (*domain.BlogPost, error)
-	GetPost(id string) (*domain.BlogPost, error)
-	GetPostBySlug(slug string) (*domain.BlogPostBySlugResponse, error)
-	ListPosts(filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
-	UpdatePost(id string, req domain.UpdateBlogPostRequest) error
-	DeletePost(id string) error
-	PublishPost(id string) error
+	GetPost(ctx context.Context, id string) (*domain.BlogPost, error)
+	GetPostBySlug(ctx context.Context, slug string) (*domain.BlogPostBySlugResponse, error)
+	ListPosts(ctx context.Context, filter domain.BlogPostFilter) ([]*domain.BlogPost, int, error)
+	UpdatePost(ctx context.Context, id string, req domain.UpdateBlogPostRequest) error
+	DeletePost(ctx context.Context, id string) error
+	PublishPost(ctx context.Context, id string) error
 }
 
 type UploadService interface {
@@ -155,28 +155,28 @@ type RateLimiter interface {
 }
 
 type TaskRepository interface {
-	CreateTask(task domain.Task) (*domain.Task, error)
-	GetTaskByID(id string) (*domain.Task, error)
-	GetTaskByTaskID(taskID string) (*domain.Task, error)
-	UpdateTask(id string, updates domain.Task) (*domain.Task, error)
-	DeleteTask(id string) error
-	ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error)
-	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
-	ListAllTasks() ([]*domain.Task, error)
-	CountTasksByStatus(status domain.TaskStatus) (int, error)
-	CountTasksByPriority(priority domain.TaskPriority) (int, error)
-	GetCount() (int, error)
+	CreateTask(ctx context.Context, task domain.Task) (*domain.Task, error)
+	GetTaskByID(ctx context.Context, id string) (*domain.Task, error)
+	GetTaskByTaskID(ctx context.Context, taskID string) (*domain.Task, error)
+	UpdateTask(ctx context.Context, id string, updates domain.Task) (*domain.Task, error)
+	DeleteTask(ctx context.Context, id string) error
+	ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain.Task, int, error)
+	ListTasksCursor(ctx context.Context, filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
+	ListAllTasks(ctx context.Context) ([]*domain.Task, error)
+	CountTasksByStatus(ctx context.Context, status domain.TaskStatus) (int, error)
+	CountTasksByPriority(ctx context.Context, priority domain.TaskPriority) (int, error)
+	GetCount(ctx context.Context) (int, error)
 }
 
 type TaskService interface {
-	CreateTask(req domain.CreateTaskRequest) (*domain.Task, error)
-	GetTask(id string) (*domain.Task, error)
-	UpdateTask(id string, req domain.UpdateTaskRequest) (*domain.Task, error)
-	DeleteTask(id string) error
-	ListTasks(filter domain.TaskFilter) ([]*domain.Task, int, error)
-	ListTasksCursor(filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
-	ListAllTasks() ([]*domain.Task, error)
-	GetTaskStatistics() (map[string]interface{}, error)
+	CreateTask(ctx context.Context, req domain.CreateTaskRequest) (*domain.Task, error)
+	GetTask(ctx context.Context, id string) (*domain.Task, error)
+	UpdateTask(ctx context.Context, id string, req domain.UpdateTaskRequest) (*domain.Task, error)
+	DeleteTask(ctx context.Context, id string) error
+	ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain.Task, int, error)
+	ListTasksCursor(ctx context.Context, filter domain.TaskFilter, cursor string, limit int) ([]*domain.Task, *string, int, error)
+	ListAllTasks(ctx context.Context) ([]*domain.Task, error)
+	GetTaskStatistics(ctx context.Context) (map[string]interface{}, error)
 }
 type SearchEngineRepository interface {
 	IndexDocument(indexName string, document interface{}) error

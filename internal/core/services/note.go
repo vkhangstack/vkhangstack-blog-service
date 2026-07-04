@@ -20,7 +20,7 @@ func NewNoteService(repo ports.NoteRepository) *NoteService {
 
 func (n *NoteService) CreateNote(ctx context.Context, authorID string, req domain.CreateNoteRequest) (*domain.Note, error) {
 	note := domain.Note{
-		CreatedBy:   authorID,
+		CreatedBy:   utils.StringPtr(authorID),
 		Title:       req.Title,
 		SourceUrl:   req.SourceURL,
 		Status:      req.Status,
@@ -64,7 +64,7 @@ func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.Upda
 	}
 
 	note := domain.Note{
-		UpdatedBy: ctx.Value("user_id").(string),
+		UpdatedBy: utils.StringPtr(ctx.Value("user_id").(string)),
 	}
 	utils.SetIfNotNil(&note.Title, req.Title)
 	utils.SetIfNotNil(&note.SourceUrl, &req.SourceURL)
@@ -73,6 +73,8 @@ func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.Upda
 	utils.SetIfNotNil(&note.Lexical, &req.Lexical)
 	utils.SetIfNotNil(&note.Description, &req.Description)
 	utils.SetIfNotNil(&note.CreatedBy, &noteInfo.CreatedBy)
+	utils.SetIfNotNil(&note.UpdatedBy, &noteInfo.UpdatedBy)
+	utils.SetIfNotNil(&note.DeletedBy, &noteInfo.DeletedBy)
 
 	return n.repo.UpdateNote(ctx, id, note)
 }

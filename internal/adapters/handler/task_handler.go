@@ -26,7 +26,7 @@ func (h *TaskHandler) CreateTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	task, err := h.svc.CreateTask(req)
+	task, err := h.svc.CreateTask(ctx, req)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -41,7 +41,7 @@ func (h *TaskHandler) GetTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	task, err := h.svc.GetTask(id)
+	task, err := h.svc.GetTask(ctx, id)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -64,7 +64,7 @@ func (h *TaskHandler) ListTasks(ctx *gin.Context) {
 		filter.Limit = 10
 	}
 
-	tasks, total, err := h.svc.ListTasks(filter)
+	tasks, total, err := h.svc.ListTasks(ctx, filter)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -93,7 +93,7 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 		return
 	}
 
-	tasks, nextCursor, total, err := h.svc.ListTasksCursor(filter, cursor, limit)
+	tasks, nextCursor, total, err := h.svc.ListTasksCursor(ctx, filter, cursor, limit)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -122,7 +122,7 @@ func (h *TaskHandler) UpdateTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	task, err := h.svc.UpdateTask(id, req)
+	task, err := h.svc.UpdateTask(ctx, id, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("UpdateTask: Failed to update task")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
@@ -139,7 +139,7 @@ func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	if err := h.svc.DeleteTask(id); err != nil {
+	if err := h.svc.DeleteTask(ctx, id); err != nil {
 		logger.Log.WithError(err).Error("DeleteTask: Failed to delete task")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -149,7 +149,7 @@ func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 
 // GetTaskStatistics handles GET /v1/cms/tasks/statistics
 func (h *TaskHandler) GetTaskStatistics(ctx *gin.Context) {
-	stats, err := h.svc.GetTaskStatistics()
+	stats, err := h.svc.GetTaskStatistics(ctx)
 	if err != nil {
 		logger.Log.WithError(err).Error("GetTaskStatistics: Failed to get task statistics")
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
