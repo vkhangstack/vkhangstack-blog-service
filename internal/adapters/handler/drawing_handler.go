@@ -6,6 +6,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
+	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
 
 type DrawingHandler struct {
@@ -53,7 +54,23 @@ func (h *DrawingHandler) ListDrawings(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	HandleSuccess(ctx, gin.H{"drawings": drawings, "total": total}, "Success")
+	drawingsResponse := make([]*domain.DrawingResponse, len(drawings))
+	for i, drawing := range drawings {
+		drawingsResponse[i] = &domain.DrawingResponse{
+			ID:        drawing.ID,
+			Title:     drawing.Title,
+			Elements:  drawing.Elements,
+			AppState:  drawing.AppState,
+			Files:     drawing.Files,
+			CreatedAt: drawing.CreatedAt,
+			UpdatedAt: drawing.UpdatedAt,
+		}
+	}
+	drawingResponse := &domain.ListDrawingResponse{
+		Drawings: drawingsResponse,
+		Total:    total,
+	}
+	HandleSuccess(ctx, drawingResponse, "Success")
 }
 
 // UpdateDrawing handles PUT /v1/cms/drawings/:id
@@ -102,7 +119,26 @@ func (h *DrawingHandler) ListDrawingsCursor(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	HandleSuccess(ctx, gin.H{"drawings": drawings, "next_cursor": nextCursor, "total": total}, "Success")
+	drawingsDataResponse := make([]*domain.DrawingResponse, len(drawings))
+	for i, drawing := range drawings {
+		drawingsDataResponse[i] = &domain.DrawingResponse{
+			ID:        drawing.ID,
+			Title:     drawing.Title,
+			Elements:  drawing.Elements,
+			AppState:  drawing.AppState,
+			Files:     drawing.Files,
+			CreatedAt: drawing.CreatedAt,
+			UpdatedAt: drawing.UpdatedAt,
+		}
+	}
+	response := utils.CursorPaginationResponse{
+		Items:      drawingsDataResponse,
+		NextCursor: nextCursor,
+		HasMore:    nextCursor != nil,
+		Total:      &total,
+	}
+
+	HandleSuccess(ctx, response, "Success")
 }
 
 // GetDrawing handles GET /v1/cms/drawings/:id

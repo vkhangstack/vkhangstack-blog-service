@@ -304,3 +304,8 @@ type DrawingFilter struct {
 	Page  int     `form:"page"`
 	Limit int     `form:"limit"`
 }
+
+type ListDrawingResponse struct {
+	Drawings []*DrawingResponse `json:"drawings"`
+	Total    int                `json:"total"`
+}
