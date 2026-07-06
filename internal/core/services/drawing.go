@@ -16,9 +16,10 @@ func NewDrawingService(repo ports.DrawingRepository) *DrawingService {
 	return &DrawingService{repo: repo}
 }
 
-func (s *DrawingService) CreateDrawing(ctx context.Context, req domain.CreateDrawingRequest) (*domain.Drawing, error) {
+func (s *DrawingService) CreateDrawing(ctx context.Context, authorID string, req domain.CreateDrawingRequest) (*domain.Drawing, error) {
 	drawing := domain.Drawing{
-		Title: req.Title,
+		Title:     req.Title,
+		CreatedBy: &authorID,
 	}
 	return s.repo.CreateDrawing(ctx, drawing)
 }

@@ -313,7 +313,7 @@ type NoteTagRow struct {
 }
 
 type Drawing struct {
-	bun.BaseModel `bun:"table:drawing,alias:d"`
+	bun.BaseModel `bun:"table:drawings,alias:d"`
 	ID            string    `bun:"id,pk,type:varchar(20)" json:"id"`
 	OwnerID       string    `bun:"owner_id,notnull,type:varchar(20)" json:"owner_id"`
 	Title         string    `bun:"title,notnull,type:varchar(255)" json:"title"`

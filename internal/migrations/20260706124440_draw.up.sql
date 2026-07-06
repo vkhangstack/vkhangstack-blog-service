@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS drawing (
+CREATE TABLE IF NOT EXISTS drawings (
     id          VARCHAR(20)   PRIMARY KEY,
     owner_id    VARCHAR(20)   NOT NULL,
     title       VARCHAR(255)  NOT NULL DEFAULT 'Untitled drawing',
@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS drawing (
     deleted_by  VARCHAR(20)   NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_drawing_owner_id ON drawing(owner_id);
-CREATE INDEX IF NOT EXISTS idx_drawing_created_at ON drawing(created_at);
+CREATE INDEX IF NOT EXISTS idx_drawings_owner_id ON drawings(owner_id);
+CREATE INDEX IF NOT EXISTS idx_drawings_created_at ON drawings(created_at);

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
@@ -23,7 +24,13 @@ func (h *DrawingHandler) CreateDrawing(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	drawing, err := h.svc.CreateDrawing(ctx, req)
+	userID, err := http.GetUserID(ctx)
+	if err != nil {
+		logger.Log.WithError(err).Error("CreateDrawing: Failed to get user ID")
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		return
+	}
+	drawing, err := h.svc.CreateDrawing(ctx, userID, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("CreateDrawing: Failed to create drawing")
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
