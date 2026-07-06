@@ -306,3 +306,13 @@ type ListDrawingResponse struct {
 	Drawings []*DrawingResponse `json:"drawings"`
 	Total    int                `json:"total"`
 }
+
+type DrawingDetailsResponse struct {
+	ID        string         `json:"id"`
+	Title     string         `json:"title"`
+	Elements  []JSON         `json:"elements"`
+	AppState  JSON           `json:"app_state"`
+	Files     map[string]any `json:"files"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+}
