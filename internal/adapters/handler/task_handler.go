@@ -12,11 +12,15 @@ import (
 )
 
 type TaskHandler struct {
-	svc *services.TaskService
+	svc             *services.TaskService
+	searchEngineSvc *services.SearchEngineService
 }
 
-func NewTaskHandler(svc *services.TaskService) *TaskHandler {
-	return &TaskHandler{svc: svc}
+func NewTaskHandler(svc *services.TaskService, searchEngineSvc *services.SearchEngineService) *TaskHandler {
+	return &TaskHandler{
+		svc:             svc,
+		searchEngineSvc: searchEngineSvc,
+	}
 }
 
 // CreateTask handles POST /v1/cms/tasks
@@ -31,6 +35,11 @@ func (h *TaskHandler) CreateTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
+	go func() {
+		if err := h.searchEngineSvc.IndexDocument(string(domain.SearchEngineIndexNameTasks), task); err != nil {
+			logger.Log.WithError(err).Error("CreateTask: Failed to index task in search engine")
+		}
+	}()
 	HandleSuccess(ctx, task, "Task created")
 }
 
@@ -128,6 +137,11 @@ func (h *TaskHandler) UpdateTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
+	go func() {
+		if err := h.searchEngineSvc.UpdateDocument(string(domain.SearchEngineIndexNameTasks), task); err != nil {
+			logger.Log.WithError(err).Error("UpdateTask: Failed to update task in search engine")
+		}
+	}()
 	HandleSuccess(ctx, task, "Task updated")
 }
 
@@ -144,6 +158,11 @@ func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
 	}
+	go func() {
+		if err := h.searchEngineSvc.DeleteDocument(string(domain.SearchEngineIndexNameTasks), id); err != nil {
+			logger.Log.WithError(err).Error("DeleteTask: Failed to delete task from search engine")
+		}
+	}()
 	HandleSuccess(ctx, nil, "Task deleted")
 }
 
@@ -156,6 +175,34 @@ func (h *TaskHandler) GetTaskStatistics(ctx *gin.Context) {
 		return
 	}
 	HandleSuccess(ctx, stats, "Success")
+}
+
+func (h *TaskHandler) SearchTasks(ctx *gin.Context) {
+	query := ctx.Query("q")
+	limitStr := ctx.DefaultQuery("limit", "10")
+
+	if query == "" {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "Query parameter 'q' is required")
+		return
+	}
+
+	limit, err := parseTaskLimit(limitStr)
+	if err != nil || limit <= 0 {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "Invalid limit parameter")
+		return
+	}
+
+	if limit > 10 {
+		limit = 10
+	}
+
+	tasks, err := h.searchEngineSvc.Search(string(domain.SearchEngineIndexNameTasks), query, limit)
+	if err != nil {
+		logger.Log.WithError(err).Error("SearchTasks: Failed to search tasks")
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		return
+	}
+	HandleSuccess(ctx, tasks, "Success")
 }
 
 func parseTaskLimit(limitStr string) (int, error) {

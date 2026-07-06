@@ -41,7 +41,7 @@ func InitRoutes(
 	loginHandler := handler.NewLoginHandler(*accountService)
 	blogHandler := handler.NewBlogHandler(blogCategoryService, blogPostService, searchEngineService)
 	tagHandler := handler.NewTagHandler(tagService)
-	taskHandler := handler.NewTaskHandler(taskService)
+	taskHandler := handler.NewTaskHandler(taskService, searchEngineService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	noteHandler := handler.NewNoteHandler(*noteService)
 	drawingHandler := handler.NewDrawingHandler(*drawingService)

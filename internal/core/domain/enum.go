@@ -111,6 +111,9 @@ type SearchEngineIndexName string
 const (
 	SearchEngineIndexNamePosts SearchEngineIndexName = "posts"
 	SearchEngineIndexNameUsers SearchEngineIndexName = "users"
+	SearchEngineIndexNameTasks SearchEngineIndexName = "tasks"
+	SearchEngineIndexNamePages SearchEngineIndexName = "pages"
+	SearchEngineIndexNameNotes SearchEngineIndexName = "notes"
 )
 
 type TagType string
