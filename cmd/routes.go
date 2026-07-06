@@ -25,6 +25,7 @@ func InitRoutes(
 	rateLimiter *services.RateLimiter,
 	searchEngineService *services.SearchEngineService,
 	noteService *services.NoteService,
+	drawingService *services.DrawingService,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -43,9 +44,10 @@ func InitRoutes(
 	taskHandler := handler.NewTaskHandler(taskService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	noteHandler := handler.NewNoteHandler(*noteService)
+	drawingHandler := handler.NewDrawingHandler(*drawingService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -64,6 +66,7 @@ func setupV1Routes(
 	uploadHandler *handler.UploadHandler,
 	rateLimiter *services.RateLimiter,
 	noteHandler *handler.NoteHandler,
+	drawingHandler *handler.DrawingHandler,
 ) {
 
 	// Health check route
@@ -153,6 +156,16 @@ func setupV1Routes(
 				notes.GET("/:id", noteHandler.GetNote)
 				notes.PUT("/:id", noteHandler.UpdateNote)
 				notes.DELETE("/:id", noteHandler.DeleteNote)
+			}
+
+			drawings := cms.Group("/drawings")
+			{
+				drawings.POST("", drawingHandler.CreateDrawing)
+				drawings.GET("", drawingHandler.ListDrawings)
+				drawings.GET("/cursor", drawingHandler.ListDrawingsCursor)
+				drawings.GET("/:id", drawingHandler.GetDrawing)
+				drawings.PUT("/:id", drawingHandler.UpdateDrawing)
+				drawings.DELETE("/:id", drawingHandler.DeleteDrawing)
 			}
 		}
 

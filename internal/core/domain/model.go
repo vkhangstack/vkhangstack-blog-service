@@ -7,6 +7,8 @@ import (
 	"github.com/uptrace/bun"
 )
 
+type JSONB []byte
+
 type Message struct {
 	bun.BaseModel `bun:"table:messages"`
 	ID            string `bun:"id,pk"          json:"id"`
@@ -308,4 +310,20 @@ type NoteTagRow struct {
 	ID     string `bun:"id"`
 	Name   string `bun:"name"`
 	Slug   string `bun:"slug"`
+}
+
+type Drawing struct {
+	bun.BaseModel `bun:"table:drawing,alias:d"`
+	ID            string    `bun:"id,pk,type:varchar(20)" json:"id"`
+	OwnerID       string    `bun:"owner_id,notnull,type:varchar(20)" json:"owner_id"`
+	Title         string    `bun:"title,notnull,type:varchar(255)" json:"title"`
+	Elements      JSONB     `bun:"elements,notnull,type:jsonb" json:"elements"`
+	AppState      JSONB     `bun:"app_state,notnull,type:jsonb" json:"app_state"`
+	Files         JSONB     `bun:"files,notnull,type:jsonb" json:"files"`
+	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     *string   `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy     *string   `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy     *string   `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }

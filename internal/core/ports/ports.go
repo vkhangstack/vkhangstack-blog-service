@@ -207,3 +207,21 @@ type NoteService interface {
 	UpdateNote(ctx context.Context, id string, req domain.UpdateNoteRequest) error
 	DeleteNote(ctx context.Context, id string) error
 }
+
+type DrawingRepository interface {
+	CreateDrawing(ctx context.Context, drawing domain.Drawing) (*domain.Drawing, error)
+	GetDrawingByID(ctx context.Context, id string) (*domain.Drawing, error)
+	UpdateDrawing(ctx context.Context, id string, updates domain.Drawing) error
+	DeleteDrawing(ctx context.Context, id string) error
+	ListDrawings(ctx context.Context, filter domain.DrawingFilter) ([]*domain.Drawing, int, error)
+	ListDrawingsCursor(ctx context.Context, filter domain.DrawingFilter, cursor string, limit int) ([]*domain.Drawing, *string, int, error)
+}
+
+type DrawingService interface {
+	CreateDrawing(ctx context.Context, authorID string, req domain.CreateDrawingRequest) (*domain.Drawing, error)
+	GetDrawing(ctx context.Context, id string) (*domain.Drawing, error)
+	ListDrawings(ctx context.Context, filter domain.DrawingFilter) ([]*domain.Drawing, int, error)
+	ListDrawingsCursor(ctx context.Context, filter domain.DrawingFilter, cursor string, limit int) ([]*domain.Drawing, *string, int, error)
+	UpdateDrawing(ctx context.Context, id string, req domain.UpdateDrawingRequest) error
+	DeleteDrawing(ctx context.Context, id string) error
+}

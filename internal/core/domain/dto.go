@@ -223,3 +223,30 @@ type NoteListResponse struct {
 	Total int           `json:"total"`
 	Notes []*NoteHasTag `json:"notes"`
 }
+
+type CreateDrawingRequest struct {
+	Title string `json:"title" binding:"required"`
+}
+
+type DrawingResponse struct {
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Elements  string    `json:"elements"`
+	AppState  string    `json:"app_state"`
+	Files     string    `json:"files"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type UpdateDrawingRequest struct {
+	Title    *string `json:"title"`
+	Elements *string `json:"elements"`
+	AppState *string `json:"app_state"`
+	Files    *string `json:"files"`
+}
+
+type DrawingFilter struct {
+	Title *string `form:"title"`
+	Page  int     `form:"page"`
+	Limit int     `form:"limit"`
+}

@@ -114,8 +114,11 @@ func main() {
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
 	noteService := services.NewNoteService(store)
+	drawingService := services.NewDrawingService(store)
 
 	accountService.CreateAccountRoot()
 
-	InitRoutes(msgService, customerService, accountService, firebaseService, blogCategoryService, blogPostService, tagService, taskService, uploadService, rateLimiter, searchEngineService, noteService)
+	InitRoutes(msgService, customerService, accountService, firebaseService,
+		blogCategoryService, blogPostService, tagService, taskService, uploadService,
+		rateLimiter, searchEngineService, noteService, drawingService)
 }
