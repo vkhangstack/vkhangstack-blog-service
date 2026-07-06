@@ -219,9 +219,9 @@ type DrawingRepository interface {
 
 type DrawingService interface {
 	CreateDrawing(ctx context.Context, authorID string, req domain.CreateDrawingRequest) (*domain.Drawing, error)
-	GetDrawing(ctx context.Context, id string) (*domain.Drawing, error)
-	ListDrawings(ctx context.Context, filter domain.DrawingFilter) ([]*domain.Drawing, int, error)
-	ListDrawingsCursor(ctx context.Context, filter domain.DrawingFilter, cursor string, limit int) ([]*domain.Drawing, *string, int, error)
+	GetDrawing(ctx context.Context, id string) (*domain.DrawingResponse, error)
+	ListDrawings(ctx context.Context, filter domain.DrawingFilter) ([]*domain.DrawingResponse, int, error)
+	ListDrawingsCursor(ctx context.Context, filter domain.DrawingFilter, cursor string, limit int) ([]*domain.DrawingResponse, *string, int, error)
 	UpdateDrawing(ctx context.Context, id string, req domain.UpdateDrawingRequest) error
 	DeleteDrawing(ctx context.Context, id string) error
 }

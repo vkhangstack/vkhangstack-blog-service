@@ -231,18 +231,72 @@ type CreateDrawingRequest struct {
 type DrawingResponse struct {
 	ID        string    `json:"id"`
 	Title     string    `json:"title"`
-	Elements  string    `json:"elements"`
-	AppState  string    `json:"app_state"`
-	Files     string    `json:"files"`
+	Elements  []JSON    `json:"elements"`
+	AppState  JSON      `json:"app_state"`
+	Files     JSON      `json:"files"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type SceneElement struct {
+	ID              string     `json:"id"`
+	Type            string     `json:"type"`
+	X               float64    `json:"x"`
+	Y               float64    `json:"y"`
+	Width           float64    `json:"width"`
+	Height          float64    `json:"height"`
+	Angle           float64    `json:"angle"`
+	StrokeColor     string     `json:"stroke_color"`
+	BackgroundColor string     `json:"background_color"`
+	FillStyle       string     `json:"fill_style"`
+	StrokeWidth     int        `json:"stroke_width"`
+	StrokeStyle     string     `json:"stroke_style"`
+	Roughness       int        `json:"roughness"`
+	Opacity         int        `json:"opacity"`
+	GroupIDs        []string   `json:"group_ids"`
+	FrameID         *string    `json:"frame_id"`
+	Index           string     `json:"index"`
+	Roundness       *Roundness `json:"roundness"`
+	Seed            int64      `json:"seed"`
+	Version         int        `json:"version"`
+	VersionNonce    int64      `json:"version_nonce"`
+	IsDeleted       bool       `json:"is_deleted"`
+	BoundElements   []any      `json:"bound_elements"`
+	Updated         int64      `json:"updated"`
+	Link            *string    `json:"link"`
+	Locked          bool       `json:"locked"`
+}
+
+type Roundness struct {
+	Type int `json:"type"`
+}
+
+type SceneAppState struct {
+	ViewBackgroundColor        string    `json:"view_background_color"`
+	CurrentItemStrokeColor     string    `json:"current_item_stroke_color"`
+	CurrentItemBackgroundColor string    `json:"current_item_background_color"`
+	CurrentItemFillStyle       string    `json:"current_item_fill_style"`
+	CurrentItemStrokeWidth     int       `json:"current_item_stroke_width"`
+	CurrentItemStrokeStyle     string    `json:"current_item_stroke_style"`
+	CurrentItemRoughness       int       `json:"current_item_roughness"`
+	CurrentItemOpacity         int       `json:"current_item_opacity"`
+	CurrentItemFontFamily      int       `json:"current_item_font_family"`
+	CurrentItemFontSize        int       `json:"current_item_font_size"`
+	CurrentItemTextAlign       string    `json:"current_item_text_align"`
+	ScrollX                    float64   `json:"scroll_x"`
+	ScrollY                    float64   `json:"scroll_y"`
+	Zoom                       ZoomState `json:"zoom"`
+}
+
+type ZoomState struct {
+	Value float64 `json:"value"`
+}
+
 type UpdateDrawingRequest struct {
-	Title    *string `json:"title"`
-	Elements *string `json:"elements"`
-	AppState *string `json:"app_state"`
-	Files    *string `json:"files"`
+	Title    *string        `json:"title"`
+	Elements []JSON         `json:"elements"`
+	AppState JSON           `json:"app_state"`
+	Files    map[string]any `json:"files"`
 }
 
 type DrawingFilter struct {

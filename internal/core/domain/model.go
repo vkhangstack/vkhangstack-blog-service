@@ -8,6 +8,7 @@ import (
 )
 
 type JSONB []byte
+type JSON map[string]any
 
 type Message struct {
 	bun.BaseModel `bun:"table:messages"`
@@ -317,9 +318,9 @@ type Drawing struct {
 	ID            string    `bun:"id,pk,type:varchar(20)" json:"id"`
 	OwnerID       string    `bun:"owner_id,notnull,type:varchar(20)" json:"owner_id"`
 	Title         string    `bun:"title,notnull,type:varchar(255)" json:"title"`
-	Elements      JSONB     `bun:"elements,notnull,type:jsonb" json:"elements"`
-	AppState      JSONB     `bun:"app_state,notnull,type:jsonb" json:"app_state"`
-	Files         JSONB     `bun:"files,notnull,type:jsonb" json:"files"`
+	Elements      []JSON    `bun:"elements,notnull,type:json" json:"elements"`
+	AppState      JSON      `bun:"app_state,notnull,type:json" json:"app_state"`
+	Files         JSON      `bun:"files,notnull,type:json" json:"files"`
 	CreatedAt     time.Time `bun:"created_at,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,type:timestamptz" json:"updated_at"`
 	DeletedAt     time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`

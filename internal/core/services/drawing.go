@@ -24,8 +24,23 @@ func (s *DrawingService) CreateDrawing(ctx context.Context, authorID string, req
 	return s.repo.CreateDrawing(ctx, drawing)
 }
 
-func (s *DrawingService) GetDrawing(ctx context.Context, id string) (*domain.Drawing, error) {
-	return s.repo.GetDrawingByID(ctx, id)
+func (s *DrawingService) GetDrawing(ctx context.Context, id string) (*domain.DrawingResponse, error) {
+	drawing, err := s.repo.GetDrawingByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &domain.DrawingResponse{
+		ID:        drawing.ID,
+		Title:     drawing.Title,
+		Elements:  drawing.Elements,
+		AppState:  drawing.AppState,
+		Files:     drawing.Files,
+		CreatedAt: drawing.CreatedAt,
+		UpdatedAt: drawing.UpdatedAt,
+	}
+
+	return response, nil
 }
 
 func (s *DrawingService) ListDrawings(ctx context.Context, filter domain.DrawingFilter) ([]*domain.Drawing, int, error) {
@@ -39,6 +54,11 @@ func (s *DrawingService) UpdateDrawing(ctx context.Context, id string, req domai
 	}
 
 	utils.SetIfNotNil(&drawing.Title, req.Title)
+	utils.SetIfNotNil(&drawing.Elements, &req.Elements)
+	utils.SetIfNotNil(&drawing.AppState, &req.AppState)
+	if req.Files != nil {
+		drawing.Files = req.Files
+	}
 
 	return s.repo.UpdateDrawing(ctx, id, *drawing)
 }
