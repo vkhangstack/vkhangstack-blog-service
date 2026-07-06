@@ -231,9 +231,6 @@ type CreateDrawingRequest struct {
 type DrawingResponse struct {
 	ID        string    `json:"id"`
 	Title     string    `json:"title"`
-	Elements  []JSON    `json:"elements"`
-	AppState  JSON      `json:"app_state"`
-	Files     JSON      `json:"files"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

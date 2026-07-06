@@ -59,9 +59,6 @@ func (h *DrawingHandler) ListDrawings(ctx *gin.Context) {
 		drawingsResponse[i] = &domain.DrawingResponse{
 			ID:        drawing.ID,
 			Title:     drawing.Title,
-			Elements:  drawing.Elements,
-			AppState:  drawing.AppState,
-			Files:     drawing.Files,
 			CreatedAt: drawing.CreatedAt,
 			UpdatedAt: drawing.UpdatedAt,
 		}
@@ -124,9 +121,6 @@ func (h *DrawingHandler) ListDrawingsCursor(ctx *gin.Context) {
 		drawingsDataResponse[i] = &domain.DrawingResponse{
 			ID:        drawing.ID,
 			Title:     drawing.Title,
-			Elements:  drawing.Elements,
-			AppState:  drawing.AppState,
-			Files:     drawing.Files,
 			CreatedAt: drawing.CreatedAt,
 			UpdatedAt: drawing.UpdatedAt,
 		}
