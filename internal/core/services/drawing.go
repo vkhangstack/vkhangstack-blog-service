@@ -33,9 +33,6 @@ func (s *DrawingService) GetDrawing(ctx context.Context, id string) (*domain.Dra
 	response := &domain.DrawingResponse{
 		ID:        drawing.ID,
 		Title:     drawing.Title,
-		Elements:  drawing.Elements,
-		AppState:  drawing.AppState,
-		Files:     drawing.Files,
 		CreatedAt: drawing.CreatedAt,
 		UpdatedAt: drawing.UpdatedAt,
 	}
