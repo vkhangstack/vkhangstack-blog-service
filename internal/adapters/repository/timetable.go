@@ -45,12 +45,19 @@ func (u *DB) DeleteTimetableEntry(ctx context.Context, id string) error {
 }
 
 func (u *DB) ListTimetableEntries(ctx context.Context, authorID string, filter domain.TimetableEntryFilter) ([]*domain.TimetableEntry, int, error) {
-	var timetableEntries []*domain.TimetableEntry
-	count, err := u.db.NewSelect().Model(&timetableEntries).Where("author_id = ?", authorID).Count(ctx)
-	if err != nil {
-		return nil, 0, err
+	timetableEntries := make([]*domain.TimetableEntry, 0)
+	query := u.db.NewSelect().Model(&timetableEntries)
+
+	if filter.DayOfWeek != nil {
+		query = query.Where("te.day_of_week = ?", filter.DayOfWeek)
 	}
-	return timetableEntries, count, nil
+
+	total, err := query.Order("te.created_at DESC").Offset((filter.Page - 1) * filter.Limit).Limit(filter.Limit).ScanAndCount(ctx)
+	if err != nil {
+		return nil, 0, fmt.Errorf("timetable entries not found: %v", err)
+	}
+
+	return timetableEntries, total, nil
 }
 
 func (u *DB) ListTimetableEntriesCursor(ctx context.Context, authorID string, filter domain.TimetableEntryFilter, cursor string, limit int) ([]*domain.TimetableEntry, *string, int, error) {
@@ -64,21 +71,21 @@ func (u *DB) ListTimetableEntriesCursor(ctx context.Context, authorID string, fi
 	}
 
 	var timetableEntries []*domain.TimetableEntry
-	query := u.db.NewSelect().Model(&timetableEntries)
+	query := u.db.NewSelect().Model(&timetableEntries).Where("te.author_id = ?", authorID)
 
 	if filter.DayOfWeek != nil {
-		query = query.Where("t.day_of_week = ?", filter.DayOfWeek)
+		query = query.Where("te.day_of_week = ?", filter.DayOfWeek)
 	}
 	queryCount := query.Clone()
-	query = query.Order("t.created_at DESC", "t.id DESC")
+	query = query.Order("te.created_at DESC", "te.id DESC")
 
 	if cursorID != "" {
 		cursorTimetableEntry := &domain.TimetableEntry{}
-		err := u.db.NewSelect().Model(cursorTimetableEntry).Where("t.id = ?", cursorID).Limit(1).Scan(ctx)
+		err := u.db.NewSelect().Model(cursorTimetableEntry).Where("te.id = ? AND te.author_id = ?", cursorID, authorID).Limit(1).Scan(ctx)
 		if err != nil {
 			return nil, nil, 0, fmt.Errorf("cursor timetable entry not found: %v", err)
 		}
-		query = query.Where("(t.created_at, t.id) < (?, ?)", cursorTimetableEntry.CreatedAt, cursorID)
+		query = query.Where("(te.created_at, te.id) < (?, ?)", cursorTimetableEntry.CreatedAt, cursorID)
 	}
 
 	err := query.Limit(limit + 1).Scan(ctx)
