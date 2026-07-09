@@ -115,10 +115,11 @@ func main() {
 	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
 	noteService := services.NewNoteService(store)
 	drawingService := services.NewDrawingService(store)
+	timetableService := services.NewTimetableService(store)
 
 	accountService.CreateAccountRoot()
 
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
-		rateLimiter, searchEngineService, noteService, drawingService)
+		rateLimiter, searchEngineService, noteService, drawingService, timetableService)
 }

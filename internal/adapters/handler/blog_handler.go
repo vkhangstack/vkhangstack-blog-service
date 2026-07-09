@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	customhttp "github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 
@@ -374,22 +373,4 @@ func (h *BlogHandler) SearchBlogPostsPublic(ctx *gin.Context) {
 		response = append(response, post)
 	}
 	HandleSuccess(ctx, response, "Success")
-}
-
-func parseIDParam(ctx *gin.Context) (string, error) {
-	return ctx.Param("id"), nil
-}
-
-func parseLimit(limitStr string) (int, error) {
-	var limit int
-	_, err := fmt.Sscanf(limitStr, "%d", &limit)
-	return limit, err
-}
-
-func getAuthorID(ctx *gin.Context) (string, error) {
-	idStr, err := customhttp.GetUserID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return idStr, nil
 }

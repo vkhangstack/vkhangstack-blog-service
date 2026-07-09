@@ -328,3 +328,21 @@ type Drawing struct {
 	UpdatedBy     *string   `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
 	DeletedBy     *string   `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
+
+type TimetableEntry struct {
+	bun.BaseModel `bun:"table:timetable_entries,alias:te"`
+	ID            string     `bun:"id,pk,type:varchar(20)" json:"id"`
+	AuthorID      string     `bun:"author_id,notnull,type:varchar(255)" json:"author_id"`
+	Subject       string     `bun:"subject,notnull,type:varchar(255)" json:"subject"`
+	DayOfWeek     int        `bun:"day_of_week,notnull,check:day_of_week BETWEEN 1 AND 7" json:"day_of_week"`
+	StartTime     string     `bun:"start_time,notnull,type:time" json:"start_time"`
+	EndTime       string     `bun:"end_time,notnull,type:time" json:"end_time"`
+	Color         string     `bun:"color,notnull,default:'blue',type:varchar(20)" json:"color"`
+	Note          *string    `bun:"note,nullzero,type:text" json:"note"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     *time.Time `bun:"updated_at,nullzero,type:timestamptz" json:"updated_at"`
+	DeletedAt     *time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz" json:"deleted_at"`
+	CreatedBy     string     `bun:"created_by,notnull,type:varchar(255)" json:"created_by"`
+	UpdatedBy     *string    `bun:"updated_by,nullzero,type:varchar(255)" json:"updated_by"`
+	DeletedBy     *string    `bun:"deleted_by,nullzero,type:varchar(255)" json:"deleted_by"`
+}

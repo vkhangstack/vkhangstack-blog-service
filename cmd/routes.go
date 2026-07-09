@@ -26,6 +26,7 @@ func InitRoutes(
 	searchEngineService *services.SearchEngineService,
 	noteService *services.NoteService,
 	drawingService *services.DrawingService,
+	timetableService *services.TimetableService,
 ) {
 	// Create routers
 	router := gin.Default()
@@ -45,9 +46,11 @@ func InitRoutes(
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	noteHandler := handler.NewNoteHandler(*noteService)
 	drawingHandler := handler.NewDrawingHandler(*drawingService)
+	timetableHandler := handler.NewTimetableHandler(timetableService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler, tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler)
+	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler,
+		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -67,6 +70,7 @@ func setupV1Routes(
 	rateLimiter *services.RateLimiter,
 	noteHandler *handler.NoteHandler,
 	drawingHandler *handler.DrawingHandler,
+	timetableHandler *handler.TimetableHandler,
 ) {
 
 	// Health check route
@@ -166,6 +170,15 @@ func setupV1Routes(
 				drawings.GET("/:id", drawingHandler.GetDrawing)
 				drawings.PUT("/:id", drawingHandler.UpdateDrawing)
 				drawings.DELETE("/:id", drawingHandler.DeleteDrawing)
+			}
+			timetables := cms.Group("/timetables")
+			{
+				timetables.POST("", timetableHandler.CreateTimetableEntry)
+				timetables.GET("", timetableHandler.ListTimetableEntries)
+				timetables.GET("/cursor", timetableHandler.ListTimetableEntriesCursor)
+				timetables.GET("/:id", timetableHandler.GetTimetableEntry)
+				timetables.PUT("/:id", timetableHandler.UpdateTimetableEntry)
+				timetables.DELETE("/:id", timetableHandler.DeleteTimetableEntry)
 			}
 		}
 

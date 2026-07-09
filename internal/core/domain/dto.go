@@ -316,3 +316,40 @@ type DrawingDetailsResponse struct {
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
 }
+
+// Timetable Entries
+type CreateTimetableEntryRequest struct {
+	Subject   string  `json:"subject" binding:"required"`
+	DayOfWeek int     `json:"day_of_week" binding:"required"`
+	StartTime string  `json:"start_time" binding:"required"`
+	EndTime   string  `json:"end_time" binding:"required"`
+	Color     *string `json:"color"`
+	Note      *string `json:"note"`
+}
+
+type UpdateTimetableEntryRequest struct {
+	Subject   *string `json:"subject"`
+	DayOfWeek *int    `json:"day_of_week"`
+	StartTime *string `json:"start_time"`
+	EndTime   *string `json:"end_time"`
+	Color     *string `json:"color"`
+	Note      *string `json:"note"`
+}
+
+type TimetableEntryFilter struct {
+	DayOfWeek *int `form:"day_of_week"`
+	Page      int  `form:"page"`
+	Limit     int  `form:"limit"`
+}
+
+type TimetableEntryResponse struct {
+	ID        string     `json:"id"`
+	Subject   string     `json:"subject"`
+	DayOfWeek int        `json:"day_of_week"`
+	StartTime string     `json:"start_time"`
+	EndTime   string     `json:"end_time"`
+	Color     string     `json:"color"`
+	Note      *string    `json:"note"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at,omitempty"`
+}

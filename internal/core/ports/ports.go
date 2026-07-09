@@ -225,3 +225,21 @@ type DrawingService interface {
 	UpdateDrawing(ctx context.Context, id string, req domain.UpdateDrawingRequest) error
 	DeleteDrawing(ctx context.Context, id string) error
 }
+
+type TimetableRepository interface {
+	CreateTimetableEntry(ctx context.Context, entry domain.TimetableEntry) (*domain.TimetableEntry, error)
+	GetTimetableEntryByID(ctx context.Context, authorID, id string) (*domain.TimetableEntry, error)
+	UpdateTimetableEntry(ctx context.Context, id string, updates domain.TimetableEntry) error
+	DeleteTimetableEntry(ctx context.Context, id string) error
+	ListTimetableEntries(ctx context.Context, authorID string, filter domain.TimetableEntryFilter) ([]*domain.TimetableEntry, int, error)
+	ListTimetableEntriesCursor(ctx context.Context, authorID string, filter domain.TimetableEntryFilter, cursor string, limit int) ([]*domain.TimetableEntry, *string, int, error)
+}
+
+type TimetableService interface {
+	CreateTimetableEntry(ctx context.Context, authorID string, req domain.CreateTimetableEntryRequest) (*domain.TimetableEntry, error)
+	GetTimetableEntry(ctx context.Context, authorID, id string) (*domain.TimetableEntryResponse, error)
+	ListTimetableEntries(ctx context.Context, authorID string, filter domain.TimetableEntryFilter) ([]*domain.TimetableEntryResponse, int, error)
+	ListTimetableEntriesCursor(ctx context.Context, authorID string, filter domain.TimetableEntryFilter, cursor string, limit int) ([]*domain.TimetableEntryResponse, *string, int, error)
+	UpdateTimetableEntry(ctx context.Context, id string, req domain.UpdateTimetableEntryRequest) error
+	DeleteTimetableEntry(ctx context.Context, id string) error
+}
