@@ -33,10 +33,12 @@ const (
 )
 
 const (
-	RoleRoot  = "ROOT"
-	RoleAdmin = "ADMIN"
-	RoleStaff = "STAFF"
-	RoleUser  = "USER"
+	RoleRoot    = "ROOT"
+	RoleAdmin   = "ADMIN"
+	RoleStaff   = "STAFF"
+	RoleAnalyst = "ANALYST"
+	RoleGuest   = "GUEST"
+	RoleUser    = "USER"
 )
 
 type PostStatus string

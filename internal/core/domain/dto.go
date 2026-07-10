@@ -13,6 +13,7 @@ type Profile struct {
 	ID       string `json:"id"`
 	Username string `json:"username"`
 	FullName string `json:"full_name"`
+	Role     string `json:"role"`
 }
 
 type LoginResponse struct {
@@ -315,6 +316,31 @@ type DrawingDetailsResponse struct {
 	Files     map[string]any `json:"files"`
 	CreatedAt time.Time      `json:"created_at"`
 	UpdatedAt time.Time      `json:"updated_at"`
+}
+
+// Menu management DTOs
+type CreateMenuRequest struct {
+	GroupTitle string  `json:"group_title" binding:"required"`
+	ParentID   *string `json:"parent_id"`
+	Title      string  `json:"title"       binding:"required"`
+	URL        *string `json:"url"`
+	Icon       *string `json:"icon"`
+	Badge      *string `json:"badge"`
+	Resource   *string `json:"resource"`
+	SortOrder  int     `json:"sort_order"`
+	IsActive   bool    `json:"is_active"`
+}
+
+type UpdateMenuRequest struct {
+	GroupTitle *string `json:"group_title"`
+	ParentID   *string `json:"parent_id"`
+	Title      *string `json:"title"`
+	URL        *string `json:"url"`
+	Icon       *string `json:"icon"`
+	Badge      *string `json:"badge"`
+	Resource   *string `json:"resource"`
+	SortOrder  *int    `json:"sort_order"`
+	IsActive   *bool   `json:"is_active"`
 }
 
 // Timetable Entries

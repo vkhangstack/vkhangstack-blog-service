@@ -59,9 +59,16 @@ func (a *AccountService) LoginAccount(username, password string) (*domain.LoginR
 	if userID == nil {
 		return nil, fmt.Errorf("invalid credentials")
 	}
+
+	// Fetch account profile to get role for JWT and response
+	account, err := a.repo.ProfileAccount(*userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch account profile: %w", err)
+	}
+
 	apiCfg := config.LoadConfig()
 
-	accessToken, err := utils.GenerateAccessToken(*userID, apiCfg.App.JWTSecret)
+	accessToken, err := utils.GenerateAccessToken(*userID, account.Role, apiCfg.App.JWTSecret)
 	if err != nil {
 		return nil, err
 	}
@@ -70,12 +77,17 @@ func (a *AccountService) LoginAccount(username, password string) (*domain.LoginR
 	if err != nil {
 		return nil, err
 	}
-	// In a real implementation, you would generate and return login tokens here
+
 	return &domain.LoginResponse{
 		ID:           *userID,
-		Email:        "",
 		AccessToken:  accessToken,
 		RefreshToken: refreshToken,
+		User: &domain.Profile{
+			ID:       account.ID,
+			Username: account.Username,
+			FullName: account.FullName,
+			Role:     account.Role,
+		},
 	}, nil
 }
 

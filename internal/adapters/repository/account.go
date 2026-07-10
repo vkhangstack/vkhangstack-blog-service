@@ -165,3 +165,13 @@ func (u *DB) ResetFailedLoginAttempts(username string) error {
 	}
 	return nil
 }
+
+func (u *DB) GetRoleByUserID(userID string) (string, error) {
+	ctx := context.Background()
+	var account domain.Account
+	err := u.db.NewSelect().Column("role").Model(&account).Where("id = ?", userID).Limit(1).Scan(ctx)
+	if err != nil {
+		return "", err
+	}
+	return account.Role, nil
+}

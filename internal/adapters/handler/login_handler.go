@@ -34,18 +34,6 @@ func (h *LoginHandler) LoginAccount(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodeInvalidCredentials, nil, "Username or password is incorrect")
 		return
 	}
-	profile, err := h.sva.ProfileAccount(response.ID)
-	if err != nil {
-		logger.Log.WithError(err).Error("LoginAccount: Failed to get user profile")
-		HandleError(ctx, domain.ErrorCodeInvalidCredentials, nil, "Username or password is incorrect")
-		return
-	}
 
-	data := domain.LoginResponse{
-		AccessToken:  response.AccessToken,
-		RefreshToken: response.RefreshToken,
-		User:         &domain.Profile{ID: profile.ID, Username: profile.Username, FullName: profile.FullName},
-	}
-
-	HandleSuccess(ctx, data, "Login success!")
+	HandleSuccess(ctx, response, "Login success!")
 }

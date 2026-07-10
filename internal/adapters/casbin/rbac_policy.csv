@@ -1,0 +1,33 @@
+# ABAC policy rules
+# Format: p, role, resource, action
+# action * means all HTTP methods
+
+# ROOT: full access to everything
+p, ROOT, *, *
+
+# ADMIN: full access to all CMS resources, messages, and customer
+p, ADMIN, cms/posts, *
+p, ADMIN, cms/categories, *
+p, ADMIN, cms/tasks, *
+p, ADMIN, cms/notes, *
+p, ADMIN, cms/drawings, *
+p, ADMIN, cms/timetables, *
+p, ADMIN, cms/tags, *
+p, ADMIN, cms/upload, *
+p, ADMIN, cms/menus, *
+p, ADMIN, messages, *
+p, ADMIN, customer, *
+
+# STAFF: read-only on posts/categories, full write on tasks/notes/drawings/timetables
+p, STAFF, cms/posts, GET
+p, STAFF, cms/categories, GET
+p, STAFF, cms/tasks, *
+p, STAFF, cms/notes, *
+p, STAFF, cms/drawings, *
+p, STAFF, cms/timetables, *
+p, STAFF, cms/tags, *
+p, STAFF, cms/upload, POST
+
+# USER: messages only (GET and POST)
+p, USER, messages, GET
+p, USER, messages, POST

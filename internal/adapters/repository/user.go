@@ -132,7 +132,7 @@ func (u *DB) LoginUser(email, password string) (*domain.LoginResponse, error) {
 		return nil, err
 	}
 
-	accessToken, err := utils.GenerateAccessToken(utils.Uint64ToString(user.ID), apiCfg.App.JWTSecret)
+	accessToken, err := utils.GenerateAccessToken(utils.Uint64ToString(user.ID), domain.RoleUser, apiCfg.App.JWTSecret)
 	if err != nil {
 		return nil, err
 	}

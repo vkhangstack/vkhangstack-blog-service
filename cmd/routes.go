@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
+	"github.com/uptrace/bun"
+	casbinAdapter "github.com/vkhangstack/hexagonal-architecture/internal/adapters/casbin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/handler"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
@@ -27,7 +29,15 @@ func InitRoutes(
 	noteService *services.NoteService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
+	menuAdminSvc *services.MenuService,
+	db *bun.DB,
 ) {
+	// Initialize Casbin RBAC enforcer backed by PostgreSQL for per-user policies.
+	authzAdapter, err := casbinAdapter.NewAuthorizationAdapterWithDB(db)
+	if err != nil {
+		log.Fatalf("failed to initialize authorization adapter: %v", err)
+	}
+
 	// Create routers
 	router := gin.Default()
 	// router2 := gin.Default()
@@ -37,6 +47,10 @@ func InitRoutes(
 	// pprof.Register(router2)
 
 	// Initialize handlers
+	menuSvc := casbinAdapter.NewMenuServiceAdapter(authzAdapter, menuAdminSvc)
+	menuHandler := handler.NewMenuHandler(menuSvc)
+	menuAdminHandler := handler.NewMenuAdminHandler(menuAdminSvc)
+	permissionHandler := handler.NewPermissionHandler(authzAdapter)
 	messageHandler := handler.NewMessageHandler(*msgService)
 	customerHandler := handler.NewUserHandler(*customerService, *firebaseService)
 	loginHandler := handler.NewLoginHandler(*accountService)
@@ -49,8 +63,8 @@ func InitRoutes(
 	timetableHandler := handler.NewTimetableHandler(timetableService)
 
 	// Setup route groups
-	setupV1Routes(router, messageHandler, customerHandler, loginHandler, blogHandler,
-		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler)
+	setupV1Routes(router, menuHandler, menuAdminHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
+		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -60,6 +74,9 @@ func InitRoutes(
 // setupV1Routes configures v1 API routes
 func setupV1Routes(
 	router *gin.Engine,
+	menuHandler *handler.MenuHandler,
+	menuAdminHandler *handler.MenuAdminHandler,
+	permissionHandler *handler.PermissionHandler,
 	messageHandler *handler.MessageHandler,
 	customerHandler *handler.UserHandler,
 	loginHandler *handler.LoginHandler,
@@ -71,8 +88,8 @@ func setupV1Routes(
 	noteHandler *handler.NoteHandler,
 	drawingHandler *handler.DrawingHandler,
 	timetableHandler *handler.TimetableHandler,
+	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
-
 	// Health check route
 	router.GET("/health", http.TracingMiddleware(), handler.NewHealthHandler().HealthCheck)
 
@@ -80,7 +97,8 @@ func setupV1Routes(
 	{
 		// Message routes
 		messages := v1.Group("/messages")
-		messages.Use(http.AuthenticationMiddleware())
+		messages.Use(http.AuthenticationMiddleware(authzAdapter))
+		messages.Use(http.AuthorizationMiddleware(authzAdapter, "messages"))
 		{
 			messages.GET("/:id", messageHandler.ReadMessage)
 			messages.GET("", messageHandler.ReadMessages)
@@ -91,7 +109,8 @@ func setupV1Routes(
 
 		// User routes
 		users := v1.Group("/customer")
-		users.Use(http.AuthenticationMiddleware())
+		users.Use(http.AuthenticationMiddleware(authzAdapter))
+		users.Use(http.AuthorizationMiddleware(authzAdapter, "customer"))
 		{
 			users.GET("/:id", customerHandler.ReadUser)
 			users.GET("", customerHandler.ReadUsers)
@@ -106,14 +125,23 @@ func setupV1Routes(
 			auth.POST("/login", loginHandler.LoginAccount)
 		}
 
+		// Account routes (authenticated — no authz check, users can always see their own data)
+		account := v1.Group("/account")
+		account.Use(http.AuthenticationMiddleware(authzAdapter))
+		{
+			account.GET("/menu", menuHandler.GetMenu)
+			account.GET("/permissions", permissionHandler.GetMyPermissions)
+		}
+
 		// Webhook routes
 		v1.POST("/membership/webhooks", customerHandler.UpdateMembershipStatus)
 
-		// CMS routes (authenticated)
+		// CMS routes (authenticated + authorized per sub-group)
 		cms := v1.Group("/cms")
-		cms.Use(http.AuthenticationMiddleware())
+		cms.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			categories := cms.Group("/categories")
+			categories.Use(http.AuthorizationMiddleware(authzAdapter, "cms/categories"))
 			{
 				categories.POST("", blogHandler.CreateCategory)
 				categories.GET("", blogHandler.ListCategories)
@@ -124,6 +152,7 @@ func setupV1Routes(
 			}
 
 			posts := cms.Group("/posts")
+			posts.Use(http.AuthorizationMiddleware(authzAdapter, "cms/posts"))
 			{
 				posts.POST("", blogHandler.CreatePost)
 				posts.GET("", blogHandler.ListPosts)
@@ -136,12 +165,14 @@ func setupV1Routes(
 			}
 
 			tags := cms.Group("/tags")
+			tags.Use(http.AuthorizationMiddleware(authzAdapter, "cms/tags"))
 			{
 				tags.POST("", tagHandler.CreateTag)
 				tags.GET("", tagHandler.ListTags)
 			}
 
 			tasks := cms.Group("/tasks")
+			tasks.Use(http.AuthorizationMiddleware(authzAdapter, "cms/tasks"))
 			{
 				tasks.POST("", taskHandler.CreateTask)
 				tasks.GET("", taskHandler.ListTasks)
@@ -153,6 +184,7 @@ func setupV1Routes(
 			}
 
 			notes := cms.Group("/notes")
+			notes.Use(http.AuthorizationMiddleware(authzAdapter, "cms/notes"))
 			{
 				notes.POST("", noteHandler.CreateNote)
 				notes.GET("", noteHandler.ListNotes)
@@ -163,6 +195,7 @@ func setupV1Routes(
 			}
 
 			drawings := cms.Group("/drawings")
+			drawings.Use(http.AuthorizationMiddleware(authzAdapter, "cms/drawings"))
 			{
 				drawings.POST("", drawingHandler.CreateDrawing)
 				drawings.GET("", drawingHandler.ListDrawings)
@@ -171,7 +204,26 @@ func setupV1Routes(
 				drawings.PUT("/:id", drawingHandler.UpdateDrawing)
 				drawings.DELETE("/:id", drawingHandler.DeleteDrawing)
 			}
+			// Permission management — ROOT/ADMIN only (reuse customer resource guard)
+			permissions := cms.Group("/permissions")
+			permissions.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
+			{
+				permissions.POST("/grant", permissionHandler.GrantPermission)
+				permissions.POST("/revoke", permissionHandler.RevokePermission)
+			}
+
+			menus := cms.Group("/menus")
+			menus.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
+			{
+				menus.POST("", menuAdminHandler.CreateMenu)
+				menus.GET("", menuAdminHandler.ListMenus)
+				menus.GET("/:id", menuAdminHandler.GetMenuByID)
+				menus.PUT("/:id", menuAdminHandler.UpdateMenu)
+				menus.DELETE("/:id", menuAdminHandler.DeleteMenu)
+			}
+
 			timetables := cms.Group("/timetables")
+			timetables.Use(http.AuthorizationMiddleware(authzAdapter, "cms/timetables"))
 			{
 				timetables.POST("", timetableHandler.CreateTimetableEntry)
 				timetables.GET("", timetableHandler.ListTimetableEntries)
@@ -193,7 +245,8 @@ func setupV1Routes(
 		}
 		// Upload routes
 		upload := v1.Group("/upload")
-		upload.Use(http.AuthenticationMiddleware())
+		upload.Use(http.AuthenticationMiddleware(authzAdapter))
+		upload.Use(http.AuthorizationMiddleware(authzAdapter, "cms/upload"))
 		{
 			upload.POST("", uploadHandler.UploadFile)
 		}

@@ -9,8 +9,42 @@ import (
 )
 
 type AuthService interface {
-	ValidateToken(authHeader string, jwtSecret string) (string, error)
+	ValidateToken(authHeader string, jwtSecret string) (string, string, error)
 	GenerateAuthTokens(userID string) (*domain.LoginResponse, error)
+}
+
+// AuthorizationService evaluates RBAC policy decisions and manages per-user permissions.
+type AuthorizationService interface {
+	IsAllowed(ctx context.Context, input domain.AuthzInput) (domain.AuthzResult, error)
+	// SyncUserRole ensures g(userID, role) exists so the user inherits role policies.
+	SyncUserRole(userID, role string) error
+	// GrantPermission adds a direct user-level policy: p(userID, resource, action).
+	GrantPermission(userID, resource, action string) error
+	// RevokePermission removes a direct user-level policy.
+	RevokePermission(userID, resource, action string) error
+	// GetUserPermissions returns all direct policies for a user (not inherited from role).
+	GetUserPermissions(userID string) [][]string
+}
+
+// MenuService builds the navigation menu filtered by role permissions.
+type MenuService interface {
+	GetMenu(ctx context.Context, role string) (*domain.MenuResponse, error)
+}
+
+type MenuRepository interface {
+	CreateMenu(ctx context.Context, entry domain.MenuEntry) (*domain.MenuEntry, error)
+	GetMenuByID(ctx context.Context, id string) (*domain.MenuEntry, error)
+	UpdateMenu(ctx context.Context, id string, updates domain.MenuEntry) error
+	DeleteMenu(ctx context.Context, id string) error
+	ListMenus(ctx context.Context) ([]*domain.MenuEntry, error)
+}
+
+type MenuAdminService interface {
+	CreateMenu(ctx context.Context, req domain.CreateMenuRequest) (*domain.MenuEntry, error)
+	GetMenu(ctx context.Context, id string) (*domain.MenuEntry, error)
+	UpdateMenu(ctx context.Context, id string, req domain.UpdateMenuRequest) error
+	DeleteMenu(ctx context.Context, id string) error
+	ListMenus(ctx context.Context) ([]*domain.MenuEntry, error)
 }
 
 type MessengerService interface {
@@ -61,6 +95,7 @@ type AccountRepository interface {
 	SetAccountBlocked(username string, blocked bool) error
 	IncrementFailedLoginAttempts(username string) error
 	ResetFailedLoginAttempts(username string) error
+	GetRoleByUserID(userID string) (string, error)
 }
 
 type AccountService interface {

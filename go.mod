@@ -6,6 +6,7 @@ require (
 	github.com/aws/aws-sdk-go-v2 v1.42.0
 	github.com/aws/aws-sdk-go-v2/credentials v1.19.24
 	github.com/bwmarrin/snowflake v0.3.0
+	github.com/casbin/casbin/v2 v2.135.0
 	github.com/gin-contrib/pprof v1.4.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-redis/redis/v8 v8.11.5
@@ -46,6 +47,8 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.36.6 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.43.3 // indirect
 	github.com/aws/smithy-go v1.27.2 // indirect
+	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
+	github.com/casbin/govaluate v1.3.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect

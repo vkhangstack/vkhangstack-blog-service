@@ -329,6 +329,24 @@ type Drawing struct {
 	DeletedBy     *string   `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
 }
 
+// MenuEntry is the DB model for a CMS-managed navigation item.
+type MenuEntry struct {
+	bun.BaseModel `bun:"table:menus,alias:m"`
+	ID            string     `bun:"id,pk,type:varchar(20)"          json:"id"`
+	GroupTitle    string     `bun:"group_title,notnull,type:varchar(255)" json:"group_title"`
+	ParentID      *string    `bun:"parent_id,nullzero,type:varchar(20)"   json:"parent_id"`
+	Title         string     `bun:"title,notnull,type:varchar(255)"       json:"title"`
+	URL           *string    `bun:"url,nullzero,type:varchar(500)"        json:"url"`
+	Icon          *string    `bun:"icon,nullzero,type:varchar(100)"       json:"icon"`
+	Badge         *string    `bun:"badge,nullzero,type:varchar(100)"      json:"badge"`
+	Resource      *string    `bun:"resource,nullzero,type:varchar(255)"   json:"resource"`
+	SortOrder     int        `bun:"sort_order,notnull,default:0"          json:"sort_order"`
+	IsActive      bool       `bun:"is_active,notnull,default:true"        json:"is_active"`
+	CreatedAt     time.Time  `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     *time.Time `bun:"updated_at,nullzero,type:timestamptz"  json:"updated_at"`
+	DeletedAt     *time.Time `bun:"deleted_at,soft_delete,nullzero,type:timestamptz" json:"-"`
+}
+
 type TimetableEntry struct {
 	bun.BaseModel `bun:"table:timetable_entries,alias:te"`
 	ID            string     `bun:"id,pk,type:varchar(20)" json:"id"`
