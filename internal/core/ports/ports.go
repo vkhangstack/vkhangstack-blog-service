@@ -31,22 +31,6 @@ type MenuService interface {
 	GetMenu(ctx context.Context, role string) (*domain.MenuResponse, error)
 }
 
-type MenuRepository interface {
-	CreateMenu(ctx context.Context, entry domain.MenuEntry) (*domain.MenuEntry, error)
-	GetMenuByID(ctx context.Context, id string) (*domain.MenuEntry, error)
-	UpdateMenu(ctx context.Context, id string, updates domain.MenuEntry) error
-	DeleteMenu(ctx context.Context, id string) error
-	ListMenus(ctx context.Context) ([]*domain.MenuEntry, error)
-}
-
-type MenuAdminService interface {
-	CreateMenu(ctx context.Context, req domain.CreateMenuRequest) (*domain.MenuEntry, error)
-	GetMenu(ctx context.Context, id string) (*domain.MenuEntry, error)
-	UpdateMenu(ctx context.Context, id string, req domain.UpdateMenuRequest) error
-	DeleteMenu(ctx context.Context, id string) error
-	ListMenus(ctx context.Context) ([]*domain.MenuEntry, error)
-}
-
 type MessengerService interface {
 	CreateMessage(userID string, message domain.Message) error
 	ReadMessage(id string) (*domain.Message, error)

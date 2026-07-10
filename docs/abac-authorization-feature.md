@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implemented role-based access control (RBAC/ABAC) using the Casbin library, embedded JWT role claims, and a dynamic navigation menu system backed by a `menus` database table.
+Implemented role-based access control (RBAC/ABAC) using the Casbin library, embedded JWT role claims, and a role-filtered navigation menu built from a static definition (no admin CRUD, no DB-backed menu table).
 
 ---
 
@@ -21,24 +21,17 @@ internal/
 │   ├── domain/
 │   │   ├── authz.go      # AuthzInput, AuthzResult
 │   │   └── menu.go       # NavItem, NavGroup, MenuResponse, ResourcePermission
-│   ├── ports/ports.go    # AuthorizationService, MenuService, MenuAdminService, MenuRepository
-│   └── services/
-│       └── menu.go       # MenuAdminService implementation (CRUD)
+│   └── ports/ports.go    # AuthorizationService, MenuService
 ├── adapters/
 │   ├── casbin/
 │   │   ├── authorization_adapter.go   # Casbin enforcer, IsAllowed()
-│   │   ├── menu_service.go            # MenuServiceAdapter (DB + static fallback)
+│   │   ├── menu_service.go            # MenuServiceAdapter (static nav def, Casbin-filtered)
 │   │   ├── rbac_model.conf            # Casbin model definition
 │   │   └── rbac_policy.csv           # Policy rules per role/resource/action
 │   ├── http/
 │   │   └── middleware.go              # AuthenticationMiddleware, AuthorizationMiddleware
-│   ├── repository/
-│   │   └── menu.go                    # MenuRepository (CRUD on menus table)
 │   └── handler/
-│       ├── menu_handler.go            # GET /v1/account/menu
-│       └── menu_admin_handler.go      # CRUD /v1/cms/menus
-└── migrations/
-    └── 20260710143800_menus.up.sql    # menus table DDL
+│       └── menu_handler.go            # GET /v1/account/menu
 ```
 
 ---
@@ -65,7 +58,7 @@ internal/
 | cms/drawings    | ALL  | ALL   | ALL   | —        |
 | cms/timetables  | ALL  | ALL   | ALL   | —        |
 | cms/tags        | ALL  | ALL   | ALL   | —        |
-| cms/menus       | ALL  | ALL   | —     | —        |
+| cms/menus (guards permission grant/revoke endpoints) | ALL | ALL | — | — |
 | cms/upload      | ALL  | ALL   | POST  | —        |
 | messages        | ALL  | ALL   | —     | GET,POST |
 | customer        | ALL  | ALL   | —     | —        |
@@ -133,65 +126,18 @@ Returns role-filtered sidebar navigation matching the frontend `SidebarData.navG
 }
 ```
 
-### Menu admin CRUD (ROOT, ADMIN only)
-
-```
-POST   /v1/cms/menus          Create menu entry
-GET    /v1/cms/menus          List all menu entries
-GET    /v1/cms/menus/:id      Get menu entry by ID
-PUT    /v1/cms/menus/:id      Update menu entry
-DELETE /v1/cms/menus/:id      Soft-delete menu entry
-```
-
-**Create/Update request body:**
-
-```json
-{
-  "group_title": "Content Management",
-  "parent_id": null,
-  "title": "Posts",
-  "url": "/cms/posts",
-  "icon": "file-text",
-  "badge": null,
-  "resource": "cms/posts",
-  "sort_order": 1,
-  "is_active": true
-}
-```
-
----
-
-## Database Schema
-
-```sql
-CREATE TABLE menus (
-  id          VARCHAR(20)  PRIMARY KEY,          -- snowflake ID
-  group_title VARCHAR(255) NOT NULL,              -- nav group label
-  parent_id   VARCHAR(20)  REFERENCES menus(id), -- null = top-level
-  title       VARCHAR(255) NOT NULL,
-  url         VARCHAR(500),                       -- null = collapsible group
-  icon        VARCHAR(100),
-  badge       VARCHAR(100),
-  resource    VARCHAR(255),                       -- Casbin resource for permission check
-  sort_order  INT          NOT NULL DEFAULT 0,
-  is_active   BOOLEAN      NOT NULL DEFAULT true,
-  created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
-  updated_at  TIMESTAMPTZ,
-  deleted_at  TIMESTAMPTZ                         -- soft delete
-);
-```
-
 ---
 
 ## Menu Resolution Logic
 
 `GET /v1/account/menu` resolution order:
 
-1. Load active entries from `menus` table (ordered by `group_title`, `sort_order`)
+1. Iterate the hardcoded static nav definition (`allNavGroups` in `menu_service.go`)
 2. Filter leaf items by Casbin `Enforce(role, resource, "GET")`
 3. Build `permission` object per leaf (checks GET/POST/PUT/DELETE)
-4. If DB has no entries → fall back to hardcoded static menu (same filtering)
-5. Group headers (items with children) are included only if ≥1 child is accessible
+4. Group headers (items with children) are included only if ≥1 child is accessible
+
+There is no admin CRUD for menu entries and no `menus` database table — the nav tree is defined in code and filtered per-request by role/permissions.
 
 ---
 

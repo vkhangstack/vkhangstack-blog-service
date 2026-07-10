@@ -318,31 +318,6 @@ type DrawingDetailsResponse struct {
 	UpdatedAt time.Time      `json:"updated_at"`
 }
 
-// Menu management DTOs
-type CreateMenuRequest struct {
-	GroupTitle string  `json:"group_title" binding:"required"`
-	ParentID   *string `json:"parent_id"`
-	Title      string  `json:"title"       binding:"required"`
-	URL        *string `json:"url"`
-	Icon       *string `json:"icon"`
-	Badge      *string `json:"badge"`
-	Resource   *string `json:"resource"`
-	SortOrder  int     `json:"sort_order"`
-	IsActive   bool    `json:"is_active"`
-}
-
-type UpdateMenuRequest struct {
-	GroupTitle *string `json:"group_title"`
-	ParentID   *string `json:"parent_id"`
-	Title      *string `json:"title"`
-	URL        *string `json:"url"`
-	Icon       *string `json:"icon"`
-	Badge      *string `json:"badge"`
-	Resource   *string `json:"resource"`
-	SortOrder  *int    `json:"sort_order"`
-	IsActive   *bool   `json:"is_active"`
-}
-
 // Timetable Entries
 type CreateTimetableEntryRequest struct {
 	Subject   string  `json:"subject" binding:"required"`

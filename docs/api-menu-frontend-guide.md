@@ -165,37 +165,7 @@ const canDelete = canAccess(menuItem, 'delete')
 
 ---
 
-## 4. Menu CRUD (ADMIN / ROOT only)
-
-```
-POST   /v1/cms/menus          Create entry
-GET    /v1/cms/menus          List all entries
-GET    /v1/cms/menus/:id      Get by ID
-PUT    /v1/cms/menus/:id      Update
-DELETE /v1/cms/menus/:id      Delete
-```
-
-**Create body:**
-```json
-{
-  "group_title": "Content Management",
-  "parent_id": null,
-  "title": "Blog",
-  "url": "/cms/blog",
-  "icon": "book",
-  "resource": "cms/posts",
-  "sort_order": 10,
-  "is_active": true
-}
-```
-
-- `parent_id` — set to a parent item ID to nest (creates `NavCollapsible` behaviour)
-- `resource` — must match a Casbin resource key for permission filtering
-- `sort_order` — controls display order within the group
-
----
-
-## 5. Role-based behaviour summary
+## 4. Role-based behaviour summary
 
 | Role  | Sees in menu |
 |-------|-------------|

@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
-	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 )
 
 // navGroupDef defines a static nav group with leaf items linked to resources.
@@ -62,112 +61,21 @@ var allNavGroups = []navGroupDef{
 	},
 }
 
-// MenuServiceAdapter wraps AuthorizationAdapter + optional DB service for dynamic menus.
+// MenuServiceAdapter builds the role-filtered navigation menu from the static definition.
 type MenuServiceAdapter struct {
-	authz   *AuthorizationAdapter
-	menuSvc ports.MenuAdminService // nil → falls back to static menu
+	authz *AuthorizationAdapter
 }
 
-// NewMenuServiceAdapter creates a MenuServiceAdapter that uses DB entries when available.
-func NewMenuServiceAdapter(authz *AuthorizationAdapter, menuSvc ports.MenuAdminService) *MenuServiceAdapter {
-	return &MenuServiceAdapter{authz: authz, menuSvc: menuSvc}
+// NewMenuServiceAdapter creates a MenuServiceAdapter.
+func NewMenuServiceAdapter(authz *AuthorizationAdapter) *MenuServiceAdapter {
+	return &MenuServiceAdapter{authz: authz}
 }
 
-// GetMenu returns role-filtered navGroups. DB entries take precedence; falls back to static list.
-func (m *MenuServiceAdapter) GetMenu(ctx context.Context, role string) (*domain.MenuResponse, error) {
-	if m.menuSvc != nil {
-		entries, err := m.menuSvc.ListMenus(ctx)
-		if err == nil && len(entries) > 0 {
-			return m.buildFromDB(role, entries), nil
-		}
-	}
-	return m.buildFromStatic(role), nil
-}
-
-// buildFromDB converts DB MenuEntry rows into the frontend NavGroup structure.
-func (m *MenuServiceAdapter) buildFromDB(role string, entries []*domain.MenuEntry) *domain.MenuResponse {
-	// Index by ID for parent lookup
-	byID := make(map[string]*domain.MenuEntry, len(entries))
-	for _, e := range entries {
-		byID[e.ID] = e
-	}
-
-	// Group top-level (no parent) entries by group_title
-	groupOrder := []string{}
-	groupMap := map[string][]domain.NavItem{}
-
-	for _, e := range entries {
-		if !e.IsActive || e.ParentID != nil {
-			continue
-		}
-		resource := ""
-		if e.Resource != nil {
-			resource = *e.Resource
-		}
-		canRead, _ := m.authz.enforcer.Enforce(role, resource, "GET")
-		if resource != "" && !canRead {
-			continue
-		}
-
-		item := m.entryToNavItem(role, e, entries)
-		g := e.GroupTitle
-		if _, seen := groupMap[g]; !seen {
-			groupOrder = append(groupOrder, g)
-		}
-		groupMap[g] = append(groupMap[g], item)
-	}
-
-	var groups []domain.NavGroup
-	for _, g := range groupOrder {
-		if items := groupMap[g]; len(items) > 0 {
-			groups = append(groups, domain.NavGroup{Title: g, Items: items})
-		}
-	}
-	return &domain.MenuResponse{Role: role, NavGroups: groups}
-}
-
-// entryToNavItem converts one DB entry, attaching children recursively.
-func (m *MenuServiceAdapter) entryToNavItem(role string, e *domain.MenuEntry, all []*domain.MenuEntry) domain.NavItem {
-	item := domain.NavItem{Title: e.Title}
-	if e.URL != nil {
-		item.URL = *e.URL
-	}
-	if e.Icon != nil {
-		item.Icon = *e.Icon
-	}
-	if e.Badge != nil {
-		item.Badge = *e.Badge
-	}
-	if e.Resource != nil && *e.Resource != "" {
-		item.Permission = buildPermission(m.authz, role, *e.Resource)
-	}
-
-	// Attach children
-	for _, child := range all {
-		if child.ParentID != nil && *child.ParentID == e.ID && child.IsActive {
-			item.Items = append(item.Items, m.entryToNavItem(role, child, all))
-		}
-	}
-	return item
-}
-
-// buildFromStatic falls back to the hardcoded menu when DB has no entries.
-func (m *MenuServiceAdapter) buildFromStatic(role string) *domain.MenuResponse {
+// GetMenu returns role-filtered navGroups built from the static nav definition.
+func (m *MenuServiceAdapter) GetMenu(_ context.Context, role string) (*domain.MenuResponse, error) {
 	var groups []domain.NavGroup
 	for _, gDef := range allNavGroups {
 		items := buildNavItems(m.authz, role, gDef.Items)
-		if len(items) > 0 {
-			groups = append(groups, domain.NavGroup{Title: gDef.Title, Items: items})
-		}
-	}
-	return &domain.MenuResponse{Role: role, NavGroups: groups}
-}
-
-// GetMenu on AuthorizationAdapter kept for backward compat (uses static only).
-func (a *AuthorizationAdapter) GetMenu(_ context.Context, role string) (*domain.MenuResponse, error) {
-	var groups []domain.NavGroup
-	for _, gDef := range allNavGroups {
-		items := buildNavItems(a, role, gDef.Items)
 		if len(items) > 0 {
 			groups = append(groups, domain.NavGroup{Title: gDef.Title, Items: items})
 		}

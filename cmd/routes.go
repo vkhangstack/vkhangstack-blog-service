@@ -29,7 +29,6 @@ func InitRoutes(
 	noteService *services.NoteService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
-	menuAdminSvc *services.MenuService,
 	db *bun.DB,
 ) {
 	// Initialize Casbin RBAC enforcer backed by PostgreSQL for per-user policies.
@@ -47,9 +46,8 @@ func InitRoutes(
 	// pprof.Register(router2)
 
 	// Initialize handlers
-	menuSvc := casbinAdapter.NewMenuServiceAdapter(authzAdapter, menuAdminSvc)
+	menuSvc := casbinAdapter.NewMenuServiceAdapter(authzAdapter)
 	menuHandler := handler.NewMenuHandler(menuSvc)
-	menuAdminHandler := handler.NewMenuAdminHandler(menuAdminSvc)
 	permissionHandler := handler.NewPermissionHandler(authzAdapter)
 	messageHandler := handler.NewMessageHandler(*msgService)
 	customerHandler := handler.NewUserHandler(*customerService, *firebaseService)
@@ -63,7 +61,7 @@ func InitRoutes(
 	timetableHandler := handler.NewTimetableHandler(timetableService)
 
 	// Setup route groups
-	setupV1Routes(router, menuHandler, menuAdminHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
+	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
 		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
@@ -75,7 +73,6 @@ func InitRoutes(
 func setupV1Routes(
 	router *gin.Engine,
 	menuHandler *handler.MenuHandler,
-	menuAdminHandler *handler.MenuAdminHandler,
 	permissionHandler *handler.PermissionHandler,
 	messageHandler *handler.MessageHandler,
 	customerHandler *handler.UserHandler,
@@ -210,16 +207,6 @@ func setupV1Routes(
 			{
 				permissions.POST("/grant", permissionHandler.GrantPermission)
 				permissions.POST("/revoke", permissionHandler.RevokePermission)
-			}
-
-			menus := cms.Group("/menus")
-			menus.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
-			{
-				menus.POST("", menuAdminHandler.CreateMenu)
-				menus.GET("", menuAdminHandler.ListMenus)
-				menus.GET("/:id", menuAdminHandler.GetMenuByID)
-				menus.PUT("/:id", menuAdminHandler.UpdateMenu)
-				menus.DELETE("/:id", menuAdminHandler.DeleteMenu)
 			}
 
 			timetables := cms.Group("/timetables")
