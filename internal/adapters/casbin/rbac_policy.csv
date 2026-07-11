@@ -16,7 +16,7 @@ p, ADMIN, cms/tags, *
 p, ADMIN, cms/upload, *
 p, ADMIN, cms/menus, *
 p, ADMIN, messages, *
-p, ADMIN, customer, *
+p, ADMIN, users, *
 
 # STAFF: read-only on posts/categories, full write on tasks/notes/drawings/timetables
 p, STAFF, cms/posts, GET

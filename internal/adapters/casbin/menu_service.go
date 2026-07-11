@@ -56,7 +56,7 @@ var allNavGroups = []navGroupDef{
 	{
 		Title: "Administration",
 		Items: []navItemDef{
-			{Title: "Customers", URL: "/customer", Icon: "users", Resource: "customer"},
+			{Title: "User", URL: "/users", Icon: "users", Resource: "users"},
 		},
 	},
 }
