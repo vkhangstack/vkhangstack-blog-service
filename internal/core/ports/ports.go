@@ -24,6 +24,13 @@ type AuthorizationService interface {
 	RevokePermission(userID, resource, action string) error
 	// GetUserPermissions returns all direct policies for a user (not inherited from role).
 	GetUserPermissions(userID string) [][]string
+	// AssignRole grants a user membership in an RBAC role (g(userID, role)), so the user
+	// immediately inherits that role's whole permission set.
+	AssignRole(userID, role string) error
+	// UnassignRole removes a user's membership in an RBAC role.
+	UnassignRole(userID, role string) error
+	// GetUserRoles returns the RBAC roles a user is currently a member of.
+	GetUserRoles(userID string) []string
 }
 
 // MenuService builds the navigation menu filtered by role permissions.
@@ -68,24 +75,44 @@ type CustomerRepository interface {
 }
 
 type AccountRepository interface {
-	CreateAccount(account domain.Account) (*domain.Account, error)
-	FindAccountByUsername(username string) (*domain.Account, error)
-	LoginAccount(username, password string) (*string, error)
-	ProfileAccount(userID string) (*domain.Account, error)
-	CheckAccountExists(username string) (bool, error)
-	CheckAccountIsBlocked(username string) (bool, error)
-	CheckAccountTemporarilyBlocked(username string) (bool, error)
-	SetAccountTemporarilyBlocked(username string, duration time.Duration) error
-	SetAccountBlocked(username string, blocked bool) error
-	IncrementFailedLoginAttempts(username string) error
-	ResetFailedLoginAttempts(username string) error
-	GetRoleByUserID(userID string) (string, error)
+	CreateAccount(ctx context.Context, account domain.Account) (*domain.Account, error)
+	FindAccountByUsername(ctx context.Context, username string) (*domain.Account, error)
+	FindAccountByEmail(ctx context.Context, email string) (*domain.Account, error)
+	LoginAccount(ctx context.Context, username, password string) (*string, error)
+	ProfileAccount(ctx context.Context, userID string) (*domain.Account, error)
+	CheckAccountExists(ctx context.Context, username string) (bool, error)
+	CheckAccountIsBlocked(ctx context.Context, username string) (bool, error)
+	CheckAccountTemporarilyBlocked(ctx context.Context, username string) (bool, error)
+	SetAccountTemporarilyBlocked(ctx context.Context, username string, duration time.Duration) error
+	SetAccountBlocked(ctx context.Context, username string, blocked bool) error
+	IncrementFailedLoginAttempts(ctx context.Context, username string) error
+	ResetFailedLoginAttempts(ctx context.Context, username string) error
+	GetRoleByUserID(ctx context.Context, userID string) (string, error)
+	ListAccounts(ctx context.Context) ([]*domain.Account, error)
+	GetAccountByID(ctx context.Context, id string) (*domain.Account, error)
+	UpdateAccountRecord(ctx context.Context, account domain.Account) (*domain.Account, error)
+	DeleteAccount(ctx context.Context, id string) error
 }
 
 type AccountService interface {
-	CreateAccountRoot() error
-	LoginAccount(username, password string) (*domain.LoginResponse, error)
-	ProfileAccount(userID string) (*domain.Account, error)
+	CreateAccountRoot(ctx context.Context) error
+	LoginAccount(ctx context.Context, username, password string) (*domain.LoginResponse, error)
+	ProfileAccount(ctx context.Context, userID string) (*domain.Account, error)
+	ListAccounts(ctx context.Context) ([]domain.AccountResponse, error)
+	GetAccount(ctx context.Context, id string) (*domain.AccountResponse, error)
+	// actorIsRoot lets the root superadmin assign the root role to another account;
+	// everyone else is blocked from ever granting root.
+	CreateAccount(ctx context.Context, req domain.CreateAccountRequest, actorIsRoot bool) (*domain.AccountResponse, error)
+	UpdateAccount(ctx context.Context, id string, req domain.UpdateAccountRequest, actorIsRoot bool) (*domain.AccountResponse, error)
+	DeleteAccount(ctx context.Context, id string) error
+	InviteAccount(ctx context.Context, req domain.InviteAccountRequest, actorIsRoot bool) (*domain.AccountResponse, error)
+}
+
+// RoleService manages the runtime-editable Casbin role permission matrix (Part B).
+type RoleService interface {
+	ListRoles() []domain.RoleInfo
+	GetRolePermissions(role string) (*domain.RolePermissions, error)
+	UpdateRolePermissions(role string, req domain.UpdateRolePermissionsRequest) error
 }
 
 type PaymentService interface {

@@ -1,33 +1,42 @@
 # ABAC policy rules
 # Format: p, role, resource, action
 # action * means all HTTP methods
+# NOTE: role names here must match domain.Role* constants (lowercase) exactly —
+# Casbin's g(r.sub, p.sub) match is case-sensitive.
 
-# ROOT: full access to everything
-p, ROOT, *, *
+# root: full access to everything
+p, root, *, *
 
-# ADMIN: full access to all CMS resources, messages, and customer
-p, ADMIN, cms/posts, *
-p, ADMIN, cms/categories, *
-p, ADMIN, cms/tasks, *
-p, ADMIN, cms/notes, *
-p, ADMIN, cms/drawings, *
-p, ADMIN, cms/timetables, *
-p, ADMIN, cms/tags, *
-p, ADMIN, cms/upload, *
-p, ADMIN, cms/menus, *
-p, ADMIN, messages, *
-p, ADMIN, users, *
+# admin: full access to all CMS resources, messages, and customer
+p, admin, cms/posts, *
+p, admin, cms/categories, *
+p, admin, cms/tasks, *
+p, admin, cms/notes, *
+p, admin, cms/drawings, *
+p, admin, cms/timetables, *
+p, admin, cms/tags, *
+p, admin, cms/upload, *
+p, admin, cms/menus, *
+p, admin, messages, *
+p, admin, users, *
 
-# STAFF: read-only on posts/categories, full write on tasks/notes/drawings/timetables
-p, STAFF, cms/posts, GET
-p, STAFF, cms/categories, GET
-p, STAFF, cms/tasks, *
-p, STAFF, cms/notes, *
-p, STAFF, cms/drawings, *
-p, STAFF, cms/timetables, *
-p, STAFF, cms/tags, *
-p, STAFF, cms/upload, POST
+# staff: read-only on posts/categories, full write on tasks/notes/drawings/timetables
+p, staff, cms/posts, GET
+p, staff, cms/categories, GET
+p, staff, cms/tasks, *
+p, staff, cms/notes, *
+p, staff, cms/drawings, *
+p, staff, cms/timetables, *
+p, staff, cms/tags, *
+p, staff, cms/upload, POST
 
-# USER: messages only (GET and POST)
-p, USER, messages, GET
-p, USER, messages, POST
+# user: messages only (GET and POST)
+p, user, messages, GET
+p, user, messages, POST
+
+# guest: full access to workspace tasks, notes, timetables
+p, guest, cms/tasks, *
+p, guest, cms/notes, *
+p, guest, cms/drawings, *
+p, guest, cms/timetables, *
+p, guest, cms/upload, POST

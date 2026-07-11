@@ -1,0 +1,5 @@
+ALTER TABLE accounts
+  DROP COLUMN IF EXISTS first_name,
+  DROP COLUMN IF EXISTS last_name,
+  DROP COLUMN IF EXISTS phone_number,
+  DROP COLUMN IF EXISTS status;

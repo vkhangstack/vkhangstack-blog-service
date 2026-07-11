@@ -30,3 +30,5 @@ bin/*
 internal/config/serviceAccountKey.json
 logs
 .serena
+.tokensave
+.claude

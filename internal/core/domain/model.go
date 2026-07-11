@@ -40,11 +40,15 @@ func (b *Base) BeforeUpdate(_ context.Context, _ *bun.UpdateQuery) error {
 type Account struct {
 	bun.BaseModel       `bun:"table:accounts"`
 	ID                  string     `bun:"id,pk"`
+	FirstName           string     `bun:"first_name,notnull"`
+	LastName            string     `bun:"last_name,notnull"`
 	Username            string     `bun:"username,notnull"`
 	Password            string     `bun:"password,notnull"`
 	Email               *string    `bun:"email"`
+	PhoneNumber         *string    `bun:"phone_number"`
 	FullName            string     `bun:"full_name,notnull"`
 	Role                string     `bun:"role,notnull"`
+	Status              string     `bun:"status,notnull,default:'active'"`
 	IsActive            bool       `bun:"is_active,notnull,default:false"`
 	LastLogin           *time.Time `bun:"last_login"`
 	BlockedAt           *time.Time `bun:"blocked_at"`

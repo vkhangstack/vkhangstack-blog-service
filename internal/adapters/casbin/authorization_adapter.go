@@ -151,3 +151,22 @@ func (a *AuthorizationAdapter) GetUserPermissions(userID string) [][]string {
 	perms, _ := a.enforcer.GetPermissionsForUser(userID)
 	return perms
 }
+
+// AssignRole grants a user membership in an RBAC role: g(userID, role).
+// The user immediately inherits every permission the role has.
+func (a *AuthorizationAdapter) AssignRole(userID, role string) error {
+	_, err := a.enforcer.AddGroupingPolicy(userID, role)
+	return err
+}
+
+// UnassignRole removes a user's membership in an RBAC role.
+func (a *AuthorizationAdapter) UnassignRole(userID, role string) error {
+	_, err := a.enforcer.RemoveGroupingPolicy(userID, role)
+	return err
+}
+
+// GetUserRoles returns the RBAC roles a user is currently a member of.
+func (a *AuthorizationAdapter) GetUserRoles(userID string) []string {
+	roles, _ := a.enforcer.GetRolesForUser(userID)
+	return roles
+}

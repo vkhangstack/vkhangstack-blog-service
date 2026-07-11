@@ -28,7 +28,7 @@ func (h *LoginHandler) LoginAccount(ctx *gin.Context) {
 		return
 	}
 
-	response, err := h.sva.LoginAccount(user.Username, user.Password)
+	response, err := h.sva.LoginAccount(ctx, user.Username, user.Password)
 	if err != nil {
 		logger.Log.WithError(err).Error("LoginAccount: Failed to login account")
 		HandleError(ctx, domain.ErrorCodeInvalidCredentials, nil, "Username or password is incorrect")

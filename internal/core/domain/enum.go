@@ -23,6 +23,7 @@ const (
 	ErrorCodeProductNotFound    = -480
 	ErrorCodeInventoryNotFound  = -479
 	ErrorCodeOrderNotFound      = -478
+	ErrorCodeAccountNotFound    = -404
 
 	ErrorCodePayloadBadRequest   = -400
 	ErrorCodeUnAuthorization     = -401
@@ -33,13 +34,27 @@ const (
 )
 
 const (
-	RoleRoot    = "ROOT"
-	RoleAdmin   = "ADMIN"
-	RoleStaff   = "STAFF"
-	RoleAnalyst = "ANALYST"
-	RoleGuest   = "GUEST"
-	RoleUser    = "USER"
+	RoleRoot    = "root"
+	RoleAdmin   = "admin"
+	RoleStaff   = "staff"
+	RoleAnalyst = "anylytics"
+	RoleGuest   = "guest"
+	RoleUser    = "user"
 )
+
+// KnownRoles is the canonical list of RBAC roles the system recognizes (excludes RoleGuest,
+// which is a request-context default rather than an assignable role).
+var KnownRoles = []string{RoleRoot, RoleAdmin, RoleStaff, RoleAnalyst, RoleUser}
+
+// IsKnownRole reports whether role is one of KnownRoles.
+func IsKnownRole(role string) bool {
+	for _, r := range KnownRoles {
+		if r == role {
+			return true
+		}
+	}
+	return false
+}
 
 type PostStatus string
 
@@ -70,6 +85,15 @@ const (
 	PostVisibilityPublic  PostVisibility = "public"
 	PostVisibilityPrivate PostVisibility = "private"
 	PostVisibilityMembers PostVisibility = "members"
+)
+
+type AccountStatus string
+
+const (
+	AccountStatusActive    AccountStatus = "active"
+	AccountStatusInactive  AccountStatus = "inactive"
+	AccountStatusInvited   AccountStatus = "invited"
+	AccountStatusSuspended AccountStatus = "suspended"
 )
 
 type FailedLoginAttemptsNumber int

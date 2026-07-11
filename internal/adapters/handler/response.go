@@ -7,9 +7,9 @@ import (
 )
 
 type Response struct {
-	Error int         `json:"error"`
-	Data  interface{} `json:"data"`
-	Msg   string      `json:"message"`
+	Error int    `json:"error"`
+	Data  any    `json:"data"`
+	Msg   string `json:"message"`
 }
 
 func HandleError(ctx *gin.Context, error int, data any, message string) {

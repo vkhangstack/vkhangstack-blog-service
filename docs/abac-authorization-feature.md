@@ -41,7 +41,7 @@ internal/
 | Role  | Description                                  |
 |-------|----------------------------------------------|
 | ROOT  | Full access to all resources                 |
-| ADMIN | Full access to CMS, messages, customer       |
+| ADMIN | Full access to CMS, messages, users          |
 | STAFF | Read-only on posts/categories; full on tasks/notes/drawings/timetables |
 | USER  | GET and POST on messages only                |
 
@@ -61,7 +61,7 @@ internal/
 | cms/menus (guards permission grant/revoke endpoints) | ALL | ALL | — | — |
 | cms/upload      | ALL  | ALL   | POST  | —        |
 | messages        | ALL  | ALL   | —     | GET,POST |
-| customer        | ALL  | ALL   | —     | —        |
+| users           | ALL  | ALL   | —     | —        |
 
 ---
 

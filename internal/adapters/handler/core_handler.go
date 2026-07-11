@@ -36,3 +36,12 @@ func getLimit(ctx *gin.Context) (int, error) {
 	}
 	return parseLimit(limitStr)
 }
+
+func getRole(ctx *gin.Context) string {
+	role := ctx.Param("role")
+	return role
+}
+
+func getParamID(ctx *gin.Context) string {
+	return ctx.Param("id")
+}

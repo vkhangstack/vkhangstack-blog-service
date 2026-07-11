@@ -14,6 +14,7 @@ import (
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/migrate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/cache"
+	casbinAdapter "github.com/vkhangstack/hexagonal-architecture/internal/adapters/casbin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/meili"
 	storage "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/repository"
@@ -117,9 +118,14 @@ func main() {
 	drawingService := services.NewDrawingService(store)
 	timetableService := services.NewTimetableService(store)
 
-	accountService.CreateAccountRoot()
+	accountService.CreateAccountRoot(ctx)
+
+	authzAdapter, err := casbinAdapter.NewAuthorizationAdapterWithDB(db)
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize authorization adapter")
+	}
 
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
-		rateLimiter, searchEngineService, noteService, drawingService, timetableService, db)
+		rateLimiter, searchEngineService, noteService, drawingService, timetableService, authzAdapter)
 }

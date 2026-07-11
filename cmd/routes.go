@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
-	"github.com/uptrace/bun"
 	casbinAdapter "github.com/vkhangstack/hexagonal-architecture/internal/adapters/casbin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/handler"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
@@ -29,14 +28,8 @@ func InitRoutes(
 	noteService *services.NoteService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
-	db *bun.DB,
+	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
-	// Initialize Casbin RBAC enforcer backed by PostgreSQL for per-user policies.
-	authzAdapter, err := casbinAdapter.NewAuthorizationAdapterWithDB(db)
-	if err != nil {
-		log.Fatalf("failed to initialize authorization adapter: %v", err)
-	}
-
 	// Create routers
 	router := gin.Default()
 	// router2 := gin.Default()
@@ -48,7 +41,7 @@ func InitRoutes(
 	// Initialize handlers
 	menuSvc := casbinAdapter.NewMenuServiceAdapter(authzAdapter)
 	menuHandler := handler.NewMenuHandler(menuSvc)
-	permissionHandler := handler.NewPermissionHandler(authzAdapter)
+	permissionHandler := handler.NewPermissionHandler(authzAdapter, accountService)
 	messageHandler := handler.NewMessageHandler(*msgService)
 	customerHandler := handler.NewUserHandler(*customerService, *firebaseService)
 	loginHandler := handler.NewLoginHandler(*accountService)
@@ -59,10 +52,14 @@ func InitRoutes(
 	noteHandler := handler.NewNoteHandler(*noteService)
 	drawingHandler := handler.NewDrawingHandler(*drawingService)
 	timetableHandler := handler.NewTimetableHandler(timetableService)
+	accountHandler := handler.NewAccountHandler(accountService)
+	roleSvc := casbinAdapter.NewRoleServiceAdapter(authzAdapter)
+	roleHandler := handler.NewRoleHandler(roleSvc)
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
-		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler, authzAdapter)
+		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler,
+		accountHandler, roleHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -85,6 +82,8 @@ func setupV1Routes(
 	noteHandler *handler.NoteHandler,
 	drawingHandler *handler.DrawingHandler,
 	timetableHandler *handler.TimetableHandler,
+	accountHandler *handler.AccountHandler,
+	roleHandler *handler.RoleHandler,
 	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
 	// Health check route
@@ -128,6 +127,28 @@ func setupV1Routes(
 		{
 			account.GET("/menu", menuHandler.GetMenu)
 			account.GET("/permissions", permissionHandler.GetMyPermissions)
+
+			// Role permission management (Part B) — guarded by cms/menus resource.
+			// Registered before the /:id wildcard below so "roles" isn't swallowed as an :id value.
+			roles := account.Group("/roles")
+			roles.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
+			{
+				roles.GET("", roleHandler.ListRoles)
+				roles.GET("/:role/permissions", roleHandler.GetRolePermissions)
+				roles.PUT("/:role/permissions", roleHandler.UpdateRolePermissions)
+			}
+
+			// Account CRUD (Part A) — guarded by users resource.
+			accountCRUD := account.Group("")
+			accountCRUD.Use(http.AuthorizationMiddleware(authzAdapter, "users"))
+			{
+				accountCRUD.POST("/invite", accountHandler.InviteAccount)
+				accountCRUD.GET("", accountHandler.ListAccounts)
+				accountCRUD.POST("", accountHandler.CreateAccount)
+				accountCRUD.GET("/:id", accountHandler.GetAccount)
+				accountCRUD.PUT("/:id", accountHandler.UpdateAccount)
+				accountCRUD.DELETE("/:id", accountHandler.DeleteAccount)
+			}
 		}
 
 		// Webhook routes
@@ -208,6 +229,9 @@ func setupV1Routes(
 			{
 				permissions.POST("/grant", permissionHandler.GrantPermission)
 				permissions.POST("/revoke", permissionHandler.RevokePermission)
+				permissions.POST("/assign-role", permissionHandler.AssignRole)
+				permissions.POST("/revoke-role", permissionHandler.RemoveRole)
+				permissions.GET("/:user_id/roles", permissionHandler.GetUserRoles)
 			}
 
 			timetables := cms.Group("/timetables")

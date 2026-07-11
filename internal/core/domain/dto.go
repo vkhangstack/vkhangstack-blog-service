@@ -209,6 +209,64 @@ type NoteFilter struct {
 	CreatedBy *string `form:"created_by"`
 }
 
+type CreateAccountRequest struct {
+	FirstName   string        `json:"first_name" binding:"required"`
+	LastName    string        `json:"last_name"  binding:"required"`
+	Username    string        `json:"username"   binding:"required"`
+	Email       *string       `json:"email"      binding:"omitempty,email"`
+	PhoneNumber *string       `json:"phone_number"`
+	Password    string        `json:"password"   binding:"required"`
+	Role        string        `json:"role"`
+	Status      AccountStatus `json:"status"`
+}
+
+type UpdateAccountRequest struct {
+	FirstName   *string        `json:"first_name"`
+	LastName    *string        `json:"last_name"`
+	Username    *string        `json:"username"`
+	Email       *string        `json:"email"`
+	PhoneNumber *string        `json:"phone_number"`
+	Password    *string        `json:"password"`
+	Role        *string        `json:"role"`
+	Status      *AccountStatus `json:"status"`
+}
+
+type InviteAccountRequest struct {
+	Email string `json:"email" binding:"required,email"`
+	Role  string `json:"role"`
+	Desc  string `json:"desc"`
+}
+
+// AccountResponse is the account shape returned by the /v1/account endpoints — password omitted.
+type AccountResponse struct {
+	ID          string    `json:"id"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	PhoneNumber string    `json:"phone_number"`
+	Status      string    `json:"status"`
+	Role        string    `json:"role"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+// RolePermissions is returned by GET /v1/account/roles/:role/permissions.
+type RolePermissions struct {
+	Role        string               `json:"role"`
+	Permissions []ResourcePermission `json:"permissions"`
+}
+
+// RoleInfo is a single entry in GET /v1/account/roles.
+type RoleInfo struct {
+	Name string `json:"name"`
+}
+
+// UpdateRolePermissionsRequest is the body of PUT /v1/account/roles/:role/permissions.
+type UpdateRolePermissionsRequest struct {
+	Permissions []ResourcePermission `json:"permissions" binding:"required"`
+}
+
 type TagView struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
