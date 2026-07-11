@@ -178,6 +178,7 @@ func setupV1Routes(
 				tasks.GET("/:id", taskHandler.GetTask)
 				tasks.PUT("/:id", taskHandler.UpdateTask)
 				tasks.DELETE("/:id", taskHandler.DeleteTask)
+				tasks.GET("/search", taskHandler.SearchTasks)
 			}
 
 			notes := cms.Group("/notes")

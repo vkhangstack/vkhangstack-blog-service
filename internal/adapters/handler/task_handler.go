@@ -199,7 +199,7 @@ func (h *TaskHandler) SearchTasks(ctx *gin.Context) {
 	tasks, err := h.searchEngineSvc.Search(string(domain.SearchEngineIndexNameTasks), query, limit)
 	if err != nil {
 		logger.Log.WithError(err).Error("SearchTasks: Failed to search tasks")
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		HandleSuccess(ctx, []interface{}{}, "Empty task")
 		return
 	}
 	HandleSuccess(ctx, tasks, "Success")
