@@ -22,7 +22,7 @@ var rbacPolicyText string
 // AuthorizationAdapter implements ports.AuthorizationService using Casbin RBAC.
 // When a bun.DB is provided it persists rules there; otherwise falls back to embedded CSV.
 type AuthorizationAdapter struct {
-	enforcer *casbin.Enforcer
+	enforcer  *casbin.Enforcer
 	dbAdapter *DBAdapter
 }
 
@@ -56,28 +56,31 @@ func NewAuthorizationAdapterWithDB(db *bun.DB) (*AuthorizationAdapter, error) {
 
 	a := &AuthorizationAdapter{enforcer: enforcer, dbAdapter: dbAdapter}
 
-	// Seed role policies from embedded CSV if the DB has no policies yet.
-	if err := a.seedPoliciesIfEmpty(); err != nil {
-		return nil, fmt.Errorf("casbin: seed policies: %w", err)
+	// Sync the embedded rbac_policy.csv into the DB on every startup, so policy
+	// changes in the CSV always take effect without manual DB intervention.
+	if err := a.syncPoliciesFromCSV(); err != nil {
+		return nil, fmt.Errorf("casbin: sync policies: %w", err)
 	}
 
 	return a, nil
 }
 
-// seedPoliciesIfEmpty imports the embedded rbac_policy.csv into the DB when empty.
-func (a *AuthorizationAdapter) seedPoliciesIfEmpty() error {
-	policies, _ := a.enforcer.GetAllSubjects()
-	if len(policies) > 0 {
-		return nil // already seeded
-	}
+// csvLine is a single parsed row from rbac_policy.csv.
+type csvLine struct {
+	ptype string
+	vals  []string
+}
 
-	// Parse CSV and add each line
-	for _, line := range strings.Split(rbacPolicyText, "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "#") {
+// parseRbacPolicyCSV parses the embedded CSV into ptype/values rows, skipping
+// blank lines and comments.
+func parseRbacPolicyCSV() []csvLine {
+	var lines []csvLine
+	for _, raw := range strings.Split(rbacPolicyText, "\n") {
+		raw = strings.TrimSpace(raw)
+		if raw == "" || strings.HasPrefix(raw, "#") {
 			continue
 		}
-		parts := strings.SplitN(line, ",", -1)
+		parts := strings.Split(raw, ",")
 		if len(parts) < 4 {
 			continue
 		}
@@ -86,11 +89,37 @@ func (a *AuthorizationAdapter) seedPoliciesIfEmpty() error {
 		for _, p := range parts[1:] {
 			vals = append(vals, strings.TrimSpace(p))
 		}
-		ivals := make([]interface{}, len(vals))
-		for i, v := range vals {
+		lines = append(lines, csvLine{ptype: ptype, vals: vals})
+	}
+	return lines
+}
+
+// syncPoliciesFromCSV replaces the "p" policies of every role defined in the
+// embedded CSV with the CSV's current content, then ensures its "g" lines
+// exist. Policies for subjects not present in the CSV (per-user grants added
+// via GrantPermission/AssignRole at runtime) are left untouched, so this is
+// safe to run on every startup.
+func (a *AuthorizationAdapter) syncPoliciesFromCSV() error {
+	lines := parseRbacPolicyCSV()
+
+	roles := make(map[string]struct{})
+	for _, l := range lines {
+		if l.ptype == "p" && len(l.vals) > 0 {
+			roles[l.vals[0]] = struct{}{}
+		}
+	}
+	for role := range roles {
+		if _, err := a.enforcer.RemoveFilteredPolicy(0, role); err != nil {
+			return err
+		}
+	}
+
+	for _, l := range lines {
+		ivals := make([]interface{}, len(l.vals))
+		for i, v := range l.vals {
 			ivals[i] = v
 		}
-		switch ptype {
+		switch l.ptype {
 		case "p":
 			if _, err := a.enforcer.AddPolicy(ivals...); err != nil {
 				return err
