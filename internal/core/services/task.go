@@ -86,14 +86,30 @@ func (s *TaskService) UpdateTask(ctx context.Context, id string, req domain.Upda
 	utils.SetIfNotNil(&existing.Status, req.Status)
 	utils.SetIfNotNil(&existing.Label, req.Label)
 	utils.SetIfNotNil(&existing.Priority, req.Priority)
-	utils.SetIfNotNil(&existing.HTML, &req.HTML)
-	utils.SetIfNotNil(&existing.Lexical, &req.Lexical)
-	utils.SetIfNotNil(&existing.Description, &req.Description)
-	utils.SetIfNotNil(&existing.DueAt, &req.DueAt)
-	utils.SetIfNotNil(&existing.AssigneeID, &req.AssigneeID)
-	utils.SetIfNotNil(&existing.EnableNotice, &req.EnableNotice)
-	utils.SetIfNotNil(&existing.ReminderAt, &req.ReminderAt)
-	utils.SetIfNotNil(&existing.TypeReminder, &req.TypeReminder)
+	if req.HTML != nil {
+		existing.HTML = req.HTML
+	}
+	if req.Lexical != nil {
+		existing.Lexical = req.Lexical
+	}
+	if req.Description != nil {
+		existing.Description = req.Description
+	}
+	if req.DueAt != nil {
+		existing.DueAt = req.DueAt
+	}
+	if req.AssigneeID != nil {
+		existing.AssigneeID = req.AssigneeID
+	}
+	if req.EnableNotice != nil {
+		existing.EnableNotice = req.EnableNotice
+	}
+	if req.ReminderAt != nil {
+		existing.ReminderAt = req.ReminderAt
+	}
+	if req.TypeReminder != nil {
+		existing.TypeReminder = req.TypeReminder
+	}
 
 	updated, err := s.repo.UpdateTask(ctx, id, *existing)
 	if err != nil {

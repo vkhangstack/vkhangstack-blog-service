@@ -103,7 +103,9 @@ func (s *TimetableService) UpdateTimetableEntry(ctx context.Context, authorID, t
 	utils.SetIfNotNil(&timetable.StartTime, req.StartTime)
 	utils.SetIfNotNil(&timetable.EndTime, req.EndTime)
 	utils.SetIfNotNil(&timetable.Color, req.Color)
-	utils.SetIfNotNil(&timetable.Note, &req.Note)
+	if req.Note != nil {
+		timetable.Note = req.Note
+	}
 
 	err = s.repo.UpdateTimetableEntry(ctx, timetableID, *timetable)
 	if err != nil {

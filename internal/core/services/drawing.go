@@ -54,8 +54,12 @@ func (s *DrawingService) UpdateDrawing(ctx context.Context, id string, req domai
 	}
 
 	utils.SetIfNotNil(&drawing.Title, req.Title)
-	utils.SetIfNotNil(&drawing.Elements, &req.Elements)
-	utils.SetIfNotNil(&drawing.AppState, &req.AppState)
+	if req.Elements != nil {
+		drawing.Elements = req.Elements
+	}
+	if req.AppState != nil {
+		drawing.AppState = req.AppState
+	}
 	// if req.Files != nil {
 	// 	drawing.Files = req.Files
 	// }

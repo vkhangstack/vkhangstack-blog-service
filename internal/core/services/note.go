@@ -63,20 +63,23 @@ func (n *NoteService) UpdateNote(ctx context.Context, id string, req domain.Upda
 		return err
 	}
 
-	note := domain.Note{
-		UpdatedBy: utils.StringPtr(ctx.Value("user_id").(string)),
+	utils.SetIfNotNil(&noteInfo.Title, req.Title)
+	if req.SourceURL != nil {
+		noteInfo.SourceUrl = req.SourceURL
 	}
-	utils.SetIfNotNil(&note.Title, req.Title)
-	utils.SetIfNotNil(&note.SourceUrl, &req.SourceURL)
-	utils.SetIfNotNil(&note.Status, req.Status)
-	utils.SetIfNotNil(&note.HTML, &req.HTML)
-	utils.SetIfNotNil(&note.Lexical, &req.Lexical)
-	utils.SetIfNotNil(&note.Description, &req.Description)
-	utils.SetIfNotNil(&note.CreatedBy, &noteInfo.CreatedBy)
-	utils.SetIfNotNil(&note.UpdatedBy, &noteInfo.UpdatedBy)
-	utils.SetIfNotNil(&note.DeletedBy, &noteInfo.DeletedBy)
+	utils.SetIfNotNil(&noteInfo.Status, req.Status)
+	if req.HTML != nil {
+		noteInfo.HTML = req.HTML
+	}
+	if req.Lexical != nil {
+		noteInfo.Lexical = req.Lexical
+	}
+	if req.Description != nil {
+		noteInfo.Description = req.Description
+	}
+	noteInfo.UpdatedBy = utils.StringPtr(ctx.Value("user_id").(string))
 
-	return n.repo.UpdateNote(ctx, id, note)
+	return n.repo.UpdateNote(ctx, id, *noteInfo)
 }
 
 func (n *NoteService) DeleteNote(ctx context.Context, id string) error {
