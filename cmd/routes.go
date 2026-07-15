@@ -188,62 +188,62 @@ func setupV1Routes(
 				tags.POST("", tagHandler.CreateTag)
 				tags.GET("", tagHandler.ListTags)
 			}
+		}
 
-			tasks := cms.Group("/tasks")
-			tasks.Use(http.AuthorizationMiddleware(authzAdapter, "cms/tasks"))
-			{
-				tasks.POST("", taskHandler.CreateTask)
-				tasks.GET("", taskHandler.ListTasks)
-				tasks.GET("/cursor", taskHandler.ListTasksCursor)
-				tasks.GET("/statistics", taskHandler.GetTaskStatistics)
-				tasks.GET("/:id", taskHandler.GetTask)
-				tasks.PUT("/:id", taskHandler.UpdateTask)
-				tasks.DELETE("/:id", taskHandler.DeleteTask)
-				tasks.GET("/search", taskHandler.SearchTasks)
-			}
+		tasks := v1.Group("/tasks")
+		tasks.Use(http.AuthorizationMiddleware(authzAdapter, "cms/tasks"))
+		{
+			tasks.POST("", taskHandler.CreateTask)
+			tasks.GET("", taskHandler.ListTasks)
+			tasks.GET("/cursor", taskHandler.ListTasksCursor)
+			tasks.GET("/statistics", taskHandler.GetTaskStatistics)
+			tasks.GET("/:id", taskHandler.GetTask)
+			tasks.PUT("/:id", taskHandler.UpdateTask)
+			tasks.DELETE("/:id", taskHandler.DeleteTask)
+			tasks.GET("/search", taskHandler.SearchTasks)
+		}
 
-			notes := cms.Group("/notes")
-			notes.Use(http.AuthorizationMiddleware(authzAdapter, "cms/notes"))
-			{
-				notes.POST("", noteHandler.CreateNote)
-				notes.GET("", noteHandler.ListNotes)
-				notes.GET("/cursor", noteHandler.ListNotesCursor)
-				notes.GET("/:id", noteHandler.GetNote)
-				notes.PUT("/:id", noteHandler.UpdateNote)
-				notes.DELETE("/:id", noteHandler.DeleteNote)
-			}
+		notes := v1.Group("/notes")
+		notes.Use(http.AuthorizationMiddleware(authzAdapter, "cms/notes"))
+		{
+			notes.POST("", noteHandler.CreateNote)
+			notes.GET("", noteHandler.ListNotes)
+			notes.GET("/cursor", noteHandler.ListNotesCursor)
+			notes.GET("/:id", noteHandler.GetNote)
+			notes.PUT("/:id", noteHandler.UpdateNote)
+			notes.DELETE("/:id", noteHandler.DeleteNote)
+		}
 
-			drawings := cms.Group("/drawings")
-			drawings.Use(http.AuthorizationMiddleware(authzAdapter, "cms/drawings"))
-			{
-				drawings.POST("", drawingHandler.CreateDrawing)
-				drawings.GET("", drawingHandler.ListDrawings)
-				drawings.GET("/cursor", drawingHandler.ListDrawingsCursor)
-				drawings.GET("/:id", drawingHandler.GetDrawing)
-				drawings.PUT("/:id", drawingHandler.UpdateDrawing)
-				drawings.DELETE("/:id", drawingHandler.DeleteDrawing)
-			}
-			// Permission management — ROOT/ADMIN only (reuse customer resource guard)
-			permissions := cms.Group("/permissions")
-			permissions.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
-			{
-				permissions.POST("/grant", permissionHandler.GrantPermission)
-				permissions.POST("/revoke", permissionHandler.RevokePermission)
-				permissions.POST("/assign-role", permissionHandler.AssignRole)
-				permissions.POST("/revoke-role", permissionHandler.RemoveRole)
-				permissions.GET("/:user_id/roles", permissionHandler.GetUserRoles)
-			}
+		drawings := v1.Group("/drawings")
+		drawings.Use(http.AuthorizationMiddleware(authzAdapter, "cms/drawings"))
+		{
+			drawings.POST("", drawingHandler.CreateDrawing)
+			drawings.GET("", drawingHandler.ListDrawings)
+			drawings.GET("/cursor", drawingHandler.ListDrawingsCursor)
+			drawings.GET("/:id", drawingHandler.GetDrawing)
+			drawings.PUT("/:id", drawingHandler.UpdateDrawing)
+			drawings.DELETE("/:id", drawingHandler.DeleteDrawing)
+		}
+		// Permission management — ROOT/ADMIN only (reuse customer resource guard)
+		permissions := v1.Group("/permissions")
+		permissions.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
+		{
+			permissions.POST("/grant", permissionHandler.GrantPermission)
+			permissions.POST("/revoke", permissionHandler.RevokePermission)
+			permissions.POST("/assign-role", permissionHandler.AssignRole)
+			permissions.POST("/revoke-role", permissionHandler.RemoveRole)
+			permissions.GET("/:user_id/roles", permissionHandler.GetUserRoles)
+		}
 
-			timetables := cms.Group("/timetables")
-			timetables.Use(http.AuthorizationMiddleware(authzAdapter, "cms/timetables"))
-			{
-				timetables.POST("", timetableHandler.CreateTimetableEntry)
-				timetables.GET("", timetableHandler.ListTimetableEntries)
-				timetables.GET("/cursor", timetableHandler.ListTimetableEntriesCursor)
-				timetables.GET("/:id", timetableHandler.GetTimetableEntry)
-				timetables.PUT("/:id", timetableHandler.UpdateTimetableEntry)
-				timetables.DELETE("/:id", timetableHandler.DeleteTimetableEntry)
-			}
+		timetables := v1.Group("/timetables")
+		timetables.Use(http.AuthorizationMiddleware(authzAdapter, "cms/timetables"))
+		{
+			timetables.POST("", timetableHandler.CreateTimetableEntry)
+			timetables.GET("", timetableHandler.ListTimetableEntries)
+			timetables.GET("/cursor", timetableHandler.ListTimetableEntriesCursor)
+			timetables.GET("/:id", timetableHandler.GetTimetableEntry)
+			timetables.PUT("/:id", timetableHandler.UpdateTimetableEntry)
+			timetables.DELETE("/:id", timetableHandler.DeleteTimetableEntry)
 		}
 
 		// Public blog routes (no auth)
