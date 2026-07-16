@@ -25,6 +25,14 @@ func getAuthorID(ctx *gin.Context) (string, error) {
 	return idStr, nil
 }
 
+func getUserID(ctx *gin.Context) (string, error) {
+	idStr, err := customhttp.GetUserID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return idStr, nil
+}
+
 func getCursor(ctx *gin.Context) string {
 	return ctx.Query("cursor")
 }

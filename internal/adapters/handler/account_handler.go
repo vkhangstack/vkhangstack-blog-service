@@ -48,6 +48,21 @@ func (h *AccountHandler) GetAccount(ctx *gin.Context) {
 	HandleSuccess(ctx, account, "success")
 }
 
+// GetMe handles GET /v1/account/me
+func (h *AccountHandler) GetMe(ctx *gin.Context) {
+	userID, err := getUserID(ctx)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeAccountNotFound, nil, "profile me not found")
+		return
+	}
+	account, err := h.svc.GetAccount(ctx, userID)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeAccountNotFound, nil, "profile me not found")
+		return
+	}
+	HandleSuccess(ctx, account, "Get profile me success")
+}
+
 // CreateAccount handles POST /v1/account
 func (h *AccountHandler) CreateAccount(ctx *gin.Context) {
 	var req domain.CreateAccountRequest

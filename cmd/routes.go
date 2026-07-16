@@ -125,6 +125,7 @@ func setupV1Routes(
 		account := v1.Group("/account")
 		account.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
+			account.GET("/me", accountHandler.GetMe)
 			account.GET("/menu", menuHandler.GetMenu)
 			account.GET("/permissions", permissionHandler.GetMyPermissions)
 
