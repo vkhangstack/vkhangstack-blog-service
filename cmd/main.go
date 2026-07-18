@@ -19,6 +19,7 @@ import (
 	storage "github.com/vkhangstack/hexagonal-architecture/internal/adapters/objectStorage"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/repository"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/snowflake"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/zalobot"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
@@ -103,6 +104,15 @@ func main() {
 		logger.Log.WithError(err).Fatal("failed to initialize Meilisearch adapter")
 	}
 
+	zaloBotAdapter, err := zalobot.NewZaloBotAdapter(zalobot.ZaloBotConfig{
+		Token:         cfg.ZaloBot.Token,
+		WebhookSecret: cfg.ZaloBot.WebhookSecret,
+		Endpoint:      cfg.ZaloBot.Endpoint,
+	})
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize Zalo bot adapter")
+	}
+
 	msgService = services.NewMessengerService(store)
 	customerService = services.NewCustomerService(store)
 	firebaseService = services.NewFirebaseService(store)
@@ -117,6 +127,12 @@ func main() {
 	noteService := services.NewNoteService(store)
 	drawingService := services.NewDrawingService(store)
 	timetableService := services.NewTimetableService(store)
+	notificationService := services.NewNotificationService(store)
+	notificationSettingService := services.NewNotificationSettingService(store, store, zaloBotAdapter)
+
+	// Start the task reminder poller
+	taskReminderService := services.NewTaskReminderService(store, store, store, zaloBotAdapter)
+	taskReminderService.StartReminderPoller(ctx, time.Second*5) // Check every 5 seconds
 
 	accountService.CreateAccountRoot(ctx)
 
@@ -127,5 +143,6 @@ func main() {
 
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
-		rateLimiter, searchEngineService, noteService, drawingService, timetableService, authzAdapter)
+		rateLimiter, searchEngineService, noteService, drawingService, timetableService,
+		notificationService, notificationSettingService, zaloBotAdapter, authzAdapter)
 }

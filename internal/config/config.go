@@ -43,6 +43,12 @@ type MeilisearchConfig struct {
 	APIKey string
 }
 
+type ZaloBotConfig struct {
+	Token         string
+	WebhookSecret string
+	Endpoint      string
+}
+
 type Config struct {
 	App         AppConfig
 	DB          DBConfig
@@ -50,6 +56,7 @@ type Config struct {
 	S3          S3Config
 	TinyEditor  TinyEditorConfig
 	Meilisearch MeilisearchConfig
+	ZaloBot     ZaloBotConfig
 }
 
 func LoadConfig() Config {
@@ -89,6 +96,11 @@ func LoadConfig() Config {
 		Meilisearch: MeilisearchConfig{
 			Host:   getEnv("MEILISEARCH_HOST", "http://localhost:7700"),
 			APIKey: getEnv("MEILISEARCH_API_KEY", "masterKey"),
+		},
+		ZaloBot: ZaloBotConfig{
+			Token:         getEnv("ZALO_BOT_TOKEN", ""),
+			WebhookSecret: getEnv("ZALO_BOT_WEBHOOK_SECRET", ""),
+			Endpoint:      getEnv("ZALO_BOT_ENDPOINT", "http://localhost:8080/webhooks/zalo"),
 		},
 	}
 }

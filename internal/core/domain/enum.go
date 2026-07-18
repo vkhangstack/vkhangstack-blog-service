@@ -69,6 +69,10 @@ const (
 	ErrorCodeBlogCategoryNotFound = -470
 	ErrorCodeBlogPostNotFound     = -469
 	ErrorCodeBlogSlugExists       = -468
+
+	ErrorCodeNotificationNotFound        = -467
+	ErrorCodeNotificationSettingNotFound = -466
+	ErrorCodeChannelVerificationInvalid  = -465
 )
 
 type PostType string
@@ -150,4 +154,63 @@ const (
 	TagTypeTask TagType = "task"
 	TagTypePage TagType = "page"
 	TagTypeUser TagType = "user"
+)
+
+// NotificationChannelType is a delivery channel a user can enable in their notification settings.
+type NotificationChannelType string
+
+const (
+	NotificationChannelEmail    NotificationChannelType = "email"
+	NotificationChannelSMS      NotificationChannelType = "sms"
+	NotificationChannelSlackBot NotificationChannelType = "slack_bot"
+	NotificationChannelZaloBot  NotificationChannelType = "zalo_bot"
+	NotificationChannelPush     NotificationChannelType = "push"
+	NotificationChannelWebhook  NotificationChannelType = "webhook"
+)
+
+// KnownNotificationChannels is the canonical list of channels notification settings accept.
+var KnownNotificationChannels = []NotificationChannelType{
+	NotificationChannelEmail,
+	NotificationChannelSMS,
+	NotificationChannelSlackBot,
+	NotificationChannelZaloBot,
+	NotificationChannelPush,
+	NotificationChannelWebhook,
+}
+
+// IsKnownNotificationChannel reports whether channel is one of KnownNotificationChannels.
+func IsKnownNotificationChannel(channel NotificationChannelType) bool {
+	for _, c := range KnownNotificationChannels {
+		if c == channel {
+			return true
+		}
+	}
+	return false
+}
+
+// VerifiableNotificationChannels are channels whose token can't be supplied directly by the
+// client — instead the user copies a generated code into the channel's own app (e.g. sends it
+// as a message to our Zalo bot), and the channel's webhook reports back the code plus the
+// sender's platform-specific ID, which becomes the channel's token once verified.
+var VerifiableNotificationChannels = []NotificationChannelType{
+	NotificationChannelZaloBot,
+}
+
+// IsVerifiableNotificationChannel reports whether channel is one of VerifiableNotificationChannels.
+func IsVerifiableNotificationChannel(channel NotificationChannelType) bool {
+	for _, c := range VerifiableNotificationChannels {
+		if c == channel {
+			return true
+		}
+	}
+	return false
+}
+
+// ChannelVerificationStatus tracks the lifecycle of a NotificationChannelVerification code.
+type ChannelVerificationStatus string
+
+const (
+	ChannelVerificationPending  ChannelVerificationStatus = "pending"
+	ChannelVerificationVerified ChannelVerificationStatus = "verified"
+	ChannelVerificationExpired  ChannelVerificationStatus = "expired"
 )

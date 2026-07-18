@@ -10,6 +10,8 @@ import (
 	"github.com/stripe/stripe-go/webhook"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
+	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
+	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
 )
@@ -58,6 +60,43 @@ func (h *UserHandler) UpdateMembershipStatus(ctx *gin.Context) {
 	}
 
 	HandleSuccess(ctx, nil, "User's membership status updated successfully")
+}
+
+// ZaloBotWebhook handles POST /v1/webhooks/zalo — called by Zalo's servers (not our
+// authenticated clients) whenever a user sends a message to our Zalo bot. If the message
+// carries a valid verification code, it links the zalo_bot channel to the requesting user.
+func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
+	payload, err := ctx.GetRawData()
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		return
+	}
+	signature := ctx.GetHeader("X-Bot-Api-Secret-Token")
+
+	senderID, text, err := h.zaloBot.ProcessWebhook(payload, signature)
+	if errors.Is(err, ports.ErrZaloBotMessage) {
+		HandleSuccess(ctx, nil, "Success")
+		return
+	}
+	if err != nil {
+		logger.Log.WithError(err).Error("ZaloBotWebhook: Failed to process webhook")
+		HandleSuccess(ctx, nil, "Success")
+		return
+	}
+
+	// Only messages carrying the VKBLOG-###### verification-code prefix are relevant here;
+	// skip everything else to avoid noisy failed-verification logs for ordinary chat messages.
+	if !services.VerificationCodePattern.MatchString(text) {
+		HandleSuccess(ctx, nil, "Success")
+		return
+	}
+
+	if err := h.settingSvc.VerifyChannelNotificationLinked(ctx, domain.NotificationChannelZaloBot, text, senderID); err != nil {
+		logger.Log.WithError(err).Error("ZaloBotWebhook: Failed to verify channel")
+		HandleSuccess(ctx, nil, "Success")
+		return
+	}
+	HandleSuccess(ctx, nil, "Success")
 }
 
 // stripe webhook

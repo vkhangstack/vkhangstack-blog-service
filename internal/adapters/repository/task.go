@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
@@ -152,6 +153,19 @@ func (u *DB) CountTasksByPriority(ctx context.Context, priority domain.TaskPrior
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
 	}
 	return count, nil
+}
+
+func (u *DB) ListDueReminderTasks(ctx context.Context, before time.Time) ([]*domain.Task, error) {
+	tasks := make([]*domain.Task, 0)
+	err := u.db.NewSelect().Model(&tasks).
+		Where("t.enable_notice = true").
+		Where("t.reminder_at IS NOT NULL").
+		Where("t.reminder_at >= ?", before).
+		Scan(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("due reminder tasks not found: %v", err)
+	}
+	return tasks, nil
 }
 
 func (u *DB) GetCount(ctx context.Context) (int, error) {

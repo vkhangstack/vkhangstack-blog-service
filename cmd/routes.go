@@ -9,6 +9,7 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/handler"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
+	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 )
 
@@ -28,6 +29,9 @@ func InitRoutes(
 	noteService *services.NoteService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
+	notificationService *services.NotificationService,
+	notificationSettingService *services.NotificationSettingService,
+	zaloBotClient ports.ZaloBotClient,
 	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
 	// Create routers
@@ -55,11 +59,12 @@ func InitRoutes(
 	accountHandler := handler.NewAccountHandler(accountService)
 	roleSvc := casbinAdapter.NewRoleServiceAdapter(authzAdapter)
 	roleHandler := handler.NewRoleHandler(roleSvc)
+	notificationHandler := handler.NewNotificationHandler(notificationService, notificationSettingService, zaloBotClient)
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
 		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler,
-		accountHandler, roleHandler, authzAdapter)
+		accountHandler, roleHandler, notificationHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -84,6 +89,7 @@ func setupV1Routes(
 	timetableHandler *handler.TimetableHandler,
 	accountHandler *handler.AccountHandler,
 	roleHandler *handler.RoleHandler,
+	notificationHandler *handler.NotificationHandler,
 	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
 	// Health check route
@@ -154,6 +160,7 @@ func setupV1Routes(
 
 		// Webhook routes
 		v1.POST("/membership/webhooks", customerHandler.UpdateMembershipStatus)
+		v1.POST("/webhooks/zalo", notificationHandler.ZaloBotWebhook)
 
 		// CMS routes (authenticated + authorized per sub-group)
 		cms := v1.Group("/cms")
@@ -192,7 +199,7 @@ func setupV1Routes(
 		}
 
 		tasks := v1.Group("/tasks")
-		tasks.Use(http.AuthorizationMiddleware(authzAdapter, "cms/tasks"))
+		tasks.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			tasks.POST("", taskHandler.CreateTask)
 			tasks.GET("", taskHandler.ListTasks)
@@ -205,7 +212,7 @@ func setupV1Routes(
 		}
 
 		notes := v1.Group("/notes")
-		notes.Use(http.AuthorizationMiddleware(authzAdapter, "cms/notes"))
+		notes.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			notes.POST("", noteHandler.CreateNote)
 			notes.GET("", noteHandler.ListNotes)
@@ -216,7 +223,7 @@ func setupV1Routes(
 		}
 
 		drawings := v1.Group("/drawings")
-		drawings.Use(http.AuthorizationMiddleware(authzAdapter, "cms/drawings"))
+		drawings.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			drawings.POST("", drawingHandler.CreateDrawing)
 			drawings.GET("", drawingHandler.ListDrawings)
@@ -227,7 +234,7 @@ func setupV1Routes(
 		}
 		// Permission management — ROOT/ADMIN only (reuse customer resource guard)
 		permissions := v1.Group("/permissions")
-		permissions.Use(http.AuthorizationMiddleware(authzAdapter, "cms/menus"))
+		permissions.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			permissions.POST("/grant", permissionHandler.GrantPermission)
 			permissions.POST("/revoke", permissionHandler.RevokePermission)
@@ -237,7 +244,7 @@ func setupV1Routes(
 		}
 
 		timetables := v1.Group("/timetables")
-		timetables.Use(http.AuthorizationMiddleware(authzAdapter, "cms/timetables"))
+		timetables.Use(http.AuthenticationMiddleware(authzAdapter))
 		{
 			timetables.POST("", timetableHandler.CreateTimetableEntry)
 			timetables.GET("", timetableHandler.ListTimetableEntries)
@@ -245,6 +252,21 @@ func setupV1Routes(
 			timetables.GET("/:id", timetableHandler.GetTimetableEntry)
 			timetables.PUT("/:id", timetableHandler.UpdateTimetableEntry)
 			timetables.DELETE("/:id", timetableHandler.DeleteTimetableEntry)
+		}
+
+		// Notification routes (authenticated — no authz check, personal/self-scoped resource)
+		notifications := v1.Group("/notifications")
+		notifications.Use(http.AuthenticationMiddleware(authzAdapter))
+		{
+			notifications.GET("/settings", notificationHandler.GetNotificationSetting)
+			notifications.PUT("/settings", notificationHandler.UpdateNotificationSetting)
+			notifications.POST("/settings/channels/verify", notificationHandler.RequestChannelVerification)
+			notifications.POST("", notificationHandler.CreateNotification)
+			notifications.GET("", notificationHandler.ListNotifications)
+			notifications.GET("/cursor", notificationHandler.ListNotificationsCursor)
+			notifications.GET("/:id", notificationHandler.GetNotification)
+			notifications.PUT("/:id", notificationHandler.UpdateNotification)
+			notifications.DELETE("/:id", notificationHandler.DeleteNotification)
 		}
 
 		// Public blog routes (no auth)

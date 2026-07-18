@@ -412,3 +412,70 @@ type TimetableEntryResponse struct {
 	CreatedAt time.Time  `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at,omitempty"`
 }
+
+// NotificationChannelInput is a single channel entry accepted from the client when
+// updating notification settings — which channel, whether it's enabled, and the
+// token/address to deliver to (push token, bot chat id, webhook URL, phone, email, ...).
+type NotificationChannelInput struct {
+	Channel NotificationChannelType `json:"channel" binding:"required,oneof=email sms slack_bot zalo_bot push webhook"`
+	Enabled bool                    `json:"enabled"`
+	Token   string                  `json:"token"`
+}
+
+// UpdateNotificationSettingRequest replaces the full set of channels for a user.
+type UpdateNotificationSettingRequest struct {
+	Channels []NotificationChannelInput `json:"channels" binding:"required,dive"`
+}
+
+type NotificationSettingResponse struct {
+	ID        string                `json:"id"`
+	UserID    string                `json:"user_id"`
+	Channels  []NotificationChannel `json:"channels"`
+	CreatedAt time.Time             `json:"created_at"`
+	UpdatedAt time.Time             `json:"updated_at"`
+}
+
+// CreateChannelVerificationRequest asks the server to generate a linking code for a
+// channel that can't accept a client-supplied token directly (e.g. zalo_bot).
+type CreateChannelVerificationRequest struct {
+	Channel NotificationChannelType `json:"channel" binding:"required,oneof=zalo_bot"`
+}
+
+// ChannelVerificationResponse is the code/instructions the client shows the user to copy
+// and send from within the target channel's own app (e.g. as a Zalo message to our bot).
+type ChannelVerificationResponse struct {
+	Channel   NotificationChannelType `json:"channel"`
+	Code      string                  `json:"code"`
+	Message   string                  `json:"message"`
+	ExpiresAt time.Time               `json:"expires_at"`
+}
+
+type NotificationResponse struct {
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Message   string    `json:"message"`
+	Type      string    `json:"type"`
+	Read      bool      `json:"read"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type NotificationListResponse struct {
+	Total         int                     `json:"total"`
+	Notifications []*NotificationResponse `json:"notifications"`
+}
+
+type NotificationFilter struct {
+	Type  string `form:"type"`
+	Read  *bool  `form:"read"`
+	Page  int    `form:"page"`
+	Limit int    `form:"limit"`
+}
+type CreateNotificationRequest struct {
+	Title   string `json:"title" binding:"required"`
+	Message string `json:"message" binding:"required"`
+	Type    string `json:"type" binding:"required"`
+}
+
+type UpdateNotificationRequest struct {
+	Read *bool `json:"read"`
+}

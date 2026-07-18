@@ -350,3 +350,53 @@ type TimetableEntry struct {
 	UpdatedBy     *string    `bun:"updated_by,nullzero,type:varchar(255)" json:"updated_by"`
 	DeletedBy     *string    `bun:"deleted_by,nullzero,type:varchar(255)" json:"deleted_by"`
 }
+
+// NotificationChannel is a single delivery channel entry within a user's notification
+// settings: whether it's enabled, and the token/address used to deliver to it (e.g. an
+// FCM push token, a Slack/Zalo bot chat ID, a webhook URL, a phone number, or an email address).
+type NotificationChannel struct {
+	Channel NotificationChannelType `json:"channel"`
+	Enabled bool                    `json:"enabled"`
+	Token   string                  `json:"token,omitempty"`
+}
+
+type NotificationSetting struct {
+	bun.BaseModel `bun:"table:notification_settings,alias:ns"`
+	ID            string                `bun:"id,pk,type:varchar(20)" json:"id"`
+	UserID        string                `bun:"user_id,notnull,type:varchar(20)" json:"user_id"`
+	Channels      []NotificationChannel `bun:"channels,notnull,type:jsonb" json:"channels"`
+	CreatedAt     time.Time             `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time             `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}
+
+type Notification struct {
+	bun.BaseModel `bun:"table:notifications,alias:n"`
+	ID            string    `bun:"id,pk,type:varchar(20)" json:"id"`
+	UserID        string    `bun:"user_id,notnull,type:varchar(20)" json:"user_id"`
+	Type          string    `bun:"type,notnull,type:varchar(50)" json:"type"`
+	Title         string    `bun:"title,notnull,type:varchar(255)" json:"title"`
+	Message       string    `bun:"message,notnull,type:text" json:"message"`
+	IsRead        bool      `bun:"is_read,notnull,default:false" json:"is_read"`
+	IsDeleted     bool      `bun:"is_deleted,notnull,default:false" json:"is_deleted"`
+	IsArchived    bool      `bun:"is_archived,notnull,default:false" json:"is_archived"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}
+
+// NotificationChannelVerification links a channel (e.g. zalo_bot) to a user by having the
+// user copy a generated code into that channel's own app, then having the channel's webhook
+// report the code back along with the sender's platform-specific ID (ExtendID), which becomes
+// that channel's Token once verified.
+type NotificationChannelVerification struct {
+	bun.BaseModel `bun:"table:notification_channel_verifications,alias:ncv"`
+	ID            string                    `bun:"id,pk,type:varchar(20)" json:"id"`
+	UserID        string                    `bun:"user_id,notnull,type:varchar(20)" json:"user_id"`
+	Channel       NotificationChannelType   `bun:"channel,notnull,type:varchar(50)" json:"channel"`
+	Code          string                    `bun:"code,notnull,type:varchar(50)" json:"code"`
+	ExtendID      string                    `bun:"extend_id,type:varchar(255)" json:"extend_id,omitempty"`
+	Status        ChannelVerificationStatus `bun:"status,notnull,type:varchar(20)" json:"status"`
+	ExpiresAt     time.Time                 `bun:"expires_at,notnull,type:timestamptz" json:"expires_at"`
+	VerifiedAt    *time.Time                `bun:"verified_at,type:timestamptz" json:"verified_at,omitempty"`
+	CreatedAt     time.Time                 `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time                 `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}

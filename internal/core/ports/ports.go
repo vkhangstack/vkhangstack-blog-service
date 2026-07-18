@@ -2,6 +2,7 @@ package ports
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"firebase.google.com/go/v4/auth"
@@ -212,6 +213,9 @@ type TaskRepository interface {
 	CountTasksByStatus(ctx context.Context, status domain.TaskStatus) (int, error)
 	CountTasksByPriority(ctx context.Context, priority domain.TaskPriority) (int, error)
 	GetCount(ctx context.Context) (int, error)
+	// ListDueReminderTasks returns tasks with notice enabled whose reminder_at has passed
+	// (reminder_at <= before) and hasn't been cleared yet.
+	ListDueReminderTasks(ctx context.Context, before time.Time) ([]*domain.Task, error)
 }
 
 type TaskService interface {
@@ -288,4 +292,60 @@ type TimetableService interface {
 	ListTimetableEntriesCursor(ctx context.Context, authorID string, filter domain.TimetableEntryFilter, cursor string, limit int) ([]*domain.TimetableEntryResponse, *string, int, error)
 	UpdateTimetableEntry(ctx context.Context, id string, req domain.UpdateTimetableEntryRequest) error
 	DeleteTimetableEntry(ctx context.Context, id string) error
+}
+
+// NotificationRepository persists notification messages. Reads/updates/deletes are scoped
+// by userID so one user can never touch another user's notifications.
+type NotificationRepository interface {
+	CreateNotification(ctx context.Context, notification domain.Notification) (*domain.Notification, error)
+	GetNotificationByID(ctx context.Context, userID, id string) (*domain.Notification, error)
+	UpdateNotification(ctx context.Context, userID, id string, updates domain.Notification) error
+	DeleteNotification(ctx context.Context, userID, id string) error
+	ListNotifications(ctx context.Context, userID string, filter domain.NotificationFilter) ([]*domain.Notification, int, error)
+	ListNotificationsCursor(ctx context.Context, userID string, filter domain.NotificationFilter, cursor string, limit int) ([]*domain.Notification, *string, int, error)
+}
+
+type NotificationService interface {
+	CreateNotification(ctx context.Context, userID string, req domain.CreateNotificationRequest) (*domain.NotificationResponse, error)
+	GetNotification(ctx context.Context, userID, id string) (*domain.NotificationResponse, error)
+	ListNotifications(ctx context.Context, userID string, filter domain.NotificationFilter) ([]*domain.NotificationResponse, int, error)
+	ListNotificationsCursor(ctx context.Context, userID string, filter domain.NotificationFilter, cursor string, limit int) ([]*domain.NotificationResponse, *string, int, error)
+	UpdateNotification(ctx context.Context, userID, id string, req domain.UpdateNotificationRequest) error
+	DeleteNotification(ctx context.Context, userID, id string) error
+}
+
+// NotificationSettingRepository persists each user's channel preferences (one row per user).
+type NotificationSettingRepository interface {
+	GetNotificationSettingByUserID(ctx context.Context, userID string) (*domain.NotificationSetting, error)
+	UpsertNotificationSetting(ctx context.Context, setting domain.NotificationSetting) (*domain.NotificationSetting, error)
+}
+
+type NotificationSettingService interface {
+	GetNotificationSetting(ctx context.Context, userID string) (*domain.NotificationSettingResponse, error)
+	UpdateNotificationSetting(ctx context.Context, userID string, req domain.UpdateNotificationSettingRequest) (*domain.NotificationSettingResponse, error)
+	// RequestChannelVerification generates a code the user copies into the channel's own app
+	// (e.g. sends it as a Zalo message to our bot) to link that channel without a client-supplied token.
+	RequestChannelVerification(ctx context.Context, userID string, req domain.CreateChannelVerificationRequest) (*domain.ChannelVerificationResponse, error)
+	// VerifyChannelNotificationLinked is called by a channel's webhook handler once it receives a
+	// message carrying a verification code; on success it enables that channel with the
+	// sender's platform-specific ID (extendID) as the channel's token.
+	VerifyChannelNotificationLinked(ctx context.Context, channel domain.NotificationChannelType, code, extendID string) error
+}
+
+// NotificationChannelVerificationRepository persists pending/verified channel linking codes.
+type NotificationChannelVerificationRepository interface {
+	CreateChannelVerification(ctx context.Context, verification domain.NotificationChannelVerification) (*domain.NotificationChannelVerification, error)
+	GetPendingChannelVerification(ctx context.Context, channel domain.NotificationChannelType, code string) (*domain.NotificationChannelVerification, error)
+	MarkChannelVerificationVerified(ctx context.Context, id, extendID string) error
+	ExpirePendingChannelVerifications(ctx context.Context, userID string, channel domain.NotificationChannelType) error
+}
+
+// ErrZaloBotMessage indicates a webhook update was sent by the bot itself (e.g. its own
+// reply echoed back), not by an end user — callers should skip it, not treat it as an error.
+var ErrZaloBotMessage = errors.New("zalo webhook: message is from the bot itself")
+
+// ZaloBotClient sends messages to and parses webhook updates from the Zalo Bot API.
+type ZaloBotClient interface {
+	SendMessage(chatID, text string) error
+	ProcessWebhook(payload []byte, signature string) (senderID, text string, err error)
 }
