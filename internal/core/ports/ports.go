@@ -2,7 +2,6 @@ package ports
 
 import (
 	"context"
-	"errors"
 	"time"
 
 	"firebase.google.com/go/v4/auth"
@@ -340,12 +339,10 @@ type NotificationChannelVerificationRepository interface {
 	ExpirePendingChannelVerifications(ctx context.Context, userID string, channel domain.NotificationChannelType) error
 }
 
-// ErrZaloBotMessage indicates a webhook update was sent by the bot itself (e.g. its own
-// reply echoed back), not by an end user — callers should skip it, not treat it as an error.
-var ErrZaloBotMessage = errors.New("zalo webhook: message is from the bot itself")
-
 // ZaloBotClient sends messages to and parses webhook updates from the Zalo Bot API.
 type ZaloBotClient interface {
 	SendMessage(chatID, text string) error
 	ProcessWebhook(payload []byte, signature string) (senderID, text string, err error)
+	GetSecretToken() string
+	GetFieldSecretToken() string
 }

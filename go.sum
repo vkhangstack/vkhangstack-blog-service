@@ -258,6 +258,8 @@ github.com/uptrace/bun/driver/pgdriver v1.2.18 h1:Zojuc83ulApocXomBLEcx1DqCZweRE
 github.com/uptrace/bun/driver/pgdriver v1.2.18/go.mod h1:ZRJcARw93nxbQ5WawTrc5EO+F+GygkcYgDLEnT17CcE=
 github.com/vkhangstack/go-zalo-bot v0.0.4 h1:ICQNbRKjHGRQeC84BhBr3p6Tlj+aL+GIyiIMLeBTdGg=
 github.com/vkhangstack/go-zalo-bot v0.0.4/go.mod h1:KJpkouPxbuVNz3ThW7iHQmsabp/M4APUixeWh0T2jYg=
+github.com/vkhangstack/go-zalo-bot v0.0.5 h1:E5ER8I9gc/xJA/YhBV0lvnftuIxZMlRUdoqHplIIpbk=
+github.com/vkhangstack/go-zalo-bot v0.0.5/go.mod h1:KJpkouPxbuVNz3ThW7iHQmsabp/M4APUixeWh0T2jYg=
 github.com/vmihailenco/msgpack/v5 v5.4.1 h1:cQriyiUvjTwOHg8QZaPihLWeRAAVoCpE00IUPn0Bjt8=
 github.com/vmihailenco/msgpack/v5 v5.4.1/go.mod h1:GaZTsDaehaPpQVyxrf5mtQlH+pc21PIudVV/E3rRQok=
 github.com/vmihailenco/tagparser/v2 v2.0.0 h1:y09buUbR+b5aycVFQs/g70pqKVZNBmxwAhO7/IwNM9g=

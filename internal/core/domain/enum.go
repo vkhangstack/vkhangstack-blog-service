@@ -1,5 +1,7 @@
 package domain
 
+import "errors"
+
 const (
 	JwtIssuerAccess  = "golang-hexagonal-access"
 	JwtIssuerRefresh = "golang-hexagonal-refresh"
@@ -214,3 +216,7 @@ const (
 	ChannelVerificationVerified ChannelVerificationStatus = "verified"
 	ChannelVerificationExpired  ChannelVerificationStatus = "expired"
 )
+
+// ErrZaloBotMessage indicates a webhook update was sent by the bot itself (e.g. its own
+// reply echoed back), not by an end user — callers should skip it, not treat it as an error.
+var ErrZaloBotMessage = errors.New("zalo webhook: message is from the bot itself")

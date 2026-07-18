@@ -10,7 +10,6 @@ import (
 	"github.com/stripe/stripe-go/webhook"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
-	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/utils"
@@ -71,10 +70,10 @@ func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
 		return
 	}
-	signature := ctx.GetHeader("X-Bot-Api-Secret-Token")
+	signature := ctx.GetHeader(h.zaloBot.GetFieldSecretToken())
 
 	senderID, text, err := h.zaloBot.ProcessWebhook(payload, signature)
-	if errors.Is(err, ports.ErrZaloBotMessage) {
+	if errors.Is(err, domain.ErrZaloBotMessage) {
 		HandleSuccess(ctx, nil, "Success")
 		return
 	}

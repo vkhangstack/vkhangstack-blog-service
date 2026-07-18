@@ -7,7 +7,7 @@ import (
 
 	zalobot "github.com/vkhangstack/go-zalo-bot"
 	"github.com/vkhangstack/go-zalo-bot/types"
-	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
+	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 )
 
 type ZaloBotConfig struct {
@@ -88,7 +88,15 @@ func (z *ZaloBotAdapter) ProcessWebhook(payload []byte, signature string) (sende
 		return "", "", errors.New("zalo webhook payload has no message")
 	}
 	if envelope.Message.From.IsBot {
-		return "", "", ports.ErrZaloBotMessage
+		return "", "", domain.ErrZaloBotMessage
 	}
 	return envelope.Message.From.ID, envelope.Message.Text, nil
+}
+
+func (z *ZaloBotAdapter) GetSecretToken() string {
+	return z.botConfig.WebhookSecret
+}
+
+func (z *ZaloBotAdapter) GetFieldSecretToken() string {
+	return z.bot.GetFieldSecretToken()
 }
