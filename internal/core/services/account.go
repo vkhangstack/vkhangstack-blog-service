@@ -139,6 +139,10 @@ func (a *AccountService) ListAccounts(ctx context.Context) ([]domain.AccountResp
 	}
 	out := make([]domain.AccountResponse, 0, len(accounts))
 	for _, acc := range accounts {
+		if isRootAccount(acc) {
+			// Hide the root account from the list view, so it can't be edited/deleted/impersonated.
+			continue
+		}
 		out = append(out, toAccountResponse(acc))
 	}
 	return out, nil
@@ -152,10 +156,6 @@ func (a *AccountService) GetAccount(ctx context.Context, id string) (*domain.Acc
 	account, err := a.repo.GetAccountByID(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("account not found: %w", err)
-	}
-	if isRootAccount(account) {
-		// Hidden from single-record lookup too, consistent with ListAccounts excluding it.
-		return nil, fmt.Errorf("account not found")
 	}
 	resp := toAccountResponse(account)
 	return &resp, nil
