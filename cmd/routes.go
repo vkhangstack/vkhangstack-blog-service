@@ -254,6 +254,15 @@ func setupV1Routes(
 			timetables.DELETE("/:id", timetableHandler.DeleteTimetableEntry)
 		}
 
+		// Channel deep link routes (public — static per-channel links, no user data involved).
+		// GetChannelDeepLink is for the frontend to render as a QR code; RedirectChannelDeepLink
+		// is for a plain <a href> so mobile web opens the channel's app directly.
+		notificationsPublic := v1.Group("/notifications/settings/channels")
+		{
+			notificationsPublic.GET("/:channel/deeplink", notificationHandler.GetChannelDeepLink)
+			notificationsPublic.GET("/:channel/deeplink/redirect", notificationHandler.RedirectChannelDeepLink)
+		}
+
 		// Notification routes (authenticated — no authz check, personal/self-scoped resource)
 		notifications := v1.Group("/notifications")
 		notifications.Use(http.AuthenticationMiddleware(authzAdapter))
@@ -261,6 +270,7 @@ func setupV1Routes(
 			notifications.GET("/settings", notificationHandler.GetNotificationSetting)
 			notifications.PUT("/settings", notificationHandler.UpdateNotificationSetting)
 			notifications.POST("/settings/channels/verify", notificationHandler.RequestChannelVerification)
+			notifications.DELETE("/settings/channels/:channel", notificationHandler.UnlinkNotificationChannel)
 			notifications.POST("", notificationHandler.CreateNotification)
 			notifications.GET("", notificationHandler.ListNotifications)
 			notifications.GET("/cursor", notificationHandler.ListNotificationsCursor)

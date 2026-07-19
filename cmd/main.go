@@ -108,6 +108,7 @@ func main() {
 		Token:         cfg.ZaloBot.Token,
 		WebhookSecret: cfg.ZaloBot.WebhookSecret,
 		Endpoint:      cfg.ZaloBot.Endpoint,
+		DeepLink:      cfg.ZaloBot.DeepLink,
 	})
 	if err != nil {
 		logger.Log.WithError(err).Fatal("failed to initialize Zalo bot adapter")

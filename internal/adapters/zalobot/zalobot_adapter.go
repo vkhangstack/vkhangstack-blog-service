@@ -14,6 +14,7 @@ type ZaloBotConfig struct {
 	Token         string
 	WebhookSecret string
 	Endpoint      string
+	DeepLink      string
 }
 
 type ZaloBotAdapter struct {
@@ -99,4 +100,8 @@ func (z *ZaloBotAdapter) GetSecretToken() string {
 
 func (z *ZaloBotAdapter) GetFieldSecretToken() string {
 	return z.bot.GetFieldSecretToken()
+}
+
+func (z *ZaloBotAdapter) GetDeepLink() string {
+	return z.botConfig.DeepLink
 }

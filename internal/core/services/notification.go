@@ -298,3 +298,51 @@ func (s *NotificationSettingService) VerifyChannelNotificationLinked(ctx context
 
 	return nil
 }
+
+// UnlinkChannel disables a linked channel and clears its token, so the user can restart the
+// linking flow (e.g. RequestChannelVerification) from a clean state.
+func (s *NotificationSettingService) UnlinkChannel(ctx context.Context, userID string, channel domain.NotificationChannelType) (*domain.NotificationSettingResponse, error) {
+	if !domain.IsKnownNotificationChannel(channel) {
+		return nil, errors.New("unknown notification channel: " + string(channel))
+	}
+
+	setting, err := s.repo.GetNotificationSettingByUserID(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if setting == nil {
+		return &domain.NotificationSettingResponse{
+			UserID:   userID,
+			Channels: []domain.NotificationChannel{},
+		}, nil
+	}
+
+	var unlinkedToken string
+	channels := make([]domain.NotificationChannel, len(setting.Channels))
+	copy(channels, setting.Channels)
+	for i, c := range channels {
+		if c.Channel == channel {
+			unlinkedToken = c.Token
+			channels[i].Enabled = false
+			channels[i].Token = ""
+		}
+	}
+
+	if err := s.verificationRepo.ExpirePendingChannelVerifications(ctx, userID, channel); err != nil {
+		return nil, err
+	}
+
+	saved, err := s.repo.UpsertNotificationSetting(ctx, domain.NotificationSetting{
+		UserID:   userID,
+		Channels: channels,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if channel == domain.NotificationChannelZaloBot && unlinkedToken != "" && s.zaloBot != nil {
+		_ = s.zaloBot.SendMessage(unlinkedToken, "Your Zalo channel has been unlinked. You'll no longer receive notifications here.")
+	}
+
+	return toNotificationSettingResponse(saved), nil
+}

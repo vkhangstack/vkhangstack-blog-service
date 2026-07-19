@@ -1,6 +1,8 @@
 package handler
 
 import (
+	nethttp "net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
@@ -252,4 +254,59 @@ func (h *NotificationHandler) RequestChannelVerification(ctx *gin.Context) {
 		return
 	}
 	HandleSuccess(ctx, verification, "Verification code generated")
+}
+
+// GetChannelDeepLink returns the static deep link that opens the channel's own app straight
+// to a chat with our bot, for the client to render as a QR code (e.g. when linking Zalo).
+func (h *NotificationHandler) GetChannelDeepLink(ctx *gin.Context) {
+	channel := domain.NotificationChannelType(ctx.Param("channel"))
+	if channel != domain.NotificationChannelZaloBot {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "channel does not support a deep link: "+string(channel))
+		return
+	}
+	if h.zaloBot == nil {
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "zalo bot is not configured")
+		return
+	}
+
+	HandleSuccess(ctx, domain.ChannelDeepLinkResponse{
+		Channel:  channel,
+		DeepLink: h.zaloBot.GetDeepLink(),
+	}, "Success")
+}
+
+// RedirectChannelDeepLink sends the browser straight to the channel's deep link (e.g. so a
+// "Link with Zalo" button works as a plain <a href> on mobile web without a round trip
+// through JSON first). Desktop clients should instead call GetChannelDeepLink and render
+// the URL as a QR code for the user to scan with their phone.
+func (h *NotificationHandler) RedirectChannelDeepLink(ctx *gin.Context) {
+	channel := domain.NotificationChannelType(ctx.Param("channel"))
+	if channel != domain.NotificationChannelZaloBot {
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, "channel does not support a deep link: "+string(channel))
+		return
+	}
+	if h.zaloBot == nil {
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "zalo bot is not configured")
+		return
+	}
+	ctx.Redirect(nethttp.StatusFound, h.zaloBot.GetDeepLink())
+}
+
+// UnlinkNotificationChannel disables and clears a previously linked channel (e.g. zalo_bot)
+// so the user can start the linking flow again from a clean state.
+func (h *NotificationHandler) UnlinkNotificationChannel(ctx *gin.Context) {
+	userID, err := http.GetUserID(ctx)
+	if err != nil {
+		HandleError(ctx, domain.ErrorCodeForbidden, nil, "Unauthorized")
+		return
+	}
+
+	channel := domain.NotificationChannelType(ctx.Param("channel"))
+	setting, err := h.settingSvc.UnlinkChannel(ctx, userID, channel)
+	if err != nil {
+		logger.Log.WithError(err).Error("UnlinkNotificationChannel: Failed to unlink channel")
+		HandleError(ctx, domain.ErrorCodePayloadBadRequest, nil, err.Error())
+		return
+	}
+	HandleSuccess(ctx, setting, "Notification channel unlinked")
 }

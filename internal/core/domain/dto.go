@@ -451,6 +451,15 @@ type ChannelVerificationResponse struct {
 	ExpiresAt time.Time               `json:"expires_at"`
 }
 
+// ChannelDeepLinkResponse is the static deep link that opens a channel's own app straight
+// to a chat with our bot (e.g. the Zalo bot deep link). It isn't persisted anywhere — it's
+// read directly from config — the client renders it as a QR code so the user can jump to
+// the chat by scanning instead of searching for the bot manually.
+type ChannelDeepLinkResponse struct {
+	Channel  NotificationChannelType `json:"channel"`
+	DeepLink string                  `json:"deep_link"`
+}
+
 type NotificationResponse struct {
 	ID        string    `json:"id"`
 	Title     string    `json:"title"`

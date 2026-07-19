@@ -47,6 +47,7 @@ type ZaloBotConfig struct {
 	Token         string
 	WebhookSecret string
 	Endpoint      string
+	DeepLink      string
 }
 
 type Config struct {
@@ -101,6 +102,7 @@ func LoadConfig() Config {
 			Token:         getEnv("ZALO_BOT_TOKEN", ""),
 			WebhookSecret: getEnv("ZALO_BOT_WEBHOOK_SECRET", ""),
 			Endpoint:      getEnv("ZALO_BOT_ENDPOINT", "http://localhost:8080/webhooks/zalo"),
+			DeepLink:      getEnv("ZALO_BOT_DEEPLINK", "https://zalo.me/"),
 		},
 	}
 }

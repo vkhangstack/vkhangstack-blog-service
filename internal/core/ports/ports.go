@@ -329,6 +329,8 @@ type NotificationSettingService interface {
 	// message carrying a verification code; on success it enables that channel with the
 	// sender's platform-specific ID (extendID) as the channel's token.
 	VerifyChannelNotificationLinked(ctx context.Context, channel domain.NotificationChannelType, code, extendID string) error
+	// UnlinkChannel disables a linked channel and clears its token.
+	UnlinkChannel(ctx context.Context, userID string, channel domain.NotificationChannelType) (*domain.NotificationSettingResponse, error)
 }
 
 // NotificationChannelVerificationRepository persists pending/verified channel linking codes.
@@ -345,4 +347,5 @@ type ZaloBotClient interface {
 	ProcessWebhook(payload []byte, signature string) (senderID, text string, err error)
 	GetSecretToken() string
 	GetFieldSecretToken() string
+	GetDeepLink() string
 }
