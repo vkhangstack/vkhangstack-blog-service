@@ -218,7 +218,7 @@ type TaskRepository interface {
 }
 
 type TaskService interface {
-	CreateTask(ctx context.Context, req domain.CreateTaskRequest) (*domain.Task, error)
+	CreateTask(ctx context.Context, authorID string, req domain.CreateTaskRequest) (*domain.Task, error)
 	GetTask(ctx context.Context, id string) (*domain.Task, error)
 	UpdateTask(ctx context.Context, id string, req domain.UpdateTaskRequest) (*domain.Task, error)
 	DeleteTask(ctx context.Context, id string) error

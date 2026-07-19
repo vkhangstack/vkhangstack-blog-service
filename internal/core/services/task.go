@@ -18,7 +18,7 @@ func NewTaskService(repo ports.TaskRepository) *TaskService {
 	return &TaskService{repo: repo}
 }
 
-func (s *TaskService) CreateTask(ctx context.Context, req domain.CreateTaskRequest) (*domain.Task, error) {
+func (s *TaskService) CreateTask(ctx context.Context, authorID string, req domain.CreateTaskRequest) (*domain.Task, error) {
 	countTask, err := s.repo.GetCount(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get task count: %v", err)
@@ -37,6 +37,7 @@ func (s *TaskService) CreateTask(ctx context.Context, req domain.CreateTaskReque
 
 	task := domain.Task{
 		TaskID:       taskID,
+		CreatedBy:    utils.StringPtr(authorID),
 		Title:        req.Title,
 		Status:       status,
 		Label:        req.Label,

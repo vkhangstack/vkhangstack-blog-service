@@ -174,11 +174,12 @@ type TaskListResponse struct {
 }
 
 type TaskFilter struct {
-	Status   string `form:"status"`
-	Label    string `form:"label"`
-	Priority string `form:"priority"`
-	Page     int    `form:"page"`
-	Limit    int    `form:"limit"`
+	Status    string `form:"status"`
+	Label     string `form:"label"`
+	Priority  string `form:"priority"`
+	CreatedBy string `form:"created_by"`
+	Page      int    `form:"page"`
+	Limit     int    `form:"limit"`
 }
 
 type CreateNoteRequest struct {

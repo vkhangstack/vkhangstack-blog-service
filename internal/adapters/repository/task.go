@@ -69,6 +69,9 @@ func (u *DB) ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain
 	if filter.Priority != "" {
 		query = query.Where("t.priority = ?", filter.Priority)
 	}
+	if filter.CreatedBy != "" {
+		query = query.Where("t.created_by = ?", filter.CreatedBy)
+	}
 
 	total, err := query.Order("t.created_at DESC").Offset((filter.Page - 1) * filter.Limit).Limit(filter.Limit).ScanAndCount(ctx)
 	if err != nil {
@@ -101,6 +104,9 @@ func (u *DB) ListTasksCursor(ctx context.Context, filter domain.TaskFilter, curs
 	}
 	if filter.Priority != "" {
 		query = query.Where("t.priority = ?", filter.Priority)
+	}
+	if filter.CreatedBy != "" {
+		query = query.Where("t.created_by = ?", filter.CreatedBy)
 	}
 
 	queryCount := query.Clone()

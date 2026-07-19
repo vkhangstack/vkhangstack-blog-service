@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/http"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/validate"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
@@ -30,7 +31,13 @@ func (h *TaskHandler) CreateTask(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid request payload")
 		return
 	}
-	task, err := h.svc.CreateTask(ctx, req)
+	userID, err := http.GetUserID(ctx)
+	if err != nil {
+		logger.Log.WithError(err).Error("CreateTask: Failed to get user ID from context")
+		HandleError(ctx, domain.ErrorCodeForbidden, nil, "Unauthorized")
+		return
+	}
+	task, err := h.svc.CreateTask(ctx, userID, req)
 	if err != nil {
 		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
 		return
@@ -65,6 +72,13 @@ func (h *TaskHandler) ListTasks(ctx *gin.Context) {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid query parameters")
 		return
 	}
+	userID, err := http.GetUserID(ctx)
+	if err != nil {
+		logger.Log.WithError(err).Error("ListTasks: Failed to get user ID from context")
+		HandleError(ctx, domain.ErrorCodeForbidden, nil, "Unauthorized")
+		return
+	}
+	filter.CreatedBy = userID
 
 	if filter.Page <= 0 {
 		filter.Page = 1
@@ -95,12 +109,20 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 			limit = parsed
 		}
 	}
+	userID, err := http.GetUserID(ctx)
+	if err != nil {
+		logger.Log.WithError(err).Error("ListTasksCursor: Failed to get user ID from context")
+		HandleError(ctx, domain.ErrorCodeForbidden, nil, "Unauthorized")
+		return
+	}
 
 	var filter domain.TaskFilter
 	if err := ctx.ShouldBindQuery(&filter); err != nil {
 		HandleError(ctx, domain.ErrorCodePayloadBadRequest, validate.FormatValidationError(err), "Invalid query parameters")
 		return
 	}
+
+	filter.CreatedBy = userID
 
 	tasks, nextCursor, total, err := h.svc.ListTasksCursor(ctx, filter, cursor, limit)
 	if err != nil {
