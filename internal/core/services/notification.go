@@ -127,9 +127,9 @@ func NewNotificationSettingService(repo ports.NotificationSettingRepository, ver
 	return &NotificationSettingService{repo: repo, verificationRepo: verificationRepo, zaloBot: zaloBot}
 }
 
-// VerificationCodePattern extracts a linking code (e.g. "VKBLOG-482913") from arbitrary
+// VerificationCodePattern extracts a linking code (e.g. "NEXION-HUB-482913") from arbitrary
 // message text a user sends to a bot channel.
-var VerificationCodePattern = regexp.MustCompile(`VKBLOG-\d{6}`)
+var VerificationCodePattern = regexp.MustCompile(`NEXION-HUB-\d{6}`)
 
 const verificationCodeTTL = 15 * time.Minute
 
@@ -143,7 +143,7 @@ func generateVerificationCode() (string, error) {
 		}
 		code[i] = digits[n.Int64()]
 	}
-	return "VKBLOG-" + string(code), nil
+	return "NEXION-HUB-" + string(code), nil
 }
 
 func toNotificationSettingResponse(s *domain.NotificationSetting) *domain.NotificationSettingResponse {

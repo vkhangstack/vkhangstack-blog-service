@@ -83,7 +83,7 @@ func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
 		return
 	}
 
-	// Only messages carrying the VKBLOG-###### verification-code prefix are relevant here;
+	// Only messages carrying the NEXION-HUB-###### verification-code prefix are relevant here;
 	// skip everything else to avoid noisy failed-verification logs for ordinary chat messages.
 	if !services.VerificationCodePattern.MatchString(text) {
 		HandleSuccess(ctx, nil, "Success")
