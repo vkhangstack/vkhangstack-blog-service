@@ -425,6 +425,52 @@ type QuizAttempt struct {
 	CreatedBy       *string        `bun:"created_by,nullzero,type:varchar(20)" json:"created_by"`
 }
 
+type FlashcardDeck struct {
+	bun.BaseModel `bun:"table:flashcard_decks,alias:fd"`
+	ID            string              `bun:"id,pk,type:varchar(20)"                                json:"id"`
+	Title         string              `bun:"title,notnull,type:varchar(255)"                       json:"title"`
+	Description   *string             `bun:"description,nullzero,type:text"                        json:"description"`
+	Language      string              `bun:"language,notnull,default:'en',type:varchar(10)"        json:"language"`
+	Status        FlashcardDeckStatus `bun:"status,notnull,default:'draft',type:varchar(20)"       json:"status"`
+	CreatedAt     time.Time           `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time           `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt     time.Time           `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy     *string             `bun:"created_by,nullzero,type:varchar(20)"                   json:"created_by"`
+	UpdatedBy     *string             `bun:"updated_by,nullzero,type:varchar(20)"                   json:"updated_by"`
+	DeletedBy     *string             `bun:"deleted_by,nullzero,type:varchar(20)"                   json:"deleted_by"`
+}
+
+type FlashcardCard struct {
+	bun.BaseModel `bun:"table:flashcard_cards,alias:fc"`
+	ID            string    `bun:"id,pk,type:varchar(20)"               json:"id"`
+	DeckID        string    `bun:"deck_id,notnull,type:varchar(20)"     json:"deck_id"`
+	Front         string    `bun:"front,notnull,type:text"              json:"front"`
+	Back          string    `bun:"back,notnull,type:text"               json:"back"`
+	Example       *string   `bun:"example,nullzero,type:text"           json:"example"`
+	Phonetic      *string   `bun:"phonetic,nullzero,type:varchar(255)"  json:"phonetic"`
+	Position      int       `bun:"position,notnull,default:0,type:int"  json:"position"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}
+
+// FlashcardReview holds the current SM-2 scheduling state for one (user, card) pair.
+// It is upserted on every review — there is no separate append-only review log.
+type FlashcardReview struct {
+	bun.BaseModel  `bun:"table:flashcard_reviews,alias:fr"`
+	ID             string           `bun:"id,pk,type:varchar(20)"                                json:"id"`
+	UserID         string           `bun:"user_id,notnull,type:varchar(20)"                      json:"user_id"`
+	CardID         string           `bun:"card_id,notnull,type:varchar(20)"                      json:"card_id"`
+	DeckID         string           `bun:"deck_id,notnull,type:varchar(20)"                      json:"deck_id"`
+	EaseFactor     float64          `bun:"ease_factor,notnull,default:2.5,type:numeric(4,2)"     json:"ease_factor"`
+	IntervalDays   int              `bun:"interval_days,notnull,default:0,type:int"              json:"interval_days"`
+	Repetitions    int              `bun:"repetitions,notnull,default:0,type:int"                json:"repetitions"`
+	DueAt          time.Time        `bun:"due_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"due_at"`
+	LastReviewedAt *time.Time       `bun:"last_reviewed_at,nullzero,type:timestamptz"            json:"last_reviewed_at"`
+	LastRating     *FlashcardRating `bun:"last_rating,nullzero,type:varchar(20)"                 json:"last_rating"`
+	CreatedAt      time.Time        `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt      time.Time        `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}
+
 // NotificationChannelVerification links a channel (e.g. zalo_bot) to a user by having the
 // user copy a generated code into that channel's own app, then having the channel's webhook
 // report the code back along with the sender's platform-specific ID (ExtendID), which becomes

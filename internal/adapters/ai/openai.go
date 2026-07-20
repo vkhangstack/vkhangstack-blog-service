@@ -107,3 +107,53 @@ func (g *OpenAICompatGenerator) GenerateQuiz(ctx context.Context, req domain.Gen
 
 	return parseQuizPayload(parsed.Choices[0].Message.Content, req)
 }
+
+func (g *OpenAICompatGenerator) GenerateFlashcards(ctx context.Context, req domain.GenerateFlashcardsRequest) (*domain.GenerateFlashcardsResult, error) {
+	system, user := buildFlashcardPrompt(req)
+
+	body, err := json.Marshal(chatRequest{
+		Model: g.model,
+		Messages: []chatMessage{
+			{Role: "system", Content: system},
+			{Role: "user", Content: user},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, g.baseURL+"/chat/completions", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	httpReq.Header.Set("Content-Type", "application/json")
+	httpReq.Header.Set("Authorization", "Bearer "+g.apiKey)
+
+	resp, err := g.client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("ai request failed: %v", err)
+	}
+	defer resp.Body.Close()
+
+	raw, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("ai response read failed: %v", err)
+	}
+
+	var parsed chatResponse
+	if err := json.Unmarshal(raw, &parsed); err != nil {
+		return nil, fmt.Errorf("ai response is not valid JSON: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		msg := string(raw)
+		if parsed.Error != nil {
+			msg = parsed.Error.Message
+		}
+		return nil, fmt.Errorf("ai request failed (%d): %s", resp.StatusCode, msg)
+	}
+	if len(parsed.Choices) == 0 || parsed.Choices[0].Message.Content == "" {
+		return nil, fmt.Errorf("ai returned no content")
+	}
+
+	return parseFlashcardPayload(parsed.Choices[0].Message.Content)
+}

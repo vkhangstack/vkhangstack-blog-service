@@ -164,6 +164,25 @@ const (
 	QuizStatusArchived  QuizStatus = "archived"
 )
 
+type FlashcardDeckStatus string
+
+const (
+	FlashcardDeckStatusDraft     FlashcardDeckStatus = "draft"
+	FlashcardDeckStatusPublished FlashcardDeckStatus = "published"
+	FlashcardDeckStatusArchived  FlashcardDeckStatus = "archived"
+)
+
+// FlashcardRating is the Anki-style grade a learner gives a card during review,
+// driving the SM-2 scheduling calculation.
+type FlashcardRating string
+
+const (
+	FlashcardRatingAgain FlashcardRating = "again"
+	FlashcardRatingHard  FlashcardRating = "hard"
+	FlashcardRatingGood  FlashcardRating = "good"
+	FlashcardRatingEasy  FlashcardRating = "easy"
+)
+
 type SearchEngineIndexName string
 
 const (

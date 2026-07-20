@@ -112,7 +112,11 @@ func main() {
 		logger.Log.WithError(err).Fatal("failed to initialize Zalo bot adapter")
 	}
 
-	aiAdapters, err := aiAdapters.NewQuizGenerator(cfg.AI)
+	quizGenerator, err := aiAdapters.NewQuizGenerator(cfg.AI)
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize AI adapters")
+	}
+	flashcardGenerator, err := aiAdapters.NewFlashcardGenerator(cfg.AI)
 	if err != nil {
 		logger.Log.WithError(err).Fatal("failed to initialize AI adapters")
 	}
@@ -129,7 +133,8 @@ func main() {
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
 	noteService := services.NewNoteService(store)
-	quizService := services.NewQuizService(store, aiAdapters)
+	quizService := services.NewQuizService(store, quizGenerator)
+	flashcardService := services.NewFlashcardService(store, flashcardGenerator)
 	drawingService := services.NewDrawingService(store)
 	timetableService := services.NewTimetableService(store)
 	notificationService := services.NewNotificationService(store)
@@ -148,6 +153,6 @@ func main() {
 
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
-		rateLimiter, searchEngineService, noteService, quizService, drawingService, timetableService,
+		rateLimiter, searchEngineService, noteService, quizService, flashcardService, drawingService, timetableService,
 		notificationService, notificationSettingService, zaloBotAdapter, authzAdapter)
 }

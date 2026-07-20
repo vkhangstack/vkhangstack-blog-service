@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS idx_flashcard_decks_status;
+DROP INDEX IF EXISTS idx_flashcard_decks_created_at;
+DROP INDEX IF EXISTS idx_flashcard_cards_deck_id;
+DROP INDEX IF EXISTS idx_flashcard_reviews_card_id;
+DROP INDEX IF EXISTS idx_flashcard_reviews_deck_id;
+DROP INDEX IF EXISTS idx_flashcard_reviews_user_due;
+DROP TABLE IF EXISTS flashcard_reviews;
+DROP TABLE IF EXISTS flashcard_cards;
+DROP TABLE IF EXISTS flashcard_decks;

@@ -28,6 +28,7 @@ func InitRoutes(
 	searchEngineService *services.SearchEngineService,
 	noteService *services.NoteService,
 	quizService *services.QuizService,
+	flashcardService *services.FlashcardService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
 	notificationService *services.NotificationService,
@@ -56,6 +57,7 @@ func InitRoutes(
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	noteHandler := handler.NewNoteHandler(*noteService)
 	quizHandler := handler.NewQuizHandler(*quizService)
+	flashcardHandler := handler.NewFlashcardHandler(*flashcardService)
 	drawingHandler := handler.NewDrawingHandler(*drawingService)
 	timetableHandler := handler.NewTimetableHandler(timetableService)
 	accountHandler := handler.NewAccountHandler(accountService)
@@ -66,7 +68,7 @@ func InitRoutes(
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
-		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, quizHandler, drawingHandler, timetableHandler,
+		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, quizHandler, flashcardHandler, drawingHandler, timetableHandler,
 		accountHandler, roleHandler, notificationHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
@@ -89,6 +91,7 @@ func setupV1Routes(
 	rateLimiter *services.RateLimiter,
 	noteHandler *handler.NoteHandler,
 	quizHandler *handler.QuizHandler,
+	flashcardHandler *handler.FlashcardHandler,
 	drawingHandler *handler.DrawingHandler,
 	timetableHandler *handler.TimetableHandler,
 	accountHandler *handler.AccountHandler,
@@ -237,6 +240,22 @@ func setupV1Routes(
 			quizzes.DELETE("/:id", quizHandler.DeleteQuiz)
 			quizzes.POST("/:id/attempts", quizHandler.SubmitAttempt)
 			quizzes.GET("/:id/attempts/cursor", quizHandler.ListAttemptsCursor)
+		}
+
+		flashcards := v1.Group("/flashcards")
+		flashcards.Use(http.AuthenticationMiddleware(authzAdapter))
+		{
+			flashcards.POST("/decks", flashcardHandler.CreateDeck)
+			flashcards.POST("/generate", flashcardHandler.GenerateFlashcards)
+			flashcards.GET("/decks/cursor", flashcardHandler.ListDecksCursor)
+			flashcards.GET("/decks/:id", flashcardHandler.GetDeck)
+			flashcards.PUT("/decks/:id", flashcardHandler.UpdateDeck)
+			flashcards.DELETE("/decks/:id", flashcardHandler.DeleteDeck)
+			flashcards.POST("/decks/:id/cards", flashcardHandler.CreateCard)
+			flashcards.GET("/decks/:id/study", flashcardHandler.ListDueCards)
+			flashcards.PUT("/cards/:id", flashcardHandler.UpdateCard)
+			flashcards.DELETE("/cards/:id", flashcardHandler.DeleteCard)
+			flashcards.POST("/cards/:id/review", flashcardHandler.SubmitReview)
 		}
 
 		drawings := v1.Group("/drawings")

@@ -284,6 +284,40 @@ type QuizGenerator interface {
 	GenerateQuiz(ctx context.Context, req domain.GenerateQuizRequest) (*domain.CreateQuizRequest, error)
 }
 
+type FlashcardRepository interface {
+	CreateDeck(ctx context.Context, deck domain.FlashcardDeck, cards []domain.FlashcardCard) (*domain.FlashcardDeck, error)
+	GetDeckByID(ctx context.Context, id string) (*domain.FlashcardDeckWithCards, error)
+	UpdateDeck(ctx context.Context, id string, updates domain.FlashcardDeck) error
+	DeleteDeck(ctx context.Context, id string) error
+	ListDecksCursor(ctx context.Context, userID string, filter domain.FlashcardDeckFilter, cursor string, limit int) ([]*domain.FlashcardDeckWithCount, *string, int, error)
+	CreateCard(ctx context.Context, card domain.FlashcardCard) (*domain.FlashcardCard, error)
+	GetCardByID(ctx context.Context, id string) (*domain.FlashcardCard, error)
+	UpdateCard(ctx context.Context, id string, updates domain.FlashcardCard) error
+	DeleteCard(ctx context.Context, id string) error
+	ListDueCards(ctx context.Context, userID string, deckID string, limit int) ([]*domain.FlashcardCard, error)
+	GetReview(ctx context.Context, userID string, cardID string) (*domain.FlashcardReview, error)
+	UpsertReview(ctx context.Context, review domain.FlashcardReview) (*domain.FlashcardReview, error)
+}
+
+type FlashcardService interface {
+	CreateDeck(ctx context.Context, authorID string, req domain.CreateFlashcardDeckRequest) (*domain.FlashcardDeck, error)
+	GetDeck(ctx context.Context, id string) (*domain.FlashcardDeckWithCards, error)
+	UpdateDeck(ctx context.Context, id string, req domain.UpdateFlashcardDeckRequest) error
+	DeleteDeck(ctx context.Context, id string) error
+	ListDecksCursor(ctx context.Context, userID string, filter domain.FlashcardDeckFilter, cursor string, limit int) ([]*domain.FlashcardDeckWithCount, *string, int, error)
+	CreateCard(ctx context.Context, deckID string, req domain.CreateFlashcardCardRequest) (*domain.FlashcardCard, error)
+	UpdateCard(ctx context.Context, id string, req domain.UpdateFlashcardCardRequest) error
+	DeleteCard(ctx context.Context, id string) error
+	ListDueCards(ctx context.Context, userID string, deckID string, limit int) ([]*domain.FlashcardCard, error)
+	SubmitReview(ctx context.Context, userID string, cardID string, req domain.SubmitFlashcardReviewRequest) (*domain.FlashcardReviewResult, error)
+	GenerateCards(ctx context.Context, req domain.GenerateFlashcardsRequest) (*domain.GenerateFlashcardsResult, error)
+}
+
+// FlashcardGenerator drafts a flashcard deck (title + front/back cards) using an LLM provider.
+type FlashcardGenerator interface {
+	GenerateFlashcards(ctx context.Context, req domain.GenerateFlashcardsRequest) (*domain.GenerateFlashcardsResult, error)
+}
+
 type DrawingRepository interface {
 	CreateDrawing(ctx context.Context, drawing domain.Drawing) (*domain.Drawing, error)
 	GetDrawingByID(ctx context.Context, id string) (*domain.Drawing, error)

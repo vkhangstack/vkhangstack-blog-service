@@ -287,6 +287,90 @@ type QuizAttemptResult struct {
 	Results   []QuizQuestionResult `json:"results"`
 }
 
+type FlashcardCardInput struct {
+	Front    string  `json:"front" binding:"required"`
+	Back     string  `json:"back" binding:"required"`
+	Example  *string `json:"example"`
+	Phonetic *string `json:"phonetic"`
+}
+
+type CreateFlashcardDeckRequest struct {
+	Title       string               `json:"title" binding:"required"`
+	Description *string              `json:"description"`
+	Language    string               `json:"language"`
+	Status      FlashcardDeckStatus  `json:"status"`
+	Cards       []FlashcardCardInput `json:"cards"`
+}
+
+type UpdateFlashcardDeckRequest struct {
+	Title       *string              `json:"title"`
+	Description *string              `json:"description"`
+	Language    *string              `json:"language"`
+	Status      *FlashcardDeckStatus `json:"status"`
+}
+
+type FlashcardDeckFilter struct {
+	Status    *string `form:"status"`
+	Language  *string `form:"language"`
+	Title     *string `form:"title"`
+	CreatedBy *string `form:"created_by"`
+	Page      int     `form:"page"`
+	Limit     int     `form:"limit"`
+}
+
+type CreateFlashcardCardRequest struct {
+	Front    string  `json:"front" binding:"required"`
+	Back     string  `json:"back" binding:"required"`
+	Example  *string `json:"example"`
+	Phonetic *string `json:"phonetic"`
+}
+
+type UpdateFlashcardCardRequest struct {
+	Front    *string `json:"front"`
+	Back     *string `json:"back"`
+	Example  *string `json:"example"`
+	Phonetic *string `json:"phonetic"`
+}
+
+type FlashcardDeckWithCards struct {
+	*FlashcardDeck
+	Cards []*FlashcardCard `json:"cards"`
+}
+
+// FlashcardDeckWithCount is the list-view projection: deck plus its card count
+// and how many of the current user's cards are due for review right now.
+type FlashcardDeckWithCount struct {
+	*FlashcardDeck
+	CardCount int `json:"card_count"`
+	DueCount  int `json:"due_count"`
+}
+
+type SubmitFlashcardReviewRequest struct {
+	Rating FlashcardRating `json:"rating" binding:"required"`
+}
+
+type FlashcardReviewResult struct {
+	CardID       string    `json:"card_id"`
+	EaseFactor   float64   `json:"ease_factor"`
+	IntervalDays int       `json:"interval_days"`
+	Repetitions  int       `json:"repetitions"`
+	DueAt        time.Time `json:"due_at"`
+}
+
+// GenerateFlashcardsRequest asks the configured AI provider to draft flashcards for a topic.
+type GenerateFlashcardsRequest struct {
+	Topic    string  `json:"topic" binding:"required"`
+	Language string  `json:"language"`
+	Level    *string `json:"level"`
+	Count    int     `json:"count"`
+}
+
+type GenerateFlashcardsResult struct {
+	Title       string               `json:"title"`
+	Description string               `json:"description"`
+	Cards       []FlashcardCardInput `json:"cards"`
+}
+
 type CreateAccountRequest struct {
 	FirstName   string        `json:"first_name" binding:"required"`
 	LastName    string        `json:"last_name"  binding:"required"`
