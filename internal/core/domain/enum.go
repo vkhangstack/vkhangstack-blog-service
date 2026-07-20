@@ -203,6 +203,16 @@ const (
 	TagTypeUser TagType = "user"
 )
 
+// Bot chat message direction and sender values, persisted on BotChatMessage rows.
+const (
+	BotChatDirectionInbound  = "inbound"  // user -> bot
+	BotChatDirectionOutbound = "outbound" // bot/admin -> user
+
+	BotChatSenderUser  = "user"  // message typed by the Zalo user
+	BotChatSenderBot   = "bot"   // automated chatbot command reply
+	BotChatSenderAdmin = "admin" // manual reply sent from the backoffice Chats console
+)
+
 // NotificationChannelType is a delivery channel a user can enable in their notification settings.
 type NotificationChannelType string
 

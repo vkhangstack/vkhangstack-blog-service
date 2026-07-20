@@ -139,6 +139,7 @@ func main() {
 	timetableService := services.NewTimetableService(store)
 	notificationService := services.NewNotificationService(store)
 	notificationSettingService := services.NewNotificationSettingService(store, store, zaloBotAdapter)
+	chatService := services.NewChatService(store, store, zaloBotAdapter)
 
 	// Start the task reminder poller
 	taskReminderService := services.NewTaskReminderService(store, store, store, zaloBotAdapter)
@@ -154,5 +155,5 @@ func main() {
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
 		rateLimiter, searchEngineService, noteService, quizService, flashcardService, drawingService, timetableService,
-		notificationService, notificationSettingService, zaloBotAdapter, authzAdapter)
+		notificationService, notificationSettingService, chatService, zaloBotAdapter, authzAdapter)
 }

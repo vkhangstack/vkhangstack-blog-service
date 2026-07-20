@@ -19,6 +19,7 @@ type BotChatService struct {
 	noteSvc      *NoteService
 	timetableSvc *TimetableService
 	bot          ports.ZaloBotClient
+	chatSvc      *ChatService
 }
 
 func NewBotChatService(
@@ -27,6 +28,7 @@ func NewBotChatService(
 	noteSvc *NoteService,
 	timetableSvc *TimetableService,
 	bot ports.ZaloBotClient,
+	chatSvc *ChatService,
 ) *BotChatService {
 	return &BotChatService{
 		settingRepo:  settingRepo,
@@ -34,6 +36,7 @@ func NewBotChatService(
 		noteSvc:      noteSvc,
 		timetableSvc: timetableSvc,
 		bot:          bot,
+		chatSvc:      chatSvc,
 	}
 }
 
@@ -193,5 +196,9 @@ func (s *BotChatService) handleTimetable(ctx context.Context, senderID, userID, 
 func (s *BotChatService) reply(senderID, text string) {
 	if err := s.bot.SendMessage(senderID, text); err != nil {
 		logger.Log.WithError(err).WithField("sender_id", senderID).Error("BotChatService: failed to send reply")
+		return
+	}
+	if s.chatSvc != nil {
+		s.chatSvc.RecordOutbound(context.Background(), senderID, domain.BotChatSenderBot, text)
 	}
 }

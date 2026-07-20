@@ -52,7 +52,7 @@ var allNavGroups = []navGroupDef{
 	{
 		Title: "Communication",
 		Items: []navItemDef{
-			{Title: "Messages", URL: "/messages", Icon: "message-square", Resource: "messages"},
+			{Title: "Chats", URL: "/chats", Icon: "message-square", Resource: "chats"},
 		},
 	},
 	{

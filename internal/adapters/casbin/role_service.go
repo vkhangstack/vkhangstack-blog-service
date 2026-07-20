@@ -15,7 +15,7 @@ var (
 // knownResources mirrors the resource keys guarded by AuthorizationMiddleware across the app.
 var knownResources = []string{
 	"cms/posts", "cms/categories", "cms/tasks", "cms/notes", "cms/quizzes", "cms/flashcards", "cms/drawings",
-	"cms/timetables", "cms/tags", "cms/menus", "cms/upload", "messages", "users",
+	"cms/timetables", "cms/tags", "cms/menus", "cms/upload", "chats", "messages", "users",
 }
 
 func isKnownResource(resource string) bool {

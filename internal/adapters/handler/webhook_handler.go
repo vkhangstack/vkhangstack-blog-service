@@ -72,7 +72,7 @@ func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
 	}
 	signature := ctx.GetHeader(h.zaloBot.GetFieldSecretToken())
 
-	senderID, text, err := h.zaloBot.ProcessWebhook(payload, signature)
+	senderID, senderName, messageID, text, err := h.zaloBot.ProcessWebhook(payload, signature)
 	if errors.Is(err, domain.ErrZaloBotMessage) {
 		HandleSuccess(ctx, nil, "Success")
 		return
@@ -85,6 +85,14 @@ func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
 
 	// Non-verification messages are routed to the bot chat handler (e.g. /tasks, /notes).
 	if !services.VerificationCodePattern.MatchString(text) {
+		// Log the inbound user message (with the Zalo sender's display name) for the backoffice
+		// Chats inbox. RecordInbound dedupes on the Zalo message_id: Zalo redelivers a webhook
+		// when it doesn't get a fast 200, so only the first delivery is processed — otherwise the
+		// message and its auto-reply would be duplicated.
+		if !h.chatSvc.RecordInbound(ctx, senderID, messageID, senderName, text) {
+			HandleSuccess(ctx, nil, "Success")
+			return
+		}
 		h.botChatSvc.HandleMessage(ctx, senderID, text)
 		HandleSuccess(ctx, nil, "Success")
 		return

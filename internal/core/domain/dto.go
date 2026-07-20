@@ -650,3 +650,21 @@ type CreateNotificationRequest struct {
 type UpdateNotificationRequest struct {
 	Read *bool `json:"read"`
 }
+
+// ChatReplyRequest is the backoffice payload for sending a manual reply to a Zalo user through
+// the bot from the Chats console.
+type ChatReplyRequest struct {
+	Text string `json:"text" binding:"required"`
+}
+
+// BotChatConversationListResponse is the paginated Chats inbox payload.
+type BotChatConversationListResponse struct {
+	Total         int                    `json:"total"`
+	Conversations []*BotChatConversation `json:"conversations"`
+}
+
+// BotChatMessageListResponse is the paginated per-conversation message payload.
+type BotChatMessageListResponse struct {
+	Total    int               `json:"total"`
+	Messages []*BotChatMessage `json:"messages"`
+}

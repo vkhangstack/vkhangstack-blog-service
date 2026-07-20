@@ -33,6 +33,7 @@ func InitRoutes(
 	timetableService *services.TimetableService,
 	notificationService *services.NotificationService,
 	notificationSettingService *services.NotificationSettingService,
+	chatService *services.ChatService,
 	zaloBotClient ports.ZaloBotClient,
 	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
@@ -63,13 +64,14 @@ func InitRoutes(
 	accountHandler := handler.NewAccountHandler(accountService)
 	roleSvc := casbinAdapter.NewRoleServiceAdapter(authzAdapter)
 	roleHandler := handler.NewRoleHandler(roleSvc)
-	botChatService := services.NewBotChatService(notificationSettingService.Repo(), taskService, noteService, timetableService, zaloBotClient)
-	notificationHandler := handler.NewNotificationHandler(notificationService, notificationSettingService, botChatService, zaloBotClient)
+	botChatService := services.NewBotChatService(notificationSettingService.Repo(), taskService, noteService, timetableService, zaloBotClient, chatService)
+	notificationHandler := handler.NewNotificationHandler(notificationService, notificationSettingService, botChatService, chatService, zaloBotClient)
+	chatHandler := handler.NewChatHandler(chatService)
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
 		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, quizHandler, flashcardHandler, drawingHandler, timetableHandler,
-		accountHandler, roleHandler, notificationHandler, authzAdapter)
+		accountHandler, roleHandler, notificationHandler, chatHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
 	// Start servers
@@ -97,6 +99,7 @@ func setupV1Routes(
 	accountHandler *handler.AccountHandler,
 	roleHandler *handler.RoleHandler,
 	notificationHandler *handler.NotificationHandler,
+	chatHandler *handler.ChatHandler,
 	authzAdapter *casbinAdapter.AuthorizationAdapter,
 ) {
 	// Health check route
@@ -277,6 +280,16 @@ func setupV1Routes(
 			permissions.POST("/assign-role", permissionHandler.AssignRole)
 			permissions.POST("/revoke-role", permissionHandler.RemoveRole)
 			permissions.GET("/:user_id/roles", permissionHandler.GetUserRoles)
+		}
+
+		// Chats — backoffice inbox of bot<->user Zalo conversations (admin support console).
+		chats := v1.Group("/chats")
+		chats.Use(http.AuthenticationMiddleware(authzAdapter))
+		chats.Use(http.AuthorizationMiddleware(authzAdapter, "chats"))
+		{
+			chats.GET("", chatHandler.ListConversations)
+			chats.GET("/:chatID/messages", chatHandler.ListMessages)
+			chats.POST("/:chatID/reply", chatHandler.SendReply)
 		}
 
 		timetables := v1.Group("/timetables")

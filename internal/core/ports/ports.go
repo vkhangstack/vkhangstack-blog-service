@@ -405,10 +405,21 @@ type NotificationChannelVerificationRepository interface {
 	ExpirePendingChannelVerifications(ctx context.Context, userID string, channel domain.NotificationChannelType) error
 }
 
+// ChatRepository persists and reads the bot<->user message log that backs the backoffice
+// Chats inbox.
+type ChatRepository interface {
+	CreateBotChatMessage(ctx context.Context, msg domain.BotChatMessage) (*domain.BotChatMessage, error)
+	// CreateInboundBotChatMessage inserts an inbound message, deduped by its Zalo message_id.
+	// Returns true only when a new row was inserted (false when the message_id already existed).
+	CreateInboundBotChatMessage(ctx context.Context, msg domain.BotChatMessage) (bool, error)
+	ListBotChatConversations(ctx context.Context, limit, offset int) ([]*domain.BotChatConversation, int, error)
+	ListBotChatMessages(ctx context.Context, chatID string, limit, offset int) ([]*domain.BotChatMessage, int, error)
+}
+
 // ZaloBotClient sends messages to and parses webhook updates from the Zalo Bot API.
 type ZaloBotClient interface {
 	SendMessage(chatID, text string) error
-	ProcessWebhook(payload []byte, signature string) (senderID, text string, err error)
+	ProcessWebhook(payload []byte, signature string) (senderID, senderName, messageID, text string, err error)
 	GetSecretToken() string
 	GetFieldSecretToken() string
 	GetDeepLink() string

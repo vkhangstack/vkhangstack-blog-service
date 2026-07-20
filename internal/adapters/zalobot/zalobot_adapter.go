@@ -77,21 +77,21 @@ type zaloWebhookEnvelope struct {
 // ProcessWebhook validates and parses an incoming Zalo Bot webhook payload, returning the
 // sender's Zalo user ID (extend_id) and the text they sent. Messages sent by the bot itself
 // (from.is_bot == true) are rejected with ports.ErrZaloBotMessage so callers can ignore them.
-func (z *ZaloBotAdapter) ProcessWebhook(payload []byte, signature string) (senderID, text string, err error) {
+func (z *ZaloBotAdapter) ProcessWebhook(payload []byte, signature string) (senderID, senderName, messageID, text string, err error) {
 	if signature == "" || signature != z.botConfig.WebhookSecret {
-		return "", "", fmt.Errorf("zalo webhook: invalid signature")
+		return "", "", "", "", fmt.Errorf("zalo webhook: invalid signature")
 	}
 	var envelope zaloWebhookEnvelope
 	if err := json.Unmarshal(payload, &envelope); err != nil {
-		return "", "", fmt.Errorf("zalo webhook: failed to parse payload: %w", err)
+		return "", "", "", "", fmt.Errorf("zalo webhook: failed to parse payload: %w", err)
 	}
 	if envelope.Message.MessageID == "" || envelope.Message.Text == "" {
-		return "", "", errors.New("zalo webhook payload has no message")
+		return "", "", "", "", errors.New("zalo webhook payload has no message")
 	}
 	if envelope.Message.From.IsBot {
-		return "", "", domain.ErrZaloBotMessage
+		return "", "", "", "", domain.ErrZaloBotMessage
 	}
-	return envelope.Message.From.ID, envelope.Message.Text, nil
+	return envelope.Message.From.ID, envelope.Message.From.DisplayName, envelope.Message.MessageID, envelope.Message.Text, nil
 }
 
 func (z *ZaloBotAdapter) GetSecretToken() string {

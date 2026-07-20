@@ -17,6 +17,7 @@ type NotificationHandler struct {
 	svc        *services.NotificationService
 	settingSvc *services.NotificationSettingService
 	botChatSvc *services.BotChatService
+	chatSvc    *services.ChatService
 	zaloBot    ports.ZaloBotClient
 }
 
@@ -24,9 +25,10 @@ func NewNotificationHandler(
 	svc *services.NotificationService,
 	settingSvc *services.NotificationSettingService,
 	botChatSvc *services.BotChatService,
+	chatSvc *services.ChatService,
 	zaloBot ports.ZaloBotClient,
 ) *NotificationHandler {
-	return &NotificationHandler{svc: svc, settingSvc: settingSvc, botChatSvc: botChatSvc, zaloBot: zaloBot}
+	return &NotificationHandler{svc: svc, settingSvc: settingSvc, botChatSvc: botChatSvc, chatSvc: chatSvc, zaloBot: zaloBot}
 }
 
 // CreateNotification handles POST /v1/notifications

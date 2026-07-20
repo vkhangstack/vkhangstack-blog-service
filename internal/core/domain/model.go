@@ -488,3 +488,32 @@ type NotificationChannelVerification struct {
 	CreatedAt     time.Time                 `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
 	UpdatedAt     time.Time                 `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 }
+
+// BotChatMessage is a single message exchanged between a Zalo user and the bot. ChatID is the
+// Zalo chat/sender ID (the conversation key and the address we send replies back to); UserID is
+// the resolved internal account when the Zalo channel is linked, otherwise empty. Direction is
+// inbound (user -> bot) or outbound (bot/admin -> user); Sender is user, bot, or admin.
+type BotChatMessage struct {
+	bun.BaseModel `bun:"table:bot_chat_messages,alias:bcm"`
+	ID            string    `bun:"id,pk,type:varchar(20)" json:"id"`
+	ChatID        string    `bun:"chat_id,notnull,type:varchar(255)" json:"chat_id"`
+	MessageID     string    `bun:"message_id,type:varchar(255)" json:"message_id,omitempty"`
+	UserID        string    `bun:"user_id,type:varchar(20)" json:"user_id,omitempty"`
+	SenderName    string    `bun:"sender_name,type:varchar(255)" json:"sender_name,omitempty"`
+	Direction     string    `bun:"direction,notnull,type:varchar(10)" json:"direction"`
+	Sender        string    `bun:"sender,notnull,type:varchar(10)" json:"sender"`
+	Text          string    `bun:"text,notnull" json:"text"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+}
+
+// BotChatConversation is the per-chat summary shown in the backoffice Chats inbox: one row per
+// Zalo chat, carrying the most recent message and the total message count.
+type BotChatConversation struct {
+	ChatID       string    `bun:"chat_id" json:"chat_id"`
+	UserID       string    `bun:"user_id" json:"user_id,omitempty"`
+	UserName     string    `bun:"user_name" json:"user_name,omitempty"`
+	LastText     string    `bun:"last_text" json:"last_text"`
+	LastSender   string    `bun:"last_sender" json:"last_sender"`
+	LastAt       time.Time `bun:"last_at" json:"last_at"`
+	MessageCount int       `bun:"message_count" json:"message_count"`
+}
