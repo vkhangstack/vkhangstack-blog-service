@@ -338,7 +338,7 @@ type TimetableEntry struct {
 	ID            string     `bun:"id,pk,type:varchar(20)" json:"id"`
 	AuthorID      string     `bun:"author_id,notnull,type:varchar(255)" json:"author_id"`
 	Subject       string     `bun:"subject,notnull,type:varchar(255)" json:"subject"`
-	DayOfWeek     int        `bun:"day_of_week,notnull,check:day_of_week BETWEEN 1 AND 7" json:"day_of_week"`
+	DayOfWeek     int        `bun:"day_of_week,notnull" json:"day_of_week"`
 	StartTime     string     `bun:"start_time,notnull,type:time" json:"start_time"`
 	EndTime       string     `bun:"end_time,notnull,type:time" json:"end_time"`
 	Color         string     `bun:"color,notnull,default:'blue',type:varchar(20)" json:"color"`
