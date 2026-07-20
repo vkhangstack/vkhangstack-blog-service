@@ -22,7 +22,6 @@ import (
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/snowflake"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/zalobot"
 	"github.com/vkhangstack/hexagonal-architecture/internal/config"
-	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/services"
 	"github.com/vkhangstack/hexagonal-architecture/internal/logger"
 	"github.com/vkhangstack/hexagonal-architecture/internal/migrations"
@@ -61,8 +60,6 @@ func main() {
 	sqldb.SetConnMaxLifetime(5 * time.Minute)
 	sqldb.SetConnMaxIdleTime(2 * time.Minute)
 	db := bun.NewDB(sqldb, pgdialect.New())
-	db.RegisterModel((*domain.BlogPostTag)(nil))
-	db.RegisterModel((*domain.Task)(nil))
 
 	redisCache, err := cache.NewRedisCache(cfg.Cache.Host, cfg.Cache.Password)
 	if err != nil {
