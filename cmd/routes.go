@@ -27,6 +27,7 @@ func InitRoutes(
 	rateLimiter *services.RateLimiter,
 	searchEngineService *services.SearchEngineService,
 	noteService *services.NoteService,
+	quizService *services.QuizService,
 	drawingService *services.DrawingService,
 	timetableService *services.TimetableService,
 	notificationService *services.NotificationService,
@@ -54,6 +55,7 @@ func InitRoutes(
 	taskHandler := handler.NewTaskHandler(taskService, searchEngineService)
 	uploadHandler := handler.NewUploadHandler(uploadService)
 	noteHandler := handler.NewNoteHandler(*noteService)
+	quizHandler := handler.NewQuizHandler(*quizService)
 	drawingHandler := handler.NewDrawingHandler(*drawingService)
 	timetableHandler := handler.NewTimetableHandler(timetableService)
 	accountHandler := handler.NewAccountHandler(accountService)
@@ -63,7 +65,7 @@ func InitRoutes(
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,
-		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, drawingHandler, timetableHandler,
+		tagHandler, taskHandler, uploadHandler, rateLimiter, noteHandler, quizHandler, drawingHandler, timetableHandler,
 		accountHandler, roleHandler, notificationHandler, authzAdapter)
 	// setupV2Routes(router2, customerHandler)
 
@@ -85,6 +87,7 @@ func setupV1Routes(
 	uploadHandler *handler.UploadHandler,
 	rateLimiter *services.RateLimiter,
 	noteHandler *handler.NoteHandler,
+	quizHandler *handler.QuizHandler,
 	drawingHandler *handler.DrawingHandler,
 	timetableHandler *handler.TimetableHandler,
 	accountHandler *handler.AccountHandler,
@@ -220,6 +223,19 @@ func setupV1Routes(
 			notes.GET("/:id", noteHandler.GetNote)
 			notes.PUT("/:id", noteHandler.UpdateNote)
 			notes.DELETE("/:id", noteHandler.DeleteNote)
+		}
+
+		quizzes := v1.Group("/quizzes")
+		quizzes.Use(http.AuthenticationMiddleware(authzAdapter))
+		{
+			quizzes.POST("", quizHandler.CreateQuiz)
+			quizzes.POST("/generate", quizHandler.GenerateQuiz)
+			quizzes.GET("/cursor", quizHandler.ListQuizzesCursor)
+			quizzes.GET("/:id", quizHandler.GetQuiz)
+			quizzes.PUT("/:id", quizHandler.UpdateQuiz)
+			quizzes.DELETE("/:id", quizHandler.DeleteQuiz)
+			quizzes.POST("/:id/attempts", quizHandler.SubmitAttempt)
+			quizzes.GET("/:id/attempts/cursor", quizHandler.ListAttemptsCursor)
 		}
 
 		drawings := v1.Group("/drawings")

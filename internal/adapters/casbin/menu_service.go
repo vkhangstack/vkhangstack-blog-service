@@ -41,6 +41,7 @@ var allNavGroups = []navGroupDef{
 				Children: []navItemDef{
 					{Title: "Tasks", URL: "/cms/tasks", Icon: "check-square", Resource: "cms/tasks"},
 					{Title: "Notes", URL: "/cms/notes", Icon: "edit", Resource: "cms/notes"},
+					{Title: "Quizzes", URL: "/cms/quizzes", Icon: "book", Resource: "cms/quizzes"},
 					{Title: "Drawings", URL: "/cms/drawings", Icon: "pen-tool", Resource: "cms/drawings"},
 					{Title: "Timetables", URL: "/cms/timetables", Icon: "calendar", Resource: "cms/timetables"},
 				},

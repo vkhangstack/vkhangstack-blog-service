@@ -12,6 +12,7 @@ p, admin, cms/posts, *
 p, admin, cms/categories, *
 p, admin, cms/tasks, *
 p, admin, cms/notes, *
+p, admin, cms/quizzes, *
 p, admin, cms/drawings, *
 p, admin, cms/timetables, *
 p, admin, cms/tags, *
@@ -25,6 +26,7 @@ p, staff, cms/posts, GET
 p, staff, cms/categories, GET
 p, staff, cms/tasks, *
 p, staff, cms/notes, *
+p, staff, cms/quizzes, *
 p, staff, cms/drawings, *
 p, staff, cms/timetables, *
 p, staff, cms/tags, *
@@ -37,6 +39,7 @@ p, user, messages, POST
 # guest: full access to workspace tasks, notes, timetables
 p, guest, cms/tasks, *
 p, guest, cms/notes, *
+p, guest, cms/quizzes, *
 p, guest, cms/drawings, *
 p, guest, cms/timetables, *
 p, guest, cms/upload, POST

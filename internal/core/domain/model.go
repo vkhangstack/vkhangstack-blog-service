@@ -383,6 +383,48 @@ type Notification struct {
 	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
 }
 
+type Quiz struct {
+	bun.BaseModel   `bun:"table:quizzes,alias:q"`
+	ID              string       `bun:"id,pk,type:varchar(20)"                              json:"id"`
+	Title           string       `bun:"title,notnull,type:varchar(255)"                     json:"title"`
+	Description     *string      `bun:"description,nullzero,type:text"                      json:"description"`
+	ExamType        QuizExamType `bun:"exam_type,notnull,default:'general',type:varchar(20)" json:"exam_type"`
+	Skill           *QuizSkill   `bun:"skill,nullzero,type:varchar(20)"                     json:"skill"`
+	Status          QuizStatus   `bun:"status,notnull,default:'draft',type:varchar(20)"     json:"status"`
+	DurationMinutes *int         `bun:"duration_minutes,nullzero,type:int"                  json:"duration_minutes"`
+	CreatedAt       time.Time    `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt       time.Time    `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+	DeletedAt       time.Time    `bun:"deleted_at,soft_delete,nullzero,type:timestamptz"                       json:"-"`
+	CreatedBy       *string      `bun:"created_by,nullzero,type:varchar(20)"                 json:"created_by"`
+	UpdatedBy       *string      `bun:"updated_by,nullzero,type:varchar(20)"                 json:"updated_by"`
+	DeletedBy       *string      `bun:"deleted_by,nullzero,type:varchar(20)"                 json:"deleted_by"`
+}
+
+type QuizQuestion struct {
+	bun.BaseModel `bun:"table:quiz_questions,alias:qq"`
+	ID            string    `bun:"id,pk,type:varchar(20)"          json:"id"`
+	QuizID        string    `bun:"quiz_id,notnull,type:varchar(20)" json:"quiz_id"`
+	Prompt        string    `bun:"prompt,notnull,type:text"        json:"prompt"`
+	Options       []string  `bun:"options,notnull,type:jsonb"      json:"options"`
+	CorrectIndex  int       `bun:"correct_index,notnull,type:int"  json:"correct_index"`
+	Explanation   *string   `bun:"explanation,nullzero,type:text"  json:"explanation"`
+	Position      int       `bun:"position,notnull,default:0,type:int" json:"position"`
+	CreatedAt     time.Time `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	UpdatedAt     time.Time `bun:"updated_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"updated_at"`
+}
+
+type QuizAttempt struct {
+	bun.BaseModel   `bun:"table:quiz_attempts,alias:qa"`
+	ID              string         `bun:"id,pk,type:varchar(20)"           json:"id"`
+	QuizID          string         `bun:"quiz_id,notnull,type:varchar(20)" json:"quiz_id"`
+	Answers         map[string]int `bun:"answers,notnull,type:jsonb"       json:"answers"`
+	Score           int            `bun:"score,notnull,type:int"           json:"score"`
+	Total           int            `bun:"total,notnull,type:int"           json:"total"`
+	DurationSeconds *int           `bun:"duration_seconds,nullzero,type:int" json:"duration_seconds"`
+	CreatedAt       time.Time      `bun:"created_at,nullzero,notnull,default:current_timestamp,type:timestamptz" json:"created_at"`
+	CreatedBy       *string        `bun:"created_by,nullzero,type:varchar(20)" json:"created_by"`
+}
+
 // NotificationChannelVerification links a channel (e.g. zalo_bot) to a user by having the
 // user copy a generated code into that channel's own app, then having the channel's webhook
 // report the code back along with the sender's platform-specific ID (ExtendID), which becomes

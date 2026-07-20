@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS idx_quizzes_status;
+DROP INDEX IF EXISTS idx_quizzes_exam_type;
+DROP INDEX IF EXISTS idx_quizzes_created_at;
+DROP INDEX IF EXISTS idx_quiz_questions_quiz_id;
+DROP INDEX IF EXISTS idx_quiz_attempts_quiz_id;
+DROP INDEX IF EXISTS idx_quiz_attempts_created_at;
+DROP TABLE IF EXISTS quiz_attempts;
+DROP TABLE IF EXISTS quiz_questions;
+DROP TABLE IF EXISTS quizzes;

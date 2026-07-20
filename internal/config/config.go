@@ -50,6 +50,15 @@ type ZaloBotConfig struct {
 	DeepLink      string
 }
 
+// AIConfig selects the LLM provider used for quiz generation.
+// Provider: "claude" (Anthropic), "openai" (ChatGPT), or "kimi" (Moonshot).
+type AIConfig struct {
+	Provider string
+	APIKey   string
+	Model    string
+	BaseURL  string
+}
+
 type Config struct {
 	App         AppConfig
 	DB          DBConfig
@@ -58,6 +67,7 @@ type Config struct {
 	TinyEditor  TinyEditorConfig
 	Meilisearch MeilisearchConfig
 	ZaloBot     ZaloBotConfig
+	AI          AIConfig
 }
 
 func LoadConfig() Config {
@@ -103,6 +113,12 @@ func LoadConfig() Config {
 			WebhookSecret: getEnv("ZALO_BOT_WEBHOOK_SECRET", ""),
 			Endpoint:      getEnv("ZALO_BOT_ENDPOINT", "http://localhost:8080/webhooks/zalo"),
 			DeepLink:      getEnv("ZALO_BOT_DEEPLINK", "https://zalo.me/"),
+		},
+		AI: AIConfig{
+			Provider: getEnv("AI_PROVIDER", "claude"),
+			APIKey:   getEnv("AI_API_KEY", ""),
+			Model:    getEnv("AI_MODEL", ""),
+			BaseURL:  getEnv("AI_BASE_URL", ""),
 		},
 	}
 }

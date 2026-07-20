@@ -210,6 +210,83 @@ type NoteFilter struct {
 	CreatedBy *string `form:"created_by"`
 }
 
+type QuizQuestionInput struct {
+	Prompt       string   `json:"prompt"        binding:"required"`
+	Options      []string `json:"options"      binding:"required,min=2"`
+	CorrectIndex int      `json:"correct_index" binding:"gte=0"`
+	Explanation  *string  `json:"explanation"`
+}
+
+type CreateQuizRequest struct {
+	Title           string              `json:"title" binding:"required"`
+	Description     *string             `json:"description"`
+	ExamType        QuizExamType        `json:"exam_type"`
+	Skill           *QuizSkill          `json:"skill"`
+	Status          QuizStatus          `json:"status"`
+	DurationMinutes *int                `json:"duration_minutes"`
+	Questions       []QuizQuestionInput `json:"questions"`
+}
+
+type UpdateQuizRequest struct {
+	Title           *string              `json:"title"`
+	Description     *string              `json:"description"`
+	ExamType        *QuizExamType        `json:"exam_type"`
+	Skill           *QuizSkill           `json:"skill"`
+	Status          *QuizStatus          `json:"status"`
+	DurationMinutes *int                 `json:"duration_minutes"`
+	Questions       *[]QuizQuestionInput `json:"questions"`
+}
+
+type QuizFilter struct {
+	Status    *string `form:"status"`
+	ExamType  *string `form:"exam_type"`
+	Skill     *string `form:"skill"`
+	Title     *string `form:"title"`
+	CreatedBy *string `form:"created_by"`
+	Page      int     `form:"page"`
+	Limit     int     `form:"limit"`
+}
+
+type QuizWithQuestions struct {
+	*Quiz
+	Questions []*QuizQuestion `json:"questions"`
+}
+
+// QuizWithCount is the list-view projection: quiz plus its question count.
+type QuizWithCount struct {
+	*Quiz
+	QuestionCount int `json:"question_count"`
+}
+
+type SubmitQuizAttemptRequest struct {
+	Answers         map[string]int `json:"answers" binding:"required"`
+	DurationSeconds *int           `json:"duration_seconds"`
+}
+
+// GenerateQuizRequest asks the configured AI provider to draft a quiz.
+type GenerateQuizRequest struct {
+	Topic    string       `json:"topic" binding:"required"`
+	ExamType QuizExamType `json:"exam_type"`
+	Skill    *QuizSkill   `json:"skill"`
+	Level    *string      `json:"level"`
+	Count    int          `json:"count"`
+}
+
+type QuizQuestionResult struct {
+	QuestionID    string  `json:"question_id"`
+	SelectedIndex int     `json:"selected_index"`
+	CorrectIndex  int     `json:"correct_index"`
+	Correct       bool    `json:"correct"`
+	Explanation   *string `json:"explanation"`
+}
+
+type QuizAttemptResult struct {
+	AttemptID string               `json:"attempt_id"`
+	Score     int                  `json:"score"`
+	Total     int                  `json:"total"`
+	Results   []QuizQuestionResult `json:"results"`
+}
+
 type CreateAccountRequest struct {
 	FirstName   string        `json:"first_name" binding:"required"`
 	LastName    string        `json:"last_name"  binding:"required"`

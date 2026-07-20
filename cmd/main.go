@@ -13,6 +13,7 @@ import (
 	"github.com/uptrace/bun/dialect/pgdialect"
 	"github.com/uptrace/bun/driver/pgdriver"
 	"github.com/uptrace/bun/migrate"
+	aiAdapters "github.com/vkhangstack/hexagonal-architecture/internal/adapters/ai"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/cache"
 	casbinAdapter "github.com/vkhangstack/hexagonal-architecture/internal/adapters/casbin"
 	"github.com/vkhangstack/hexagonal-architecture/internal/adapters/meili"
@@ -114,6 +115,11 @@ func main() {
 		logger.Log.WithError(err).Fatal("failed to initialize Zalo bot adapter")
 	}
 
+	aiAdapters, err := aiAdapters.NewQuizGenerator(cfg.AI)
+	if err != nil {
+		logger.Log.WithError(err).Fatal("failed to initialize AI adapters")
+	}
+
 	msgService = services.NewMessengerService(store)
 	customerService = services.NewCustomerService(store)
 	firebaseService = services.NewFirebaseService(store)
@@ -126,6 +132,7 @@ func main() {
 	rateLimiter := services.NewRateLimiter(10, 5) // Burst 10, refill 5 req/s
 	searchEngineService := services.NewSearchEngineService(searchEngineAdapter)
 	noteService := services.NewNoteService(store)
+	quizService := services.NewQuizService(store, aiAdapters)
 	drawingService := services.NewDrawingService(store)
 	timetableService := services.NewTimetableService(store)
 	notificationService := services.NewNotificationService(store)
@@ -144,6 +151,6 @@ func main() {
 
 	InitRoutes(msgService, customerService, accountService, firebaseService,
 		blogCategoryService, blogPostService, tagService, taskService, uploadService,
-		rateLimiter, searchEngineService, noteService, drawingService, timetableService,
+		rateLimiter, searchEngineService, noteService, quizService, drawingService, timetableService,
 		notificationService, notificationSettingService, zaloBotAdapter, authzAdapter)
 }

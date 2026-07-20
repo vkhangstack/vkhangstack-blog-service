@@ -257,6 +257,33 @@ type NoteService interface {
 	DeleteNote(ctx context.Context, id string) error
 }
 
+type QuizRepository interface {
+	CreateQuiz(ctx context.Context, quiz domain.Quiz, questions []domain.QuizQuestion) (*domain.Quiz, error)
+	GetQuizByID(ctx context.Context, id string) (*domain.QuizWithQuestions, error)
+	UpdateQuiz(ctx context.Context, id string, updates domain.Quiz) error
+	ReplaceQuizQuestions(ctx context.Context, quizID string, questions []domain.QuizQuestion) error
+	DeleteQuiz(ctx context.Context, id string) error
+	ListQuizzesCursor(ctx context.Context, filter domain.QuizFilter, cursor string, limit int) ([]*domain.QuizWithCount, *string, int, error)
+	CreateQuizAttempt(ctx context.Context, attempt domain.QuizAttempt) (*domain.QuizAttempt, error)
+	ListQuizAttemptsCursor(ctx context.Context, quizID string, cursor string, limit int) ([]*domain.QuizAttempt, *string, int, error)
+}
+
+type QuizService interface {
+	CreateQuiz(ctx context.Context, authorID string, req domain.CreateQuizRequest) (*domain.Quiz, error)
+	GetQuiz(ctx context.Context, id string) (*domain.QuizWithQuestions, error)
+	UpdateQuiz(ctx context.Context, id string, req domain.UpdateQuizRequest) error
+	DeleteQuiz(ctx context.Context, id string) error
+	ListQuizzesCursor(ctx context.Context, filter domain.QuizFilter, cursor string, limit int) ([]*domain.QuizWithCount, *string, int, error)
+	SubmitAttempt(ctx context.Context, quizID string, authorID string, req domain.SubmitQuizAttemptRequest) (*domain.QuizAttemptResult, error)
+	ListQuizAttemptsCursor(ctx context.Context, quizID string, cursor string, limit int) ([]*domain.QuizAttempt, *string, int, error)
+	GenerateQuiz(ctx context.Context, req domain.GenerateQuizRequest) (*domain.CreateQuizRequest, error)
+}
+
+// QuizGenerator drafts a quiz (title, meta, MCQ questions) using an LLM provider.
+type QuizGenerator interface {
+	GenerateQuiz(ctx context.Context, req domain.GenerateQuizRequest) (*domain.CreateQuizRequest, error)
+}
+
 type DrawingRepository interface {
 	CreateDrawing(ctx context.Context, drawing domain.Drawing) (*domain.Drawing, error)
 	GetDrawingByID(ctx context.Context, id string) (*domain.Drawing, error)

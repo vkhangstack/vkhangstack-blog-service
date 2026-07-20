@@ -138,6 +138,32 @@ const (
 	TaskLabelTesting       TaskLabel = "testing"
 )
 
+type QuizExamType string
+
+const (
+	QuizExamTypeIELTS   QuizExamType = "ielts"
+	QuizExamTypeTOEIC   QuizExamType = "toeic"
+	QuizExamTypeGeneral QuizExamType = "general"
+)
+
+type QuizSkill string
+
+const (
+	QuizSkillListening  QuizSkill = "listening"
+	QuizSkillReading    QuizSkill = "reading"
+	QuizSkillGrammar    QuizSkill = "grammar"
+	QuizSkillVocabulary QuizSkill = "vocabulary"
+	QuizSkillMixed      QuizSkill = "mixed"
+)
+
+type QuizStatus string
+
+const (
+	QuizStatusDraft     QuizStatus = "draft"
+	QuizStatusPublished QuizStatus = "published"
+	QuizStatusArchived  QuizStatus = "archived"
+)
+
 type SearchEngineIndexName string
 
 const (
