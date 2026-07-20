@@ -52,7 +52,7 @@ func (u *DB) ListTimetableEntries(ctx context.Context, authorID string, filter d
 		query = query.Where("te.day_of_week = ?", filter.DayOfWeek)
 	}
 
-	total, err := query.Order("te.created_at DESC").Offset((filter.Page - 1) * filter.Limit).Limit(filter.Limit).ScanAndCount(ctx)
+	total, err := query.Order("te.day_of_week ASC").Offset((filter.Page - 1) * filter.Limit).Limit(filter.Limit).ScanAndCount(ctx)
 	if err != nil {
 		return nil, 0, fmt.Errorf("timetable entries not found: %v", err)
 	}

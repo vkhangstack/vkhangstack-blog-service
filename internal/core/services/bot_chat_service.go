@@ -112,7 +112,7 @@ func (s *BotChatService) handleTasks(ctx context.Context, senderID, userID, stat
 	var sb strings.Builder
 	sb.WriteString(fmt.Sprintf("Your tasks (%d):\n", len(tasks)))
 	for i, t := range tasks {
-		sb.WriteString(fmt.Sprintf("%d. [%s] %s (%s)\n", i+1, t.Status, t.Title, t.Priority))
+		sb.WriteString(fmt.Sprintf("%d. [%s] %s (%s)\n", i+1, strings.ToUpper(string(t.Status)), t.Title, t.Priority))
 	}
 	s.reply(senderID, sb.String())
 }
