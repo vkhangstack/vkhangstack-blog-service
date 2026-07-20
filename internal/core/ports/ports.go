@@ -343,6 +343,9 @@ type NotificationService interface {
 // NotificationSettingRepository persists each user's channel preferences (one row per user).
 type NotificationSettingRepository interface {
 	GetNotificationSettingByUserID(ctx context.Context, userID string) (*domain.NotificationSetting, error)
+	// GetNotificationSettingByChannelToken finds a setting row where the channels JSONB array
+	// contains an entry for the given channel type with the given token (e.g. Zalo extend_id).
+	GetNotificationSettingByChannelToken(ctx context.Context, channel domain.NotificationChannelType, token string) (*domain.NotificationSetting, error)
 	UpsertNotificationSetting(ctx context.Context, setting domain.NotificationSetting) (*domain.NotificationSetting, error)
 }
 

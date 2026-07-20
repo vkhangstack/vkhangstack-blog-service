@@ -123,6 +123,11 @@ type NotificationSettingService struct {
 	zaloBot          ports.ZaloBotClient
 }
 
+// Repo exposes the underlying repository for use by services that need it (e.g. BotChatService).
+func (s *NotificationSettingService) Repo() ports.NotificationSettingRepository {
+	return s.repo
+}
+
 func NewNotificationSettingService(repo ports.NotificationSettingRepository, verificationRepo ports.NotificationChannelVerificationRepository, zaloBot ports.ZaloBotClient) *NotificationSettingService {
 	return &NotificationSettingService{repo: repo, verificationRepo: verificationRepo, zaloBot: zaloBot}
 }

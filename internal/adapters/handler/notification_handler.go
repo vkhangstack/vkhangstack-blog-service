@@ -16,11 +16,17 @@ import (
 type NotificationHandler struct {
 	svc        *services.NotificationService
 	settingSvc *services.NotificationSettingService
+	botChatSvc *services.BotChatService
 	zaloBot    ports.ZaloBotClient
 }
 
-func NewNotificationHandler(svc *services.NotificationService, settingSvc *services.NotificationSettingService, zaloBot ports.ZaloBotClient) *NotificationHandler {
-	return &NotificationHandler{svc: svc, settingSvc: settingSvc, zaloBot: zaloBot}
+func NewNotificationHandler(
+	svc *services.NotificationService,
+	settingSvc *services.NotificationSettingService,
+	botChatSvc *services.BotChatService,
+	zaloBot ports.ZaloBotClient,
+) *NotificationHandler {
+	return &NotificationHandler{svc: svc, settingSvc: settingSvc, botChatSvc: botChatSvc, zaloBot: zaloBot}
 }
 
 // CreateNotification handles POST /v1/notifications

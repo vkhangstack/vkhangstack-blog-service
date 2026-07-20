@@ -143,6 +143,23 @@ func (u *DB) GetNotificationSettingByUserID(ctx context.Context, userID string) 
 	return setting, nil
 }
 
+// GetNotificationSettingByChannelToken finds a notification setting row where the channels
+// JSONB array contains an object with the given channel type and token (e.g. Zalo extend_id).
+func (u *DB) GetNotificationSettingByChannelToken(ctx context.Context, channel domain.NotificationChannelType, token string) (*domain.NotificationSetting, error) {
+	setting := &domain.NotificationSetting{}
+	// Use PostgreSQL JSONB containment: channels @> '[{"channel":"<ch>","token":"<tok>"}]'
+	err := u.db.NewSelect().Model(setting).
+		Where("channels @> ?::jsonb", fmt.Sprintf(`[{"channel":%q,"token":%q}]`, channel, token)).
+		Limit(1).Scan(ctx)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("notification setting not found by channel token: %v", err)
+	}
+	return setting, nil
+}
+
 func (u *DB) UpsertNotificationSetting(ctx context.Context, setting domain.NotificationSetting) (*domain.NotificationSetting, error) {
 	if setting.ID == "" {
 		setting.ID = u.snowflakeNode.GenerateID()

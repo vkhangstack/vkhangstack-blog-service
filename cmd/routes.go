@@ -61,7 +61,8 @@ func InitRoutes(
 	accountHandler := handler.NewAccountHandler(accountService)
 	roleSvc := casbinAdapter.NewRoleServiceAdapter(authzAdapter)
 	roleHandler := handler.NewRoleHandler(roleSvc)
-	notificationHandler := handler.NewNotificationHandler(notificationService, notificationSettingService, zaloBotClient)
+	botChatService := services.NewBotChatService(notificationSettingService.Repo(), taskService, noteService, timetableService, zaloBotClient)
+	notificationHandler := handler.NewNotificationHandler(notificationService, notificationSettingService, botChatService, zaloBotClient)
 
 	// Setup route groups
 	setupV1Routes(router, menuHandler, permissionHandler, messageHandler, customerHandler, loginHandler, blogHandler,

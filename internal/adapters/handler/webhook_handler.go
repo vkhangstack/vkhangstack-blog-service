@@ -83,9 +83,9 @@ func (h *NotificationHandler) ZaloBotWebhook(ctx *gin.Context) {
 		return
 	}
 
-	// Only messages carrying the NEXION-HUB-###### verification-code prefix are relevant here;
-	// skip everything else to avoid noisy failed-verification logs for ordinary chat messages.
+	// Non-verification messages are routed to the bot chat handler (e.g. /tasks, /notes).
 	if !services.VerificationCodePattern.MatchString(text) {
+		h.botChatSvc.HandleMessage(ctx, senderID, text)
 		HandleSuccess(ctx, nil, "Success")
 		return
 	}
