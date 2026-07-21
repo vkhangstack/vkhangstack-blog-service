@@ -20,7 +20,7 @@ func NewTaskService(repo ports.TaskRepository) *TaskService {
 }
 
 func (s *TaskService) CreateTask(ctx context.Context, authorID string, req domain.CreateTaskRequest) (*domain.Task, error) {
-	taskID := "TASK-" + fmt.Sprintf("%04d", time.Now().UnixNano()%10000)
+	taskID := "TASK-" + fmt.Sprintf("%08d", time.Now().UnixNano()%100000000) // Generate a unique task ID based on timestamp
 
 	status := domain.TaskStatusTodo
 	if req.Status != "" {
