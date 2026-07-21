@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/domain"
 	"github.com/vkhangstack/hexagonal-architecture/internal/core/ports"
@@ -19,11 +20,7 @@ func NewTaskService(repo ports.TaskRepository) *TaskService {
 }
 
 func (s *TaskService) CreateTask(ctx context.Context, authorID string, req domain.CreateTaskRequest) (*domain.Task, error) {
-	countTask, err := s.repo.GetCount(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get task count: %v", err)
-	}
-	taskID := "TASK-" + fmt.Sprintf("%04d", countTask+1)
+	taskID := "TASK-" + fmt.Sprintf("%04d", time.Now().UnixNano()%10000)
 
 	status := domain.TaskStatusTodo
 	if req.Status != "" {
