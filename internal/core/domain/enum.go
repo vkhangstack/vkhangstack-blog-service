@@ -33,9 +33,6 @@ const (
 	ErrorCodeInternalServerError = -500
 	ErrorCodeTooManyRequests     = -429
 	ErrorCodeInvalidCredentials  = -413
-
-	ErrorCodeTaskCreationFailed = -460
-	ErrorCodeTaskNotFound       = -461
 )
 
 const (
