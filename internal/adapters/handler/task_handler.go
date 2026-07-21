@@ -39,7 +39,8 @@ func (h *TaskHandler) CreateTask(ctx *gin.Context) {
 	}
 	task, err := h.svc.CreateTask(ctx, userID, req)
 	if err != nil {
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		logger.Log.WithError(err).Error("CreateTask: Failed to create task")
+		HandleError(ctx, domain.ErrorCodeTaskCreationFailed, nil, "Failed to create task")
 		return
 	}
 	go func() {
@@ -59,7 +60,8 @@ func (h *TaskHandler) GetTask(ctx *gin.Context) {
 	}
 	task, err := h.svc.GetTask(ctx, id)
 	if err != nil {
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		logger.Log.WithError(err).Error("GetTask: Failed to get task")
+		HandleError(ctx, domain.ErrorCodeTaskNotFound, nil, "Task not found")
 		return
 	}
 	HandleSuccess(ctx, task, "Success")
@@ -89,7 +91,8 @@ func (h *TaskHandler) ListTasks(ctx *gin.Context) {
 
 	tasks, total, err := h.svc.ListTasks(ctx, filter)
 	if err != nil {
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		logger.Log.WithError(err).Error("ListTasks: Failed to list tasks")
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "Failed to list tasks")
 		return
 	}
 
@@ -126,7 +129,8 @@ func (h *TaskHandler) ListTasksCursor(ctx *gin.Context) {
 
 	tasks, nextCursor, total, err := h.svc.ListTasksCursor(ctx, filter, cursor, limit)
 	if err != nil {
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		logger.Log.WithError(err).Error("ListTasksCursor: Failed to list tasks")
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "Failed to list tasks")
 		return
 	}
 
@@ -156,7 +160,7 @@ func (h *TaskHandler) UpdateTask(ctx *gin.Context) {
 	task, err := h.svc.UpdateTask(ctx, id, req)
 	if err != nil {
 		logger.Log.WithError(err).Error("UpdateTask: Failed to update task")
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "Failed to update task")
 		return
 	}
 	go func() {
@@ -177,7 +181,7 @@ func (h *TaskHandler) DeleteTask(ctx *gin.Context) {
 	}
 	if err := h.svc.DeleteTask(ctx, id); err != nil {
 		logger.Log.WithError(err).Error("DeleteTask: Failed to delete task")
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "Failed to delete task")
 		return
 	}
 	go func() {
@@ -193,7 +197,7 @@ func (h *TaskHandler) GetTaskStatistics(ctx *gin.Context) {
 	stats, err := h.svc.GetTaskStatistics(ctx)
 	if err != nil {
 		logger.Log.WithError(err).Error("GetTaskStatistics: Failed to get task statistics")
-		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, err.Error())
+		HandleError(ctx, domain.ErrorCodeInternalServerError, nil, "Failed to get task statistics")
 		return
 	}
 	HandleSuccess(ctx, stats, "Success")

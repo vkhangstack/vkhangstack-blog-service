@@ -22,7 +22,7 @@ func (u *DB) CreateTask(ctx context.Context, task domain.Task) (*domain.Task, er
 
 func (u *DB) GetTaskByID(ctx context.Context, id string) (*domain.Task, error) {
 	task := &domain.Task{}
-	err := u.db.NewSelect().Model(task).Where("t.id = ?", id).Limit(1).Scan(ctx)
+	err := u.db.NewSelect().Model(task).Where("t.id = ?", id).Where("t.deleted_at IS NULL").Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("task not found")
 	}
@@ -31,7 +31,7 @@ func (u *DB) GetTaskByID(ctx context.Context, id string) (*domain.Task, error) {
 
 func (u *DB) GetTaskByTaskID(ctx context.Context, taskID string) (*domain.Task, error) {
 	task := &domain.Task{}
-	err := u.db.NewSelect().Model(task).Where("t.task_id = ?", taskID).Limit(1).Scan(ctx)
+	err := u.db.NewSelect().Model(task).Where("t.task_id = ?", taskID).Where("t.deleted_at IS NULL").Limit(1).Scan(ctx)
 	if err == sql.ErrNoRows {
 		return nil, errors.New("task not found")
 	}
@@ -49,7 +49,9 @@ func (u *DB) UpdateTask(ctx context.Context, id string, updates domain.Task) (*d
 
 func (u *DB) DeleteTask(ctx context.Context, id string) error {
 	task := &domain.Task{ID: id}
-	_, err := u.db.NewDelete().Model(task).WherePK().Exec(ctx)
+	task.DeletedAt = time.Now()
+	task.DeletedBy = ctx.Value("user_id").(*string)
+	_, err := u.db.NewUpdate().Model(task).WherePK().Exec(ctx)
 	if err != nil {
 		return fmt.Errorf("task not deleted: %v", err)
 	}
@@ -58,7 +60,7 @@ func (u *DB) DeleteTask(ctx context.Context, id string) error {
 
 func (u *DB) ListTasks(ctx context.Context, filter domain.TaskFilter) ([]*domain.Task, int, error) {
 	tasks := make([]*domain.Task, 0)
-	query := u.db.NewSelect().Model(&tasks)
+	query := u.db.NewSelect().Model(&tasks).Where("t.deleted_at IS NULL")
 
 	if filter.Status != "" {
 		query = query.Where("t.status = ?", filter.Status)
@@ -94,7 +96,7 @@ func (u *DB) ListTasksCursor(ctx context.Context, filter domain.TaskFilter, curs
 	}
 
 	var tasks []*domain.Task
-	query := u.db.NewSelect().Model(&tasks)
+	query := u.db.NewSelect().Model(&tasks).Where("t.deleted_at IS NULL")
 
 	if filter.Status != "" {
 		query = query.Where("t.status = ?", filter.Status)
@@ -138,7 +140,7 @@ func (u *DB) ListTasksCursor(ctx context.Context, filter domain.TaskFilter, curs
 
 func (u *DB) ListAllTasks(ctx context.Context) ([]*domain.Task, error) {
 	tasks := make([]*domain.Task, 0)
-	err := u.db.NewSelect().Model(&tasks).Order("t.created_at DESC").Scan(ctx)
+	err := u.db.NewSelect().Model(&tasks).Where("t.deleted_at IS NULL").Order("t.created_at DESC").Scan(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("tasks not found: %v", err)
 	}
@@ -146,7 +148,7 @@ func (u *DB) ListAllTasks(ctx context.Context) ([]*domain.Task, error) {
 }
 
 func (u *DB) CountTasksByStatus(ctx context.Context, status domain.TaskStatus) (int, error) {
-	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("status = ?", status).Count(ctx)
+	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("t.status = ?", status).Where("t.deleted_at IS NULL").Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
 	}
@@ -154,7 +156,7 @@ func (u *DB) CountTasksByStatus(ctx context.Context, status domain.TaskStatus) (
 }
 
 func (u *DB) CountTasksByPriority(ctx context.Context, priority domain.TaskPriority) (int, error) {
-	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("priority = ?", priority).Count(ctx)
+	count, err := u.db.NewSelect().Model((*domain.Task)(nil)).Where("t.priority = ?", priority).Where("t.deleted_at IS NULL").Count(ctx)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count tasks: %v", err)
 	}
@@ -167,6 +169,7 @@ func (u *DB) ListDueReminderTasks(ctx context.Context, before time.Time) ([]*dom
 		Where("t.enable_notice = true").
 		Where("t.reminder_at IS NOT NULL").
 		Where("t.reminder_at >= ?", before).
+		Where("t.deleted_at IS NULL").
 		Scan(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("due reminder tasks not found: %v", err)
